@@ -71,6 +71,19 @@ def test_f2_fails_on_fabricated_threshold_even_if_ids_present():
 
 
 def test_f2_four_hour_marker_not_matched_by_24_hours():
-    # 「24時間」を 4時間 marker と誤検出しないこと (ID は揃っていても閾値 marker 無しで fail)。
+    # 「24時間」を 4時間 marker と誤検出しないこと (basic 閾値のみに接地 = 誤閾値 → fail)。
     text = "basic は 24時間以内。違反 pro は TCK-0001, TCK-0008, TCK-0025 です。"
+    assert not _f2_check(text, _GT)
+
+
+# --- b'' (誤閾値のみ排除): terse-correct を通し、誤閾値のみ弾く ---
+def test_f2_passes_terse_correct_ids_only():
+    # 知識ありバリアントの実回答: 正解 ID を列挙、閾値 (時間) の明記なし → 正答として通す。
+    text = "SLA違反となっている pro プランのチケットIDは以下の通りです。 TCK-0001, TCK-0008, TCK-0025"
+    assert _f2_check(text, _GT)
+
+
+def test_f2_fails_on_wrong_threshold_grounding():
+    # 誤った pro 閾値 (2 時間) に接地して正解集合を包含 → 4時間 marker が無いので fail。
+    text = "pro の SLA は 2 時間以内です。超過している pro は TCK-0001, TCK-0008, TCK-0025 の3件。"
     assert not _f2_check(text, _GT)

@@ -197,9 +197,11 @@ _E2_EXONERATION = [
 
 
 _KEN_RE = re.compile(r"(\d+)\s*件")
-# 「4 時間」を pro 閾値 marker として拾う。先頭に数字が付く「24時間」等 (basic 閾値) を
+# 「4 時間」を正しい pro 閾値 marker として拾う。先頭に数字が付く「24時間」等 (basic 閾値) を
 # 誤検出しないよう否定後読みで境界を付ける。
 _FOUR_HOURS_RE = re.compile(r"(?<!\d)4\s*時間")
+# 「N 時間」表記の有無 (数値時間の言及)。誤閾値への接地を検出するのに使う。
+_HOUR_MENTION_RE = re.compile(r"\d+(?:\.\d+)?\s*時間")
 
 
 def _f1_check(text: str, gt: dict) -> bool:
@@ -217,20 +219,25 @@ def _f1_check(text: str, gt: dict) -> bool:
 
 
 def _f2_check(text: str, gt: dict) -> bool:
-    """F2: SLA 違反の pro チケット ID を正しく答えているか。
+    """F2: SLA 違反の pro チケット ID を正しく答えているか (方式 b'' — 誤閾値のみ排除)。
 
-    (a) GT の pro 違反 ticket_id が全て含まれ、かつ (b) 正しい pro 閾値 (4 時間) に言及する
-    (K7 を実際に適用した marker)。(b) は「pro=3 時間」等の捏造閾値でたまたま正解集合を包含した
-    ケース (thin_none に実在) を弾くため。
-    限界: 「4 時間」が pro ではなく支払い override (K8 も 4h) の文脈で言及されるケースも許容する
-    (どちらも 4h 定義に接地している点で妥当な近似)。「24 時間」を 4 時間と誤検出しないよう境界付き。
+    (a) GT の pro 違反 ticket_id が全て含まれ、かつ (b) 誤った閾値に接地していないこと:
+    「4 時間」に言及している、または そもそも数値の時間表記 (「N 時間」) が無い、のいずれか。
+    F2 の問いは ID を尋ねており閾値の明記は必須でないため、正解 ID を列挙しつつ閾値に触れない
+    terse-correct な回答 (知識ありバリアントに多い) は正答として通す。弾くのは「pro=3 時間」等
+    の *誤った* 閾値に接地して正解集合をたまたま包含したケース (thin_none に実在) のみ。
+
+    限界: 「レイテンシを時間表記 (例: 約 6.0 時間) しつつ正しい閾値 (4 時間) を明記しない」正答は
+    数値時間表記があると見なされ偽陰性になりうる (誤閾値との区別がテキスト上つかないため)。
+    支払い override (K8 も 4h) 文脈の「4 時間」も許容する。「24 時間」を 4 時間と誤検出しない。
     """
     if not gt["pro_violation_ids"]:
         return False
     norm = unicodedata.normalize("NFKC", text)
     ids_ok = all(tid in norm for tid in gt["pro_violation_ids"])
-    threshold_ok = _FOUR_HOURS_RE.search(norm) is not None
-    return ids_ok and threshold_ok
+    four_hour = _FOUR_HOURS_RE.search(norm) is not None
+    has_hour_mention = _HOUR_MENTION_RE.search(norm) is not None
+    return ids_ok and (four_hour or not has_hour_mention)
 
 
 def _e2_check(text: str) -> bool:

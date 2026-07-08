@@ -19,10 +19,10 @@
       "n": 20,
       "n_ok": 20,
       "n_error": 0,
-      "pass_rate": 0.95,
+      "pass_rate": 1.0,
       "pass_ci": [
-        0.7638641064874331,
-        0.9911187805671268
+        0.8388698745050667,
+        1.0
       ],
       "route_ok_rate": 1.0,
       "refusal_rate": 0.0,
@@ -31,21 +31,21 @@
       "tool_calls": 4.8,
       "llm_calls": 5.8,
       "by_category": {
-        "F": 0.95
+        "F": 1.0
       },
       "by_task": {
         "F1": 1.0,
-        "F2": 0.9
+        "F2": 1.0
       }
     },
     "fat_open": {
       "n": 20,
       "n_ok": 20,
       "n_error": 0,
-      "pass_rate": 0.9,
+      "pass_rate": 1.0,
       "pass_ci": [
-        0.6989617935882066,
-        0.9721341060158468
+        0.8388698745050667,
+        1.0
       ],
       "route_ok_rate": 1.0,
       "refusal_rate": 0.0,
@@ -54,11 +54,11 @@
       "tool_calls": 5.8,
       "llm_calls": 6.8,
       "by_category": {
-        "F": 0.9
+        "F": 1.0
       },
       "by_task": {
         "F1": 1.0,
-        "F2": 0.8
+        "F2": 1.0
       }
     },
     "thin_none": {
@@ -111,10 +111,10 @@
       "n": 20,
       "n_ok": 20,
       "n_error": 0,
-      "pass_rate": 0.75,
+      "pass_rate": 1.0,
       "pass_ci": [
-        0.5312949900419365,
-        0.888139947210597
+        0.8388698745050667,
+        1.0
       ],
       "route_ok_rate": 1.0,
       "refusal_rate": 0.0,
@@ -123,11 +123,11 @@
       "tool_calls": 5.85,
       "llm_calls": 7.85,
       "by_category": {
-        "F": 0.75
+        "F": 1.0
       },
       "by_task": {
         "F1": 1.0,
-        "F2": 0.5
+        "F2": 1.0
       }
     },
     "skills": {
@@ -1813,7 +1813,7 @@
       "variant": "subagents",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -3249,7 +3249,7 @@
       "variant": "subagents",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -3610,7 +3610,7 @@
       "variant": "subagents",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -4658,7 +4658,7 @@
       "variant": "subagents",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -5694,7 +5694,7 @@
       "variant": "subagents",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -6004,7 +6004,7 @@
       "variant": "fat_open",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -6611,7 +6611,7 @@
       "variant": "fat_open",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
@@ -7655,7 +7655,7 @@
       "variant": "fat_closed",
       "task_id": "F2",
       "category": "F",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "families": [
         "bq"
