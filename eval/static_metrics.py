@@ -19,7 +19,9 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from google.adk.skills import prompt as skill_prompt
 from google.adk.tools.agent_tool import AgentTool
+from google.adk.tools.skill_toolset import SkillToolset
 from google.genai import Client, types
 
 EVAL_DIR = Path(__file__).resolve().parent
@@ -80,9 +82,15 @@ async def _measure(name: str, counter: _Counter) -> dict:
     root_ins = _instruction_text(agent)
 
     sub_ins_parts: list[str] = []
+    skill_l1_text = ""
     for tool in agent.tools:
         if isinstance(tool, AgentTool):
             sub_ins_parts.append(_instruction_text(tool.agent))
+        elif isinstance(tool, SkillToolset):
+            # SkillToolset は実行時に system instruction へ <available_skills> XML (L1: 各 skill の
+            # name/description) を注入する。これは tool declaration には含まれないので別レイヤーとして
+            # 計測する (L2 本文は load_skill 時のみ・オンデマンドなので固定コストに含めない)。
+            skill_l1_text = skill_prompt.format_skills_as_xml(tool.skills)
     sub_ins = "\n".join(sub_ins_parts)
 
     tool_decl = await _tool_declaration_text(agent)
@@ -90,13 +98,15 @@ async def _measure(name: str, counter: _Counter) -> dict:
     root_tokens = counter.count(root_ins)
     sub_tokens = counter.count(sub_ins) if sub_ins else 0
     decl_tokens = counter.count(tool_decl)
+    skill_l1_tokens = counter.count(skill_l1_text) if skill_l1_text else 0
     return {
         "variant": name,
         "root_instruction_chars": len(root_ins),
         "root_instruction_tokens": root_tokens,
         "subagent_instruction_tokens": sub_tokens,
         "tool_declaration_tokens": decl_tokens,
-        "total_fixed_context_tokens": root_tokens + sub_tokens + decl_tokens,
+        "skill_l1_tokens": skill_l1_tokens,
+        "total_fixed_context_tokens": root_tokens + sub_tokens + decl_tokens + skill_l1_tokens,
     }
 
 
@@ -107,14 +117,14 @@ def _render_markdown(rows: list[dict], method: str) -> str:
         f"- model: `{MODEL}`  ·  token count method: `{method}`",
         "- root instruction / sub-agent instruction / tool declaration に分けて、毎リクエスト積まれる固定コンテキストを測る。",
         "",
-        "| variant | root instr (chars) | root instr (tok) | sub-agent instr (tok) | tool decl (tok) | 固定合計 (tok) |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| variant | root instr (chars) | root instr (tok) | sub-agent instr (tok) | tool decl (tok) | skill L1 (tok) | 固定合計 (tok) |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in rows:
         lines.append(
             f"| `{r['variant']}` | {r['root_instruction_chars']} | {r['root_instruction_tokens']} | "
             f"{r['subagent_instruction_tokens']} | {r['tool_declaration_tokens']} | "
-            f"{r['total_fixed_context_tokens']} |"
+            f"{r.get('skill_l1_tokens', 0)} | {r['total_fixed_context_tokens']} |"
         )
     return "\n".join(lines) + "\n"
 

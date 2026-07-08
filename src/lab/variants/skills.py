@@ -34,7 +34,7 @@ def _skill(key: str) -> Skill:
 
 def build() -> Agent:
     instruction = f"{PERSONA}\n\n{OPEN_MANDATE}"
-    skillset = SkillToolset(skills=[_skill("sales-analytics"), _skill("slack-ops")])
+    skillset = SkillToolset(skills=[_skill(key) for key in KNOWLEDGE])
     tools = [*make_bq_tools(rich=False), *make_slack_tools(rich=False), skillset]
     return Agent(
         name=NAME,

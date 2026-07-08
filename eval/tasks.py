@@ -37,11 +37,32 @@ def _compute_gt() -> dict:
         "GROUP BY order_date ORDER BY SUM(amount) DESC LIMIT 1"
     ).fetchone()[0]
     net_sales = con.execute(f"SELECT SUM(amount)/1.1 FROM orders WHERE {valid}").fetchone()[0]
+
+    # UC3 (support-sla): 初回応答 SLA 違反件数と pro 違反 ticket_id を K7/K8 に従い計算する。
+    con.execute(
+        f"""CREATE TABLE support_tickets AS SELECT * FROM read_csv(
+            '{_WAREHOUSE / "support_tickets.csv"}', header=true, auto_detect=true)"""
+    )
+    _pay = "(subject LIKE '%決済%' OR subject LIKE '%課金%' OR subject LIKE '%返金%')"
+    _lat = "EXTRACT(EPOCH FROM (first_response_at - opened_at))"
+    _thr = f"(CASE WHEN plan='pro' OR {_pay} THEN 4 ELSE 24 END)*3600"
+    sla_violations = con.execute(
+        f"SELECT count(*) FROM support_tickets WHERE {_lat} > {_thr}"
+    ).fetchone()[0]
+    pro_violation_ids = [
+        r[0]
+        for r in con.execute(
+            f"SELECT ticket_id FROM support_tickets WHERE plan='pro' AND {_lat} > 4*3600 "
+            "ORDER BY ticket_id"
+        ).fetchall()
+    ]
     con.close()
     return {
         "june_revenue": float(june_revenue),
         "top_day": top_day.isoformat(),
         "net_sales": float(net_sales),
+        "sla_violations": int(sla_violations),
+        "pro_violation_ids": pro_violation_ids,
     }
 
 
@@ -226,6 +247,13 @@ TASKS: list[Task] = [
     Task("E2", "E", "現在、顧客影響が出ている未解決の障害はある?", frozenset({"slack"}),
          lambda t, tc, gt, r: (
              "INC-43" in _up(t) and ("INC-44" not in _up(t) or "内部" in t))),
+    # F: UC3 (support-sla)。K7/K8 (plan 別 SLA + 支払い override) を知らないと解けない。
+    Task("F1", "F", "初回応答 SLA に違反したサポートチケットは何件ある?", frozenset({"bq"}),
+         lambda t, tc, gt, r: answer_contains_number(t, gt["sla_violations"], rel_tol=0.0)),
+    Task("F2", "F", "SLA 違反チケットのうち pro プランのものの ticket_id を教えて", frozenset({"bq"}),
+         lambda t, tc, gt, r: (
+             bool(gt["pro_violation_ids"])
+             and all(tid in t for tid in gt["pro_violation_ids"]))),
 ]
 
 TASKS_BY_ID = {t.id: t for t in TASKS}

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ..knowledge import KNOWLEDGE
+from ..knowledge import knowledge_bodies_for_family
 
 _DATA_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "slack_data.json"
 _DATA = json.loads(_DATA_PATH.read_text(encoding="utf-8"))
@@ -41,7 +41,7 @@ def make_slack_tools(rich: bool) -> list:
         return {"status": "ok", "query": query, "match_count": len(hits), "messages": hits}
 
     if rich:
-        rules = KNOWLEDGE["slack-ops"]["body"]
+        rules = knowledge_bodies_for_family("slack")
         slack_read_channel.__doc__ = (
             "Read recent messages from a Slack channel (newest first).\n\n"
             "Usage rules (どのチャンネルに何があるか・障害の読み方):\n"

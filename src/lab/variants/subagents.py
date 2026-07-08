@@ -15,7 +15,7 @@ from __future__ import annotations
 from google.adk.agents import Agent
 from google.adk.tools.agent_tool import AgentTool
 
-from ..knowledge import KNOWLEDGE
+from ..knowledge import knowledge_bodies_for_family
 from ..model import make_generate_config, make_model
 from ..tools import make_bq_tools, make_slack_tools
 from .common import OPEN_MANDATE, PERSONA, ROUTING_GUIDANCE, SUBAGENT_PERSONA
@@ -26,14 +26,14 @@ NAME = "subagents"
 def _data_analyst() -> Agent:
     instruction = (
         f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}\n\n"
-        f"# 集計ルール (sales-analytics)\n{KNOWLEDGE['sales-analytics']['body']}"
+        f"# data warehouse の社内ルール\n{knowledge_bodies_for_family('bq')}"
     )
     return Agent(
         name="data_analyst",
         model=make_model(),
         description=(
             "Warehouse & sales data specialist: answers questions about sales, revenue, "
-            "orders and daily active users using the data warehouse."
+            "orders, daily active users and support-ticket SLAs using the data warehouse."
         ),
         instruction=instruction,
         tools=make_bq_tools(rich=False),
@@ -44,7 +44,7 @@ def _data_analyst() -> Agent:
 def _comms_analyst() -> Agent:
     instruction = (
         f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}\n\n"
-        f"# Slack 運用規約 (slack-ops)\n{KNOWLEDGE['slack-ops']['body']}"
+        f"# Slack 運用規約\n{knowledge_bodies_for_family('slack')}"
     )
     return Agent(
         name="comms_analyst",

@@ -78,6 +78,64 @@ def gen_dau(rng: random.Random) -> list[dict]:
     return rows
 
 
+def gen_support_tickets(rng: random.Random) -> list[dict]:
+    """UC3 (support-sla) 用のサポートチケット。
+
+    全チケットに first_response_at を入れ、SLA 違反を「応答レイテンシ」だけで決定的に定める
+    (「現在時刻」に依存させない)。SLA: pro=4h / それ以外=24h、ただし支払い関連 (subject に
+    決済/課金/返金) は plan に関わらず 4h (K7/K8)。違反は下記 6 件の explicit ticket に限定し、
+    filler 24 件は全て compliant にする (違反件数を 6 に固定)。既存 fixture を乱さないよう
+    呼び出し側は専用の rng (Random(SEED+1)) を渡す。
+    """
+    subjects_nonpay = [
+        "画像がアップロードできない",
+        "検索結果が表示されない",
+        "ログインできない",
+        "注文履歴が見られない",
+        "クーポンが適用されない",
+        "配送状況が分からない",
+    ]
+
+    tickets: list[dict] = []
+
+    def add(day: int, hh: int, plan: str, subject: str, latency_h: float) -> None:
+        opened = datetime.datetime(2026, 6, day, hh, rng.randint(0, 59))
+        resp = opened + datetime.timedelta(hours=latency_h)
+        tickets.append(
+            {"opened_at": opened, "first_response_at": resp, "plan": plan, "subject": subject}
+        )
+
+    # --- explicit な違反 6 件 (pro 非支払い×2 / basic 非支払い×1 / 支払い override×3) ---
+    add(24, 9, "pro", "ログインできない", 6)  # pro 4h 超過
+    add(25, 10, "pro", "画像がアップロードできない", 5.5)  # pro 4h 超過
+    add(26, 8, "basic", "検索結果が表示されない", 30)  # basic 24h 超過
+    add(27, 11, "basic", "決済でエラーになる", 8)  # 支払い override (basic だが 4h 超過)
+    add(28, 14, "basic", "二重に課金された", 6)  # 支払い override (課金 → 4h 超過)
+    add(29, 9, "pro", "返金がまだ反映されない", 7)  # pro かつ支払い (4h 超過)
+
+    # --- compliant な filler 24 件 (非支払い・SLA 内に収まるレイテンシ) ---
+    for _ in range(24):
+        day = rng.randint(24, 30)
+        plan = rng.choice(["pro", "basic"])
+        subject = rng.choice(subjects_nonpay)
+        latency = round(rng.uniform(0.3, 3.5), 1) if plan == "pro" else round(rng.uniform(4.5, 20.0), 1)
+        add(day, rng.randint(8, 18), plan, subject, latency)
+
+    tickets.sort(key=lambda t: t["opened_at"])
+    rows = []
+    for i, t in enumerate(tickets, 1):
+        rows.append(
+            {
+                "ticket_id": f"TCK-{i:04d}",
+                "opened_at": t["opened_at"].isoformat(sep=" "),
+                "first_response_at": t["first_response_at"].isoformat(sep=" "),
+                "plan": t["plan"],
+                "subject": t["subject"],
+            }
+        )
+    return rows
+
+
 def _ts(day: datetime.date, hh: int, mm: int) -> str:
     return f"{day.isoformat()}T{hh:02d}:{mm:02d}:00+09:00"
 
@@ -184,9 +242,19 @@ def main() -> None:
         json.dumps(slack, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
 
+    # UC3: 既存 fixture の乱数列を乱さないよう独立 rng (SEED+1) を使う。
+    tickets = gen_support_tickets(random.Random(SEED + 1))
+    with (WAREHOUSE / "support_tickets.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(
+            f, fieldnames=["ticket_id", "opened_at", "first_response_at", "plan", "subject"]
+        )
+        w.writeheader()
+        w.writerows(tickets)
+
     print(f"orders.csv: {len(orders)} rows")
     print(f"daily_active_users.csv: {len(dau)} rows")
     print(f"slack_data.json: {len(slack['messages'])} messages across {len(slack['channels'])} channels")
+    print(f"support_tickets.csv: {len(tickets)} rows")
 
 
 if __name__ == "__main__":

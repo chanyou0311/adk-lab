@@ -15,7 +15,7 @@ from pathlib import Path
 
 import duckdb
 
-from ..knowledge import KNOWLEDGE
+from ..knowledge import knowledge_bodies_for_family
 
 _WAREHOUSE = Path(__file__).resolve().parent.parent / "fixtures" / "warehouse"
 
@@ -29,24 +29,43 @@ def _q(path: Path) -> str:
     return str(path).replace("'", "''")
 
 
-_CON.execute(
-    f"""CREATE TABLE orders AS SELECT * FROM read_csv(
-        '{_q(_WAREHOUSE / "orders.csv")}', header = true,
-        columns = {{
-            'order_id': 'VARCHAR', 'order_date': 'DATE', 'amount': 'BIGINT',
-            'status': 'VARCHAR', 'is_test': 'BOOLEAN', 'channel': 'VARCHAR'
-        }})"""
-)
-_CON.execute(
-    f"""CREATE TABLE daily_active_users AS SELECT * FROM read_csv(
-        '{_q(_WAREHOUSE / "daily_active_users.csv")}', header = true,
-        columns = {{ 'date': 'DATE', 'dau': 'BIGINT' }})"""
-)
-
-_TABLE_SUMMARY = {
+# 既存テーブルは列型を明示して従来挙動を保つ (orders/daily_active_users は不変)。
+# それ以外の warehouse/*.csv は auto_detect で自動登録し、ユースケース追加で CSV を
+# 足すだけでツールから引けるようにする。
+_COLUMN_SPECS: dict[str, str] = {
+    "orders": (
+        "{'order_id':'VARCHAR','order_date':'DATE','amount':'BIGINT',"
+        "'status':'VARCHAR','is_test':'BOOLEAN','channel':'VARCHAR'}"
+    ),
+    "daily_active_users": "{'date':'DATE','dau':'BIGINT'}",
+}
+_KNOWN_DESCRIPTIONS: dict[str, str] = {
     "orders": "個々の注文レコード。columns: order_id, order_date, amount, status, is_test, channel",
     "daily_active_users": "日次のアクティブユーザー数。columns: date, dau",
+    "support_tickets": "サポートチケット。columns: ticket_id, opened_at, first_response_at, plan, subject",
 }
+
+
+def _register_warehouse() -> dict[str, str]:
+    summary: dict[str, str] = {}
+    for csv_path in sorted(_WAREHOUSE.glob("*.csv")):
+        name = csv_path.stem
+        spec = _COLUMN_SPECS.get(name)
+        if spec:
+            _CON.execute(
+                f"CREATE TABLE {name} AS SELECT * FROM read_csv("
+                f"'{_q(csv_path)}', header=true, columns={spec})"
+            )
+        else:
+            _CON.execute(
+                f"CREATE TABLE {name} AS SELECT * FROM read_csv("
+                f"'{_q(csv_path)}', header=true, auto_detect=true)"
+            )
+        summary[name] = _KNOWN_DESCRIPTIONS.get(name, f"table {name}")
+    return summary
+
+
+_TABLE_SUMMARY = _register_warehouse()
 
 
 def _jsonable(value):
@@ -122,11 +141,11 @@ def make_bq_tools(rich: bool) -> list:
             return {"status": "error", "error_message": str(e)}
 
     if rich:
-        rules = KNOWLEDGE["sales-analytics"]["body"]
+        rules = knowledge_bodies_for_family("bq")
         bq_query.__doc__ = (
             "Run a read-only SQL (SELECT) query against the online store's data warehouse "
             "and return up to 200 rows.\n\n"
-            "Usage rules (社内の集計ルール — 売上系の集計では必ず従うこと):\n"
+            "Usage rules (社内の集計・判定ルール — 対象の集計/判定では必ず従うこと):\n"
             f"{rules}"
         )
         bq_list_tables.__doc__ = (
