@@ -112,9 +112,7 @@ def main() -> None:
 
     before_counts = _pass_counts(original)
     after_counts = _pass_counts(rescored)
-    changed = sorted({t for t in (k[0] for k in before_counts)
-                      if any(before_counts.get((t, v)) != after_counts.get((t, v))
-                             for v in {k[1] for k in before_counts if k[0] == t})})
+    changed = sorted({t for (t, v), b in before_counts.items() if b != after_counts.get((t, v))})
     if not changed:
         print("\n(採点結果に変化のあったタスクはありません)")
     for tid in changed:

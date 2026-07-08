@@ -111,7 +111,7 @@ async def _run_once(variant: str, prompt: str) -> dict:
     session = await runner.session_service.create_session(
         app_name=runner.app_name, user_id=USER_ID
     )
-    message = types.Content(role="user", parts=[types.Part(text=prompt)])
+    message = types.UserContent(prompt)
 
     final = ""
     start = time.perf_counter()

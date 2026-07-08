@@ -41,7 +41,7 @@ def aggregate(records: list[dict], variants: list[str], categories: list[str]) -
             "n": len(rows),
             "n_ok": len(ok_rows),
             "n_error": len(rows) - len(ok_rows),
-            "pass_rate": mean([1.0 if r["passed"] else 0.0 for r in ok_rows]),
+            "pass_rate": k / len(ok_rows) if ok_rows else 0.0,
             "pass_ci": [lo, hi],
             "route_ok_rate": mean([1.0 if r["route_ok"] else 0.0 for r in route_rows]),
             "refusal_rate": mean([1.0 if r["refused"] else 0.0 for r in ok_rows]),

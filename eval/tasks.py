@@ -393,16 +393,17 @@ def score_record(task: Task | None, final: str, tool_names: list[str],
     fail 扱いで score_error に記録する。
     """
     refused = is_refused(final)
+    scoreable = task is not None and not error
     passed = False
     score_error = None
-    if task is not None and not error:
+    if scoreable:
         try:
             passed = bool(task.check(final, tool_names, GT, refused))
         except Exception as exc:  # noqa: BLE001 - 採点例外は fail 扱い
             score_error = f"{type(exc).__name__}: {exc}"[:200]
     fams = called_families(tool_names)
     route_ok = None
-    if task is not None and task.route_scored and not error:
+    if scoreable and task.route_scored:
         route_ok = fams == task.expected_families
     out = {
         "passed": passed,

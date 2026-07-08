@@ -92,6 +92,15 @@ async def _measure(name: str, counter: _Counter) -> dict:
             # sub-agent の LLM リクエストには sub 側ツールの宣言も毎回積まれる。
             # instruction だけ数えて宣言を落とすとバリアント間の層の数え方が非対称になる。
             sub_decl_parts.append(await _tool_declaration_text(tool.agent))
+            # 層ウォークは root+1 階層前提。入れ子 (sub-agent がさらに SkillToolset /
+            # AgentTool を持つ配置) は無言で取りこぼすと過小計測が実験結論に化けるため、
+            # fail-fast にする (対応するときはここを再帰化する)。
+            for sub_tool in tool.agent.tools:
+                if isinstance(sub_tool, (AgentTool, SkillToolset)):
+                    raise NotImplementedError(
+                        f"nested {type(sub_tool).__name__} under sub-agent "
+                        f"{tool.agent.name!r} is not measured; extend _measure first"
+                    )
         elif isinstance(tool, SkillToolset):
             # 毎リクエスト注入されるのは定型 system instruction (boilerplate) のみ。
             # L1 XML は list_skills のツール応答としてオンデマンドに返る (固定合計外・別掲)。
