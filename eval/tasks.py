@@ -184,6 +184,37 @@ def called_families(names: list[str]) -> frozenset[str]:
     return frozenset(f for n in names if (f := family_of(n)) is not None)
 
 
+# E2 で INC-44 を「顧客影響ではない」と明示的に除外していると認める免罪フレーズ。
+_E2_EXONERATION = [
+    "内部",
+    "社内",
+    "直接的な影響はありません",
+    "顧客への影響はありません",
+    "顧客影響はありません",
+    "顧客影響なし",
+    "顧客影響: なし",
+]
+
+
+def _e2_check(text: str) -> bool:
+    """E2: 顧客影響が出ている未解決障害 = INC-43 のみ、を正しく判別できているか。
+
+    合格 = INC-43 に言及し、かつ INC-44 (sev2・内部影響のみ) を「顧客影響」として
+    提示していないこと。後者は決定的近似で判定する: INC-44 に触れていない
+    (INC-44 not in text)、または免罪フレーズ (内部 / 社内 / 直接的な影響はありません 等)
+    を含み INC-44 を顧客影響から明示的に除外している、のいずれか。
+
+    限界 (LLM judge なしの近似): 免罪フレーズが INC-44 ではなく別文脈に係るケースや、
+    INC-44 を顧客影響と誤提示しつつ免罪フレーズを別件で使うケースは区別できない。
+    実データでは INC-44 に触れる回答はほぼ全て「社内 / 顧客への直接的な影響はありません」で
+    除外していたため、字面「内部」限定 (旧実装) の偽陰性を解消する目的でこの近似を採用する。
+    """
+    up = text.upper()
+    if "INC-43" not in up:
+        return False
+    return "INC-44" not in up or any(p in text for p in _E2_EXONERATION)
+
+
 # --------------------------------------------------------------------------- #
 # タスク定義
 # --------------------------------------------------------------------------- #
@@ -245,8 +276,7 @@ TASKS: list[Task] = [
     Task("E1", "E", "6月の純売上 (税抜・社内定義) を教えて", frozenset({"bq"}),
          lambda t, tc, gt, r: answer_contains_number(t, gt["net_sales"], rel_tol=0.01)),
     Task("E2", "E", "現在、顧客影響が出ている未解決の障害はある?", frozenset({"slack"}),
-         lambda t, tc, gt, r: (
-             "INC-43" in _up(t) and ("INC-44" not in _up(t) or "内部" in t))),
+         lambda t, tc, gt, r: _e2_check(t)),
     # F: UC3 (support-sla)。K7/K8 (plan 別 SLA + 支払い override) を知らないと解けない。
     Task("F1", "F", "初回応答 SLA に違反したサポートチケットは何件ある?", frozenset({"bq"}),
          lambda t, tc, gt, r: answer_contains_number(t, gt["sla_violations"], rel_tol=0.0)),
