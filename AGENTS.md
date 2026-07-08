@@ -24,12 +24,13 @@ uv プロジェクトとして置く。
 - **`eval/results/` の過去記録は改変禁止 (append-only)**。再採点は `_rescored` サフィックスの
   別ファイルへ。実験をやり直す場合も tag を変えて追加する
 - **採点器を変更したら、コミット済みの全 tag を rescore で再採点**し、before/after を PR に
-  明記する (CI が `results_*_rescored` と採点器の byte 一致を強制する — 再生成漏れは落ちる)
+  明記する。CI の一致検証は `_rescored` がコミット済みの tag にしか効かないため、
+  新しい tag は最初の eval 実行時に `_rescored` も併せて commit する
 - **LLM を呼ぶ eval (run_eval.py 等) は課金があるため、明示指示があるときのみ実行**する。
   ruff / pytest / rescore / 静的検証はオフラインなので自由に実行してよい
 - **フレームワーク内部挙動を計測の前提にするときは、ソースを読んで検証してから**
   (例: 「SkillToolset が何を system instruction に注入するか」は仮定せず実装で確認する。
-  ADK ソースは `.venv/lib/python*/site-packages/google/adk/`)
+  ADK ソースは `experiments/<name>/.venv/lib/python*/site-packages/google/adk/`)
 - 結果の解釈を変える修正 (採点器・計測方法論) は、影響する数値の before/after を
   PR description に書く
 
