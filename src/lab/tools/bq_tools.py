@@ -50,12 +50,18 @@ _TABLE_SUMMARY = {
 
 
 def _jsonable(value):
-    """DuckDB が返す date / Decimal 等を JSON 直列化可能な形に落とす。"""
+    """DuckDB が返す date / Decimal / 独自型を JSON 直列化可能な形に落とす。
+
+    ツールの戻り値は ADK が pydantic で JSON 直列化してモデルへ返すため、直列化できない型
+    (DuckDBPyType 等) が混じると実行が落ちる。既知の型を変換し、それ以外は str に倒す。
+    """
     if isinstance(value, (datetime.date, datetime.datetime)):
         return value.isoformat()
     if isinstance(value, Decimal):
         return float(value)
-    return value
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    return str(value)
 
 
 def make_bq_tools(rich: bool) -> list:
@@ -81,7 +87,7 @@ def make_bq_tools(rich: bool) -> list:
             }
         with _LOCK:
             cur = _CON.execute(f"SELECT * FROM {table_name} LIMIT 3")
-            cols = [(d[0], d[1]) for d in cur.description]
+            cols = [(d[0], str(d[1])) for d in cur.description]  # 型は DuckDBPyType → str に
             sample = cur.fetchall()
         return {
             "status": "ok",
