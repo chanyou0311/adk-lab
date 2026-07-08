@@ -1,0 +1,54 @@
+{
+  "model": "gemini-3-flash-preview",
+  "token_method": "count_tokens",
+  "rows": [
+    {
+      "variant": "fat_closed",
+      "root_instruction_chars": 955,
+      "root_instruction_tokens": 364,
+      "subagent_instruction_tokens": 0,
+      "tool_declaration_tokens": 404,
+      "total_fixed_context_tokens": 768
+    },
+    {
+      "variant": "fat_open",
+      "root_instruction_chars": 1520,
+      "root_instruction_tokens": 474,
+      "subagent_instruction_tokens": 0,
+      "tool_declaration_tokens": 404,
+      "total_fixed_context_tokens": 878
+    },
+    {
+      "variant": "thin_none",
+      "root_instruction_chars": 962,
+      "root_instruction_tokens": 192,
+      "subagent_instruction_tokens": 0,
+      "tool_declaration_tokens": 404,
+      "total_fixed_context_tokens": 596
+    },
+    {
+      "variant": "tool_desc",
+      "root_instruction_chars": 962,
+      "root_instruction_tokens": 192,
+      "subagent_instruction_tokens": 0,
+      "tool_declaration_tokens": 777,
+      "total_fixed_context_tokens": 969
+    },
+    {
+      "variant": "subagents",
+      "root_instruction_chars": 1117,
+      "root_instruction_tokens": 226,
+      "subagent_instruction_tokens": 607,
+      "tool_declaration_tokens": 141,
+      "total_fixed_context_tokens": 974
+    },
+    {
+      "variant": "skills",
+      "root_instruction_chars": 962,
+      "root_instruction_tokens": 192,
+      "subagent_instruction_tokens": 0,
+      "tool_declaration_tokens": 878,
+      "total_fixed_context_tokens": 1070
+    }
+  ]
+}
