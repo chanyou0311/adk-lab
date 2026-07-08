@@ -1,6 +1,6 @@
-"""fat_closed: 知識を root instruction 全文 + 閉じた列挙 mandate。
+"""fat_closed: 知識を root instruction 全文 + ツール用途の閉じた列挙。
 
-知識配置=root、mandate=閉じた列挙。fat_open との差は mandate の開閉だけ (交絡分離用)。
+知識配置=root。fat_open との差は「役割指示か閉じた列挙か」だけ (交絡分離用)。
 """
 
 from __future__ import annotations

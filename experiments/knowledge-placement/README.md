@@ -14,14 +14,14 @@ Google ADK (Python) エージェントで **ドメイン知識をどこに置く
 | variant | root instruction | tools | 知識の所在 |
 |---|---|---|---|
 | `fat_closed` | PERSONA + 閉じた列挙 + 知識全文 | bq+slack (rich=False) | root |
-| `fat_open`   | PERSONA + 開いた mandate + 知識全文 | bq+slack (rich=False) | root |
-| `thin_none`  | PERSONA + 開いた mandate | bq+slack (rich=False) | **なし** (下限対照) |
-| `tool_desc`  | PERSONA + 開いた mandate | bq+slack (**rich=True**) | tool docstring |
-| `subagents`  | PERSONA + 開いた mandate + ルーティング指針 | AgentTool(data_analyst / comms_analyst) のみ | sub-agent instruction |
-| `skills`     | PERSONA + 開いた mandate | bq+slack (rich=False) + SkillToolset | SKILL 本文 (L2) |
+| `fat_open`   | PERSONA + 役割指示 + 知識全文 | bq+slack (rich=False) | root |
+| `thin_none`  | PERSONA + 役割指示 | bq+slack (rich=False) | **なし** (下限対照) |
+| `tool_desc`  | PERSONA + 役割指示 | bq+slack (**rich=True**) | tool docstring |
+| `subagents`  | PERSONA + 役割指示 + ルーティング指針 | AgentTool(data_analyst / comms_analyst) のみ | sub-agent instruction |
+| `skills`     | PERSONA + 役割指示 | bq+slack (rich=False) + SkillToolset | SKILL 本文 (L2) |
 
-- **mandate の開閉** (`fat_closed` vs `fat_open`) と **知識配置** は別変数。交絡を避けるため両者を分離した。
-  - 開いた mandate = 「ツールは *取得*、分析・要約・予測は *エージェント自身の仕事*」を明示する指示。
+- **役割指示か閉じた列挙か** (`fat_closed` vs `fat_open`) と **知識配置** は別変数。交絡を避けるため両者を分離した。
+  - 役割指示 (コード上は `OPEN_MANDATE`) = 「ツールは *取得*、分析・要約・予測は *エージェント自身の仕事*」を明示する指示。
     ツール用途の列挙だけを与えると、モデルが列挙を能力の枠と解釈して分析・予測系の依頼を
     「対応する機能がない」と過剰拒否することがあり、それを防ぐ。閉じた列挙 = ツール用途を並べるだけ。
 - 全バリアントで **ツール (bq+slack) は常時露出**。`skills` でもツールゲーティングはしない
