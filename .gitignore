@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+
+# venv
+.venv/
+
+# secrets — 実際の資格情報は commit しない
+.env
+
+# NOTE: 各実験の fixtures 生成物と eval/results/*.json は意図的に commit する
+# (実験の再現性のため)。ここでは除外しない。

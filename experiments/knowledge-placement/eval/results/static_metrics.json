@@ -1,0 +1,72 @@
+{
+  "model": "gemini-3-flash-preview",
+  "token_method": "count_tokens",
+  "rows": [
+    {
+      "variant": "fat_closed",
+      "root_instruction_chars": 1165,
+      "root_instruction_tokens": 462,
+      "subagent_instruction_tokens": 0,
+      "subagent_tool_declaration_tokens": 0,
+      "tool_declaration_tokens": 404,
+      "skill_boilerplate_tokens": 0,
+      "total_fixed_context_tokens": 866,
+      "skill_l1_xml_tokens_on_demand": 0
+    },
+    {
+      "variant": "fat_open",
+      "root_instruction_chars": 1730,
+      "root_instruction_tokens": 572,
+      "subagent_instruction_tokens": 0,
+      "subagent_tool_declaration_tokens": 0,
+      "tool_declaration_tokens": 404,
+      "skill_boilerplate_tokens": 0,
+      "total_fixed_context_tokens": 976,
+      "skill_l1_xml_tokens_on_demand": 0
+    },
+    {
+      "variant": "thin_none",
+      "root_instruction_chars": 962,
+      "root_instruction_tokens": 192,
+      "subagent_instruction_tokens": 0,
+      "subagent_tool_declaration_tokens": 0,
+      "tool_declaration_tokens": 404,
+      "skill_boilerplate_tokens": 0,
+      "total_fixed_context_tokens": 596,
+      "skill_l1_xml_tokens_on_demand": 0
+    },
+    {
+      "variant": "tool_desc",
+      "root_instruction_chars": 962,
+      "root_instruction_tokens": 192,
+      "subagent_instruction_tokens": 0,
+      "subagent_tool_declaration_tokens": 0,
+      "tool_declaration_tokens": 867,
+      "skill_boilerplate_tokens": 0,
+      "total_fixed_context_tokens": 1059,
+      "skill_l1_xml_tokens_on_demand": 0
+    },
+    {
+      "variant": "subagents",
+      "root_instruction_chars": 1117,
+      "root_instruction_tokens": 226,
+      "subagent_instruction_tokens": 683,
+      "subagent_tool_declaration_tokens": 404,
+      "tool_declaration_tokens": 146,
+      "skill_boilerplate_tokens": 0,
+      "total_fixed_context_tokens": 1459,
+      "skill_l1_xml_tokens_on_demand": 0
+    },
+    {
+      "variant": "skills",
+      "root_instruction_chars": 962,
+      "root_instruction_tokens": 192,
+      "subagent_instruction_tokens": 0,
+      "subagent_tool_declaration_tokens": 0,
+      "tool_declaration_tokens": 878,
+      "skill_boilerplate_tokens": 478,
+      "total_fixed_context_tokens": 1548,
+      "skill_l1_xml_tokens_on_demand": 146
+    }
+  ]
+}

@@ -1,0 +1,586 @@
+{
+  "channels": [
+    "general",
+    "alerts",
+    "support",
+    "releases"
+  ],
+  "messages": [
+    {
+      "channel": "releases",
+      "ts": "2026-06-01T11:31:00+09:00",
+      "user": "rin",
+      "text": "リリース後の監視強化します"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-01T11:54:00+09:00",
+      "user": "daiki",
+      "text": "リリース手順書を更新しました"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-01T13:13:00+09:00",
+      "user": "mio",
+      "text": "ディスク使用率 60%、問題なし"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-01T14:59:00+09:00",
+      "user": "kenji",
+      "text": "夜間バッチ正常終了"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-01T18:22:00+09:00",
+      "user": "satoshi",
+      "text": "Synthetic monitor 追加しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-02T11:04:00+09:00",
+      "user": "satoshi",
+      "text": "ロールバック手順を確認済み"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-02T13:12:00+09:00",
+      "user": "haruka",
+      "text": "ナレッジベースに追記しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-02T14:39:00+09:00",
+      "user": "rin",
+      "text": "フィーチャーフラグを整理"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-02T19:12:00+09:00",
+      "user": "yui",
+      "text": "返信の言い回しを統一しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-03T10:00:00+09:00",
+      "user": "takumi",
+      "text": "v2.3.8 をデプロイしました (軽微なバグ修正)"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-03T14:42:00+09:00",
+      "user": "yui",
+      "text": "よくある質問を追加しました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-03T15:38:00+09:00",
+      "user": "mio",
+      "text": "対応品質のレビュー会は金曜"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-03T19:40:00+09:00",
+      "user": "rin",
+      "text": "ステージング検証 OK"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-04T09:15:00+09:00",
+      "user": "rin",
+      "text": "キャッシュヒット率良好"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-04T13:15:00+09:00",
+      "user": "yui",
+      "text": "DB レプリケーション遅延なし"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-04T16:38:00+09:00",
+      "user": "haruka",
+      "text": "アラートのしきい値を見直しました"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-05T09:18:00+09:00",
+      "user": "daiki",
+      "text": "証明書の有効期限は問題なし"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-05T09:22:00+09:00",
+      "user": "takumi",
+      "text": "テンプレ返信を整備中"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-05T11:11:00+09:00",
+      "user": "mio",
+      "text": "今日のランチどこにします?"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-06T16:22:00+09:00",
+      "user": "daiki",
+      "text": "リリースノートのドラフト共有します"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-07T10:08:00+09:00",
+      "user": "kenji",
+      "text": "QA サインオフ取得済み"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-07T18:18:00+09:00",
+      "user": "daiki",
+      "text": "次スプリントの目玉機能を検討"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-08T17:15:00+09:00",
+      "user": "yui",
+      "text": "週報のテンプレ更新しました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-09T10:51:00+09:00",
+      "user": "takumi",
+      "text": "顧客からお礼のメッセージ来ました"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-09T16:57:00+09:00",
+      "user": "mio",
+      "text": "デザインレビューは木曜です"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-09T19:50:00+09:00",
+      "user": "haruka",
+      "text": "カナリアリリースは順調"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-10T10:48:00+09:00",
+      "user": "mio",
+      "text": "来月の OKR を詰めましょう"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-10T16:38:00+09:00",
+      "user": "rin",
+      "text": "次のリリースは来週水曜予定"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-11T13:32:00+09:00",
+      "user": "rin",
+      "text": "電話対応のマニュアル更新"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-12T09:55:00+09:00",
+      "user": "takumi",
+      "text": "休日対応の当番表を共有"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-12T10:22:00+09:00",
+      "user": "satoshi",
+      "text": "監視エージェントを更新しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-12T11:00:00+09:00",
+      "user": "rin",
+      "text": "v2.3.9 をデプロイしました (検索の高速化)"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-12T13:47:00+09:00",
+      "user": "haruka",
+      "text": "ネットワーク遅延は平常"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-12T17:51:00+09:00",
+      "user": "mio",
+      "text": "リグレッションテスト通過"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-12T19:36:00+09:00",
+      "user": "daiki",
+      "text": "明日は祝日ではないので通常出社です"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-12T19:46:00+09:00",
+      "user": "satoshi",
+      "text": "リモートの人はスタンドアップ Zoom で"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-13T10:23:00+09:00",
+      "user": "satoshi",
+      "text": "本番の CPU 使用率は正常範囲です"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-13T16:02:00+09:00",
+      "user": "rin",
+      "text": "SLO は達成しています"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-13T17:23:00+09:00",
+      "user": "satoshi",
+      "text": "振り返りの付箋用意しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-13T18:02:00+09:00",
+      "user": "mio",
+      "text": "デプロイ枠は平日午前中"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-14T15:47:00+09:00",
+      "user": "daiki",
+      "text": "対応漏れゼロでした"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-15T10:36:00+09:00",
+      "user": "mio",
+      "text": "バージョン命名規則を確認"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-15T11:57:00+09:00",
+      "user": "daiki",
+      "text": "リリース連絡テンプレ整備"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-15T13:49:00+09:00",
+      "user": "rin",
+      "text": "新しいメンバーが来週入社します"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-15T18:00:00+09:00",
+      "user": "kenji",
+      "text": "デプロイパイプライン正常"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-15T18:18:00+09:00",
+      "user": "daiki",
+      "text": "コーヒー淹れました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-16T16:23:00+09:00",
+      "user": "yui",
+      "text": "月次レポートを作成中"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-17T14:04:00+09:00",
+      "user": "haruka",
+      "text": "メトリクスの取りこぼしなし"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-17T14:25:00+09:00",
+      "user": "takumi",
+      "text": "依存ライブラリを更新しました"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-17T17:26:00+09:00",
+      "user": "mio",
+      "text": "社内 Wiki を整理しました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-18T13:20:00+09:00",
+      "user": "kenji",
+      "text": "新人向けオンボ資料を用意"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-18T18:33:00+09:00",
+      "user": "rin",
+      "text": "外形監視 all green"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-19T15:11:00+09:00",
+      "user": "kenji",
+      "text": "オンコール担当は今週 kenji"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-20T11:38:00+09:00",
+      "user": "rin",
+      "text": "おはようございます"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-21T13:15:00+09:00",
+      "user": "kenji",
+      "text": "マイグレーションは後方互換"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-21T17:36:00+09:00",
+      "user": "satoshi",
+      "text": "定期メンテナンスは日曜深夜です"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-21T18:29:00+09:00",
+      "user": "kenji",
+      "text": "ロードバランサ正常"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-22T16:23:00+09:00",
+      "user": "takumi",
+      "text": "ホットフィックスの運用を整理"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-23T11:18:00+09:00",
+      "user": "rin",
+      "text": "ログ基盤の retention を調整"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-23T11:48:00+09:00",
+      "user": "daiki",
+      "text": "バックアップ完了しました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-23T16:40:00+09:00",
+      "user": "mio",
+      "text": "対応時間の目標は 24 時間以内"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-23T17:54:00+09:00",
+      "user": "kenji",
+      "text": "議事録を共有しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-24T09:30:00+09:00",
+      "user": "takumi",
+      "text": "v2.4.0 をデプロイしました (決済モジュール刷新)"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-24T11:00:00+09:00",
+      "user": "kenji",
+      "text": "[INC-42][sev1] チェックアウトで決済が失敗する障害が発生。調査中"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-24T12:10:00+09:00",
+      "user": "customer",
+      "text": "決済でエラーが出て注文できません。決済エラーの対応をお願いします"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-24T16:02:00+09:00",
+      "user": "rin",
+      "text": "会議室 A を 14 時に予約しました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-24T18:40:00+09:00",
+      "user": "customer",
+      "text": "チェックアウトが失敗して購入できない。決済エラーが出ます"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-24T19:40:00+09:00",
+      "user": "kenji",
+      "text": "問い合わせ対応ありがとうございます"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-25T09:20:00+09:00",
+      "user": "customer",
+      "text": "二重に課金されたので返金してほしいです。返金依頼します"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-25T10:00:00+09:00",
+      "user": "kenji",
+      "text": "[INC-42] 原因を v2.4.0 の決済モジュール刷新と特定。修正版を準備中"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-25T13:45:00+09:00",
+      "user": "daiki",
+      "text": "チェンジログ公開しました"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-25T18:47:00+09:00",
+      "user": "takumi",
+      "text": "FAQ を更新しました"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-25T19:23:00+09:00",
+      "user": "takumi",
+      "text": "変更点のサマリを作成"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-26T10:46:00+09:00",
+      "user": "rin",
+      "text": "問い合わせタグを整理"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-26T11:04:00+09:00",
+      "user": "daiki",
+      "text": "エスカレーション基準を確認"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-26T12:56:00+09:00",
+      "user": "haruka",
+      "text": "今日の問い合わせ件数は平常"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-26T14:00:00+09:00",
+      "user": "customer",
+      "text": "キャンセルした注文の返金がまだ反映されません"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-26T15:00:00+09:00",
+      "user": "kenji",
+      "text": "[INC-42] v2.4.1 ロールバックで解消。クローズ"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-26T16:00:00+09:00",
+      "user": "takumi",
+      "text": "v2.4.1 をデプロイしました (INC-42 対応・決済モジュールをロールバック)"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-26T16:57:00+09:00",
+      "user": "satoshi",
+      "text": "お疲れさまでした"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-27T12:51:00+09:00",
+      "user": "mio",
+      "text": "歓迎会の日程を調整中です"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-27T15:05:00+09:00",
+      "user": "satoshi",
+      "text": "ノベルティ届きました"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-27T16:56:00+09:00",
+      "user": "takumi",
+      "text": "備品の発注しておきます"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-27T17:30:00+09:00",
+      "user": "yui",
+      "text": "チャットボットの回答を改善"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-27T19:11:00+09:00",
+      "user": "daiki",
+      "text": "満足度アンケートの結果共有します"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-27T19:21:00+09:00",
+      "user": "mio",
+      "text": "監視ダッシュボード更新しました"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-28T13:03:00+09:00",
+      "user": "daiki",
+      "text": "エアコンの温度下げました"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-28T14:35:00+09:00",
+      "user": "kenji",
+      "text": "ドキュメントのレビューお願いします"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-28T20:30:00+09:00",
+      "user": "customer",
+      "text": "最近サイトの動作が遅いと感じます。表示が遅いです"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-29T09:00:00+09:00",
+      "user": "mio",
+      "text": "[INC-43][sev1] 商品画像のアップロードが失敗する障害。未解決・調査中"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-29T10:15:00+09:00",
+      "user": "customer",
+      "text": "商品画像のアップロードができません。画像アップロード不可の状態です"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-29T15:21:00+09:00",
+      "user": "mio",
+      "text": "サポートツールを更新"
+    },
+    {
+      "channel": "general",
+      "ts": "2026-06-30T09:26:00+09:00",
+      "user": "haruka",
+      "text": "スプリントプランニングは月曜"
+    },
+    {
+      "channel": "alerts",
+      "ts": "2026-06-30T10:00:00+09:00",
+      "user": "satoshi",
+      "text": "[INC-44][sev2] 社内管理画面の表示が遅い。未解決"
+    },
+    {
+      "channel": "support",
+      "ts": "2026-06-30T11:45:00+09:00",
+      "user": "customer",
+      "text": "管理画面の表示がとても遅い。動作が遅くて業務に支障があります"
+    },
+    {
+      "channel": "releases",
+      "ts": "2026-06-30T17:07:00+09:00",
+      "user": "yui",
+      "text": "ドキュメント同時更新を徹底"
+    }
+  ]
+}
