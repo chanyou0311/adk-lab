@@ -61,7 +61,14 @@ def _register_warehouse() -> dict[str, str]:
                 f"CREATE TABLE {name} AS SELECT * FROM read_csv("
                 f"'{_q(csv_path)}', header=true, auto_detect=true)"
             )
-        summary[name] = _KNOWN_DESCRIPTIONS.get(name, f"table {name}")
+        # description 欠落は fail-fast にする — 無内容な説明でツールを公開すると、エージェントが
+        # テーブルを選べない失敗が「知識配置の効果」に見えて eval を静かに交絡させる。
+        if name not in _KNOWN_DESCRIPTIONS:
+            raise RuntimeError(
+                f"warehouse table {name!r} has no entry in _KNOWN_DESCRIPTIONS; "
+                "add one so bq_list_tables stays informative"
+            )
+        summary[name] = _KNOWN_DESCRIPTIONS[name]
     return summary
 
 
@@ -124,6 +131,15 @@ def make_bq_tools(rich: bool) -> list:
             return {
                 "status": "error",
                 "error_message": "Only read-only SELECT queries are allowed.",
+            }
+        # DuckDB の execute は「SELECT 1; DELETE ...」のような複文も実行するため、prefix
+        # チェックだけでは read-only ガードを迂回できてしまう (共有 in-memory 接続なので
+        # 以降の全 eval ジョブのデータが壊れる)。複文は一律拒否する。文字列リテラル内の
+        # ";" も弾く過剰側の近似だが、本 fixture への読取クエリで必要になる場面はない。
+        if ";" in stmt:
+            return {
+                "status": "error",
+                "error_message": "Only a single SELECT statement is allowed (no ';').",
             }
         try:
             with _LOCK:

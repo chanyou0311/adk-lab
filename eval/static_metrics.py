@@ -1,9 +1,14 @@
 """バリアント別の静的コスト計測 (実行前の instruction / tool 宣言のトークン量)。
 
-各バリアントについて、モデルに毎リクエスト積まれる「固定コンテキスト」を測る:
-- root instruction のトークン数
-- sub-agent instruction 合計 (subagents バリアントのみ非ゼロ)
-- tool declaration (name + description + schema) 合計トークン数
+各バリアントについて、モデルに毎リクエスト積まれる「固定コンテキスト」を層別に測る:
+- root instruction
+- sub-agent instruction 合計 + sub-agent 側 tool 宣言合計 (subagents バリアントのみ非ゼロ。
+  sub-agent の LLM リクエストに毎回積まれるため、instruction と同様に固定層として数える)
+- root の tool declaration (name + description + schema)
+- skill boilerplate: ADK 2.4.0 の SkillToolset が process_llm_request で毎リクエスト注入する
+  定型 system instruction。**<available_skills> XML (L1) は list_skills ツールが存在する限り
+  system instruction には注入されない** (ADK 実装で確認) — L1 XML は list_skills 呼び出し時の
+  ツール応答として返るオンデマンドコストなので、固定合計には含めず別掲する。
 
 トークンは google-genai の count_tokens (Vertex, MODEL) で測り、失敗時は chars/4 の概算に
 フォールバックする (どちらを使ったか記録)。全バリアントで同一の方法で測ることを担保する。
@@ -21,14 +26,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google.adk.skills import prompt as skill_prompt
 from google.adk.tools.agent_tool import AgentTool
-from google.adk.tools.skill_toolset import SkillToolset
-from google.genai import Client, types
+from google.adk.tools.skill_toolset import DEFAULT_SKILL_SYSTEM_INSTRUCTION, SkillToolset
+from google.genai import Client
 
 EVAL_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = EVAL_DIR / "results"
 sys.path.insert(0, str(EVAL_DIR))
 
-from lab.model import MODEL  # noqa: E402
+from lab.model import MODEL, make_global_client  # noqa: E402
 from lab.variants import VARIANTS  # noqa: E402
 
 load_dotenv()
@@ -40,11 +45,7 @@ class _Counter:
     def __init__(self) -> None:
         self.method = "count_tokens"
         try:
-            self._client: Client | None = Client(
-                vertexai=True,
-                location="global",
-                http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=3)),
-            )
+            self._client: Client | None = make_global_client()
         except Exception:  # noqa: BLE001
             self._client = None
             self.method = "approx(chars/4)"
@@ -82,31 +83,44 @@ async def _measure(name: str, counter: _Counter) -> dict:
     root_ins = _instruction_text(agent)
 
     sub_ins_parts: list[str] = []
-    skill_l1_text = ""
+    sub_decl_parts: list[str] = []
+    skill_boilerplate = ""
+    skill_l1_xml = ""
     for tool in agent.tools:
         if isinstance(tool, AgentTool):
             sub_ins_parts.append(_instruction_text(tool.agent))
+            # sub-agent の LLM リクエストには sub 側ツールの宣言も毎回積まれる。
+            # instruction だけ数えて宣言を落とすとバリアント間の層の数え方が非対称になる。
+            sub_decl_parts.append(await _tool_declaration_text(tool.agent))
         elif isinstance(tool, SkillToolset):
-            # SkillToolset は実行時に system instruction へ <available_skills> XML (L1: 各 skill の
-            # name/description) を注入する。これは tool declaration には含まれないので別レイヤーとして
-            # 計測する (L2 本文は load_skill 時のみ・オンデマンドなので固定コストに含めない)。
-            skill_l1_text = skill_prompt.format_skills_as_xml(tool.skills)
+            # 毎リクエスト注入されるのは定型 system instruction (boilerplate) のみ。
+            # L1 XML は list_skills のツール応答としてオンデマンドに返る (固定合計外・別掲)。
+            skill_boilerplate = DEFAULT_SKILL_SYSTEM_INSTRUCTION
+            skill_l1_xml = skill_prompt.format_skills_as_xml(tool.skills)
     sub_ins = "\n".join(sub_ins_parts)
+    sub_decl = "\n".join(sub_decl_parts)
 
     tool_decl = await _tool_declaration_text(agent)
 
     root_tokens = counter.count(root_ins)
-    sub_tokens = counter.count(sub_ins) if sub_ins else 0
+    sub_ins_tokens = counter.count(sub_ins)
+    sub_decl_tokens = counter.count(sub_decl)
     decl_tokens = counter.count(tool_decl)
-    skill_l1_tokens = counter.count(skill_l1_text) if skill_l1_text else 0
+    boilerplate_tokens = counter.count(skill_boilerplate)
+    l1_xml_tokens = counter.count(skill_l1_xml)
     return {
         "variant": name,
         "root_instruction_chars": len(root_ins),
         "root_instruction_tokens": root_tokens,
-        "subagent_instruction_tokens": sub_tokens,
+        "subagent_instruction_tokens": sub_ins_tokens,
+        "subagent_tool_declaration_tokens": sub_decl_tokens,
         "tool_declaration_tokens": decl_tokens,
-        "skill_l1_tokens": skill_l1_tokens,
-        "total_fixed_context_tokens": root_tokens + sub_tokens + decl_tokens + skill_l1_tokens,
+        "skill_boilerplate_tokens": boilerplate_tokens,
+        "total_fixed_context_tokens": (
+            root_tokens + sub_ins_tokens + sub_decl_tokens + decl_tokens + boilerplate_tokens
+        ),
+        # オンデマンド (list_skills 応答)。固定合計には含めない。
+        "skill_l1_xml_tokens_on_demand": l1_xml_tokens,
     }
 
 
@@ -115,16 +129,18 @@ def _render_markdown(rows: list[dict], method: str) -> str:
         "# 静的コスト計測 (固定コンテキストのトークン量)",
         "",
         f"- model: `{MODEL}`  ·  token count method: `{method}`",
-        "- root instruction / sub-agent instruction / tool declaration に分けて、毎リクエスト積まれる固定コンテキストを測る。",
+        "- 「固定」= 毎 LLM リクエストに積まれる層: root instruction / sub-agent instruction+tool 宣言 (sub 側リクエスト) / root tool 宣言 / skill boilerplate (SkillToolset の定型 system instruction)。",
+        "- skill L1 XML (<available_skills>) は system instruction には注入されず list_skills のツール応答として返るため、固定合計外の **オンデマンド** 列として別掲する。",
         "",
-        "| variant | root instr (chars) | root instr (tok) | sub-agent instr (tok) | tool decl (tok) | skill L1 (tok) | 固定合計 (tok) |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| variant | root instr (tok) | sub instr (tok) | sub tool decl (tok) | tool decl (tok) | skill boilerplate (tok) | **固定合計 (tok)** | (参考) skill L1 XML on-demand |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in rows:
         lines.append(
-            f"| `{r['variant']}` | {r['root_instruction_chars']} | {r['root_instruction_tokens']} | "
-            f"{r['subagent_instruction_tokens']} | {r['tool_declaration_tokens']} | "
-            f"{r.get('skill_l1_tokens', 0)} | {r['total_fixed_context_tokens']} |"
+            f"| `{r['variant']}` | {r['root_instruction_tokens']} | {r['subagent_instruction_tokens']} | "
+            f"{r['subagent_tool_declaration_tokens']} | {r['tool_declaration_tokens']} | "
+            f"{r['skill_boilerplate_tokens']} | **{r['total_fixed_context_tokens']}** | "
+            f"{r['skill_l1_xml_tokens_on_demand']} |"
         )
     return "\n".join(lines) + "\n"
 

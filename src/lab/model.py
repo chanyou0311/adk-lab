@@ -16,22 +16,37 @@ from google.genai import Client, types
 # (alias 経由だと世代跨ぎで thought signature 検証が 400 になりうるため)。
 MODEL = "gemini-3-flash-preview"
 
+_SHARED_CLIENT: Client | None = None
+
+
+def make_global_client() -> Client:
+    """global エンドポイント固定・一時的 5xx を 3 回リトライする共有 genai Client (lazy singleton)。
+
+    genai Client は並行リクエストに安全なので、eval の全ジョブ・全エージェントで 1 個を
+    共有する — ジョブごとに新規 Client を作ると TLS ハンドシェイク+トークン取得が毎回
+    発生しコネクションプールが再利用されない。global 固定の理由は _GlobalGemini 参照。
+    """
+    global _SHARED_CLIENT
+    if _SHARED_CLIENT is None:
+        _SHARED_CLIENT = Client(
+            vertexai=True,
+            location="global",
+            http_options=types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=3)),
+        )
+    return _SHARED_CLIENT
+
 
 class _GlobalGemini(Gemini):
     """モデル推論を Vertex の global エンドポイントに固定する Gemini。
 
     gemini-3-flash-preview は global 限定 (regional は 404) なので api_client の location を
     global に上書きする (ADK 公式の customize パターン)。project / credentials は env
-    (GOOGLE_CLOUD_PROJECT + ADC) から、retry は self.retry_options から継承する。
+    (GOOGLE_CLOUD_PROJECT + ADC) から。retry は共有 Client 側の設定 (attempts=3) に一元化。
     """
 
     @cached_property
     def api_client(self) -> Client:
-        return Client(
-            vertexai=True,
-            location="global",
-            http_options=types.HttpOptions(retry_options=self.retry_options),
-        )
+        return make_global_client()
 
 
 def make_model() -> _GlobalGemini:

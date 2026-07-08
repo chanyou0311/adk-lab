@@ -109,10 +109,10 @@
       "n": 140,
       "n_ok": 140,
       "n_error": 0,
-      "pass_rate": 0.9714285714285714,
+      "pass_rate": 0.9214285714285714,
       "pass_ci": [
-        0.928841706594433,
-        0.9888344037936607
+        0.8647837428260201,
+        0.9555630831269726
       ],
       "route_ok_rate": 0.7692307692307693,
       "refusal_rate": 0.0,
@@ -125,7 +125,7 @@
         "B": 1.0,
         "C": 1.0,
         "D": 1.0,
-        "E": 0.85
+        "E": 0.5
       },
       "by_task": {
         "C1": 1.0,
@@ -139,7 +139,7 @@
         "A4": 1.0,
         "A5": 1.0,
         "E1": 0.8,
-        "E2": 0.9,
+        "E2": 0.2,
         "B1": 1.0,
         "B2": 1.0
       }
@@ -226,10 +226,10 @@
       "n": 140,
       "n_ok": 140,
       "n_error": 0,
-      "pass_rate": 0.9857142857142858,
+      "pass_rate": 0.9714285714285714,
       "pass_ci": [
-        0.9494108358295452,
-        0.996073641540006
+        0.928841706594433,
+        0.9888344037936607
       ],
       "route_ok_rate": 0.8307692307692308,
       "refusal_rate": 0.0,
@@ -242,7 +242,7 @@
         "B": 1.0,
         "C": 1.0,
         "D": 0.9,
-        "E": 1.0
+        "E": 0.9
       },
       "by_task": {
         "C1": 1.0,
@@ -256,7 +256,7 @@
         "A4": 1.0,
         "E1": 1.0,
         "A5": 1.0,
-        "E2": 1.0,
+        "E2": 0.8,
         "B1": 1.0,
         "B2": 1.0
       }
@@ -32392,7 +32392,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -32813,7 +32813,7 @@
       "variant": "skills",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -33535,7 +33535,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -34091,7 +34091,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -34666,7 +34666,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -34995,7 +34995,7 @@
       "variant": "skills",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -35225,7 +35225,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -36483,7 +36483,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"
@@ -37714,7 +37714,7 @@
       "variant": "thin_none",
       "task_id": "E2",
       "category": "E",
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "slack"

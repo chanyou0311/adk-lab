@@ -87,8 +87,13 @@ def test_required_slack_incidents_present():
     assert "INC-42" in alerts and "クローズ" in alerts  # 解決済み
     assert "INC-43" in alerts  # 未解決 sev1
     assert "INC-44" in alerts  # 未解決 sev2 (内部影響)
-    # INC-43 / INC-44 にはクローズ報が無い (未解決) ことを確認。
-    assert "[INC-43] " not in alerts or "クローズ" not in alerts.split("INC-43")[-1]
+    # INC-43 / INC-44 は未解決: それらに言及するメッセージにクローズ報が無いことをメッセージ単位で確認
+    # (旧実装の `"[INC-43] " not in alerts or ...` は空白付き文字列が実データに無く恒真だった)。
+    close_words = ["クローズ", "解消"]  # 「解決」は「未解決」に部分一致するため使わない
+    for inc in ["INC-43", "INC-44"]:
+        for m in texts["alerts"]:
+            if inc in m:
+                assert not any(w in m for w in close_words), f"{inc} にクローズ報がある: {m}"
 
 
 def test_support_complaints_have_keywords():

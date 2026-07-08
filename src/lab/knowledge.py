@@ -10,6 +10,11 @@ family で引くことで、ユースケース追加時に配線を変えずに�
 
 from __future__ import annotations
 
+# サポート SLA の閾値 (時間)。K7/K8 の本文と eval の採点器 (GT 計算・閾値 marker) が
+# 同じ値に接地するよう、ここを単一ソースにする (値を変えると本文と採点が一緒に動く)。
+PRO_SLA_HOURS = 4
+DEFAULT_SLA_HOURS = 24
+
 KNOWLEDGE: dict[str, dict[str, str]] = {
     "sales-analytics": {
         "name": "sales-analytics",
@@ -36,11 +41,11 @@ K6: リリース情報は #releases、顧客の生の声・苦情は #support �
         "name": "support-sla",
         "description": "サポートチケットの初回応答 SLA 規則",
         "family": "bq",
-        "body": """\
-K7: 初回応答 SLA は plan = 'pro' が 4 時間以内、それ以外は 24 時間以内
+        "body": f"""\
+K7: 初回応答 SLA は plan = 'pro' が {PRO_SLA_HOURS} 時間以内、それ以外は {DEFAULT_SLA_HOURS} 時間以内
     (first_response_at - opened_at の経過時間で判定する)。
 K8: ただし支払い関連 (subject に 決済 / 課金 / 返金 のいずれかを含む) は plan に関わらず
-    4 時間以内。""",
+    {PRO_SLA_HOURS} 時間以内。""",
     },
 }
 
