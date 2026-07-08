@@ -100,7 +100,8 @@ uv run python eval/static_metrics.py
 - **`google-adk==2.4.0` を pin**。`SkillToolset` / `google.adk.skills` は **Experimental** で API が変動しうる
   (本ハーネスは inline の `models.Skill` を構築して渡す方式)。`FeatureName.JSON_SCHEMA_FOR_FUNC_DECL`
   有効化の UserWarning が出るが無害。
-- `skills` バリアントの固定コストは静的計測 (`STATIC_METRICS.md`) だけでは過小評価になる。SkillToolset は
-  実行時に system instruction の定型文と `list_skills` 結果の skill メタデータ XML を注入するため、実測トークン
-  (`RESULTS.md`) の方が真の負荷を表す。
+- `skills` の静的計測は「毎リクエスト注入される SkillToolset の定型 system instruction (boilerplate)」を
+  固定層として計上し、`<available_skills>` XML (L1) は **オンデマンド列** として別掲する (ADK 2.4.0 は
+  list_skills ツールがある限り L1 XML を system instruction に注入しない)。load_skill 時の L2 本文と
+  発見往復の実行時コストは `RESULTS.md` の実測トークンに現れる。
 - ローカルの `python3` が 3.11 未満でも、uv がプロジェクト用に Python 3.11+ を用意する。
