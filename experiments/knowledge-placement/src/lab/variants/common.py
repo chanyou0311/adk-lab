@@ -1,10 +1,10 @@
 """バリアント共通の instruction 部品。
 
-知識の *配置* を変える実験なので、instruction の共有骨格 (PERSONA / mandate) はここに 1 本化し、
-各バリアントで同期させる。mandate には 2 系統ある:
-- OPEN_MANDATE: 「ツールは取得、分析・予測は自分の仕事」と明示する開いた mandate。
-- CLOSED_ENUMERATION: できることをツール用途の列挙で閉じる (開いた mandate 文なし)。
-mandate の開閉と知識配置は別変数なので、fat_closed / fat_open で交絡を分離する。
+知識の *配置* を変える実験なので、instruction の共有骨格 (PERSONA / 役割指示) はここに 1 本化し、
+各バリアントで同期させる。役割の与え方には 2 系統ある:
+- OPEN_MANDATE (役割指示): 「ツールは取得、分析・予測は自分の仕事」と明示する。
+- CLOSED_ENUMERATION: できることをツール用途の列挙で閉じる (役割指示なし)。
+どちらを使うかと知識配置は別変数なので、fat_closed / fat_open で交絡を分離する。
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ PERSONA = (
     "when the question concerns the store's business."
 )
 
-# 開いた mandate。ツール=取得、分析/予測/比較はエージェント自身の仕事、と明示する。ツール用途の
+# 役割指示 (OPEN_MANDATE)。ツール=取得、分析/予測/比較はエージェント自身の仕事、と明示する。ツール用途の
 # 列挙だけだと、モデルが列挙を能力の枠と解釈して分析・予測系の依頼を「対応する機能がない」と
 # 過剰拒否することがあり、それを防ぐ。ドメイン非依存。
 OPEN_MANDATE = (
@@ -31,7 +31,7 @@ OPEN_MANDATE = (
     "assumptions and give a best-effort bounded estimate rather than refusing."
 )
 
-# 閉じた列挙。ツールの用途を並べるだけで、開いた mandate 文を意図的に持たない。
+# 閉じた列挙。ツールの用途を並べるだけで、役割指示を意図的に持たない。
 CLOSED_ENUMERATION = (
     "You can use the bq tools to look up sales and order data (totals and breakdowns), and "
     "the slack tools to read team communication (incident notices, support inquiries, "

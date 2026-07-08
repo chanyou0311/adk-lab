@@ -1,6 +1,6 @@
 """thin_none: 知識を一切置かない下限対照。
 
-root instruction は PERSONA + 開いた mandate のみ。ツールも rich=False。ドメイン知識 (K1-K6)
+root instruction は PERSONA + 役割指示のみ。ツールも rich=False。ドメイン知識 (K1-K6)
 がどこにも無いので、知識依存タスク (E1/E2 等) は解けないはず — 他バリアントの上げ幅の基準線。
 """
 

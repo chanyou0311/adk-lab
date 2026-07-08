@@ -1,6 +1,6 @@
 """subagents: 知識を sub-agent の instruction に分割配置。
 
-root は薄い (PERSONA + 開いた mandate + ルーティング指針) で、直接ツールを持たず、2 つの
+root は薄い (PERSONA + 役割指示 + ルーティング指針) で、直接ツールを持たず、2 つの
 スペシャリスト sub-agent を AgentTool として公開する:
 - data_analyst: sales-analytics 知識 + bq ツール (rich=False)
 - comms_analyst: slack-ops 知識 + slack ツール (rich=False)

@@ -1,6 +1,6 @@
 """skills: 知識を Agent Skill (SKILL 本文 = L2) に置き、progressive disclosure で読ませる。
 
-root は薄い (PERSONA + 開いた mandate)。ツール (bq+slack, rich=False) は常時露出のまま
+root は薄い (PERSONA + 役割指示)。ツール (bq+slack, rich=False) は常時露出のまま
 (ツールゲーティングはしない — 知識配置だけを変える統制)。SkillToolset が
 list_skills / load_skill / ... を注入し、L1 (name/description) を提示、モデルが必要と判断したら
 load_skill で L2 本文 (= KNOWLEDGE body) を読む。SKILL の frontmatter description は

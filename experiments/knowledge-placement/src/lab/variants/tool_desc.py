@@ -1,6 +1,6 @@
 """tool_desc: 知識を tool docstring に置く。
 
-root instruction は薄い (PERSONA + 開いた mandate)。ツールを rich=True で作り、K1-K6 を
+root instruction は薄い (PERSONA + 役割指示)。ツールを rich=True で作り、K1-K6 を
 各ツールの description (docstring) に埋め込む。root は薄いまま、知識はツールに付随する。
 """
 
