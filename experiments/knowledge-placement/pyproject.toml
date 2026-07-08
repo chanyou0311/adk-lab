@@ -1,7 +1,7 @@
 [project]
-name = "adk-thin-agent-lab"
+name = "adk-knowledge-placement"
 version = "0.1.0"
-description = "ADK エージェントのドメイン知識配置を 6 バリアント × 14 タスクで定量比較する実験ハーネス"
+description = "ADK エージェントのドメイン知識配置を 6 バリアント × 16 タスクで定量比較する実験ハーネス"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
