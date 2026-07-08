@@ -196,6 +196,43 @@ _E2_EXONERATION = [
 ]
 
 
+_KEN_RE = re.compile(r"(\d+)\s*件")
+# 「4 時間」を pro 閾値 marker として拾う。先頭に数字が付く「24時間」等 (basic 閾値) を
+# 誤検出しないよう否定後読みで境界を付ける。
+_FOUR_HOURS_RE = re.compile(r"(?<!\d)4\s*時間")
+
+
+def _f1_check(text: str, gt: dict) -> bool:
+    """F1: SLA 違反件数を正しく答えているか。
+
+    「N 件」形式で明示された整数の集合に GT の違反件数 (6) が含まれることを要求する。
+    any-number 抽出 (旧実装) だと「6 時間超過」「1 日と 6 時間」等の無関係な数値を拾って
+    偽陽性になるため、件数表現 (\\d+件) に限定する。
+    限界: 「6 件」が別文脈 (例: 別の集計) で言及されたケースは区別しない (件数表現なので
+    実害は小さい)。thin_none の実回答「違反は 1 件…全 30 件」は {1, 30} となり 6 を含まず fail。
+    """
+    norm = unicodedata.normalize("NFKC", text)
+    counts = {int(m.group(1)) for m in _KEN_RE.finditer(norm)}
+    return gt["sla_violations"] in counts
+
+
+def _f2_check(text: str, gt: dict) -> bool:
+    """F2: SLA 違反の pro チケット ID を正しく答えているか。
+
+    (a) GT の pro 違反 ticket_id が全て含まれ、かつ (b) 正しい pro 閾値 (4 時間) に言及する
+    (K7 を実際に適用した marker)。(b) は「pro=3 時間」等の捏造閾値でたまたま正解集合を包含した
+    ケース (thin_none に実在) を弾くため。
+    限界: 「4 時間」が pro ではなく支払い override (K8 も 4h) の文脈で言及されるケースも許容する
+    (どちらも 4h 定義に接地している点で妥当な近似)。「24 時間」を 4 時間と誤検出しないよう境界付き。
+    """
+    if not gt["pro_violation_ids"]:
+        return False
+    norm = unicodedata.normalize("NFKC", text)
+    ids_ok = all(tid in norm for tid in gt["pro_violation_ids"])
+    threshold_ok = _FOUR_HOURS_RE.search(norm) is not None
+    return ids_ok and threshold_ok
+
+
 def _e2_check(text: str) -> bool:
     """E2: 顧客影響が出ている未解決障害 = INC-43 のみ、を正しく判別できているか。
 
@@ -279,11 +316,9 @@ TASKS: list[Task] = [
          lambda t, tc, gt, r: _e2_check(t)),
     # F: UC3 (support-sla)。K7/K8 (plan 別 SLA + 支払い override) を知らないと解けない。
     Task("F1", "F", "初回応答 SLA に違反したサポートチケットは何件ある?", frozenset({"bq"}),
-         lambda t, tc, gt, r: answer_contains_number(t, gt["sla_violations"], rel_tol=0.0)),
+         lambda t, tc, gt, r: _f1_check(t, gt)),
     Task("F2", "F", "SLA 違反チケットのうち pro プランのものの ticket_id を教えて", frozenset({"bq"}),
-         lambda t, tc, gt, r: (
-             bool(gt["pro_violation_ids"])
-             and all(tid in t for tid in gt["pro_violation_ids"]))),
+         lambda t, tc, gt, r: _f2_check(t, gt)),
 ]
 
 TASKS_BY_ID = {t.id: t for t in TASKS}

@@ -59,14 +59,14 @@ def _rescore_record(rec: dict) -> dict:
     return out
 
 
-def _e2_before_after(original: list[dict], rescored: list[dict]) -> str:
-    """E2 の before/after pass 数をバリアント別に集計したテーブル文字列。"""
-    variants = sorted({r["variant"] for r in original if r["task_id"] == "E2"})
+def _task_before_after(original: list[dict], rescored: list[dict], task_id: str) -> str:
+    """指定タスクの before/after pass 数をバリアント別に集計したテーブル文字列。"""
+    variants = sorted({r["variant"] for r in original if r["task_id"] == task_id})
 
     def counts(records):
         by = {v: [0, 0] for v in variants}  # [pass, ok_total]
         for r in records:
-            if r["task_id"] != "E2" or r.get("error"):
+            if r["task_id"] != task_id or r.get("error"):
                 continue
             by[r["variant"]][1] += 1
             if r["passed"]:
@@ -74,10 +74,24 @@ def _e2_before_after(original: list[dict], rescored: list[dict]) -> str:
         return by
 
     b, a = counts(original), counts(rescored)
-    lines = ["| variant | E2 before | E2 after |", "| --- | --- | --- |"]
+    lines = [f"| variant | {task_id} before | {task_id} after |", "| --- | --- | --- |"]
     for v in variants:
         lines.append(f"| `{v}` | {b[v][0]}/{b[v][1]} | {a[v][0]}/{a[v][1]} |")
     return "\n".join(lines)
+
+
+def _changed_tasks(original: list[dict], rescored: list[dict]) -> list[str]:
+    """before→after で 1 バリアントでも pass 数が変わったタスク ID を返す。"""
+    orig_by = {}
+    resc_by = {}
+    for r in original:
+        if not r.get("error"):
+            orig_by[(r["task_id"], r["variant"])] = orig_by.get((r["task_id"], r["variant"]), 0) + int(r["passed"])
+    for r in rescored:
+        if not r.get("error"):
+            resc_by[(r["task_id"], r["variant"])] = resc_by.get((r["task_id"], r["variant"]), 0) + int(r["passed"])
+    changed = {k[0] for k in orig_by if orig_by.get(k) != resc_by.get(k)}
+    return sorted(changed)
 
 
 def main() -> None:
@@ -124,8 +138,12 @@ def main() -> None:
     ka, na = overall_pass(rescored)
     print(f"rescored {src.name} -> {out_json.name}")
     print(f"総合 pass: before {kb}/{nb} ({kb / nb * 100:.1f}%)  ->  after {ka}/{na} ({ka / na * 100:.1f}%)")
-    print("\nE2 before/after (variant 別):")
-    print(_e2_before_after(original, rescored))
+    changed = _changed_tasks(original, rescored)
+    if not changed:
+        print("\n(採点結果に変化のあったタスクはありません)")
+    for tid in changed:
+        print(f"\n{tid} before/after (variant 別):")
+        print(_task_before_after(original, rescored, tid))
 
 
 if __name__ == "__main__":
