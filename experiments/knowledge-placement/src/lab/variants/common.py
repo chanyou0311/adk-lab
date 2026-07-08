@@ -2,7 +2,7 @@
 
 知識の *配置* を変える実験なので、instruction の共有骨格 (PERSONA / mandate) はここに 1 本化し、
 各バリアントで同期させる。mandate には 2 系統ある:
-- OPEN_MANDATE: 「ツールは取得、分析・予測は自分の仕事」と明示する開いた mandate (fumo-adk B 案)。
+- OPEN_MANDATE: 「ツールは取得、分析・予測は自分の仕事」と明示する開いた mandate。
 - CLOSED_ENUMERATION: できることをツール用途の列挙で閉じる (開いた mandate 文なし)。
 mandate の開閉と知識配置は別変数なので、fat_closed / fat_open で交絡を分離する。
 """
@@ -16,8 +16,9 @@ PERSONA = (
     "when the question concerns the store's business."
 )
 
-# 開いた mandate (fumo-adk agent.py の _INSTRUCTION_B を一般化)。ツール=取得、分析/予測/比較は
-# エージェント自身の仕事、と明示して過剰拒否を防ぐ。ドメイン非依存。
+# 開いた mandate。ツール=取得、分析/予測/比較はエージェント自身の仕事、と明示する。ツール用途の
+# 列挙だけだと、モデルが列挙を能力の枠と解釈して分析・予測系の依頼を「対応する機能がない」と
+# 過剰拒否することがあり、それを防ぐ。ドメイン非依存。
 OPEN_MANDATE = (
     "Your tools FETCH data for you — for example sales and order records from the data "
     "warehouse, and messages from the team's Slack. Performing analysis, summarization, "

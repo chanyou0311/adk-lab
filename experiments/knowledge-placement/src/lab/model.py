@@ -1,7 +1,7 @@
 """Gemini モデルの構築。
 
 gemini-3-flash-preview は Vertex の **global エンドポイント限定** (regional は 404) なので、
-fumo-adk の ``_GlobalGemini`` (api_client の location を global に固定) をそのまま流用する。
+``_GlobalGemini`` で api_client の location を global に固定する (ADK 公式の customize パターン)。
 全実験を temperature=0 で走らせ、バリアント間の差が知識配置だけに帰属するようにする。
 """
 

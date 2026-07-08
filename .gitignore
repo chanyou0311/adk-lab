@@ -10,5 +10,5 @@ __pycache__/
 # secrets — 実際の資格情報は commit しない
 .env
 
-# NOTE: fixtures 生成物 (src/lab/fixtures/) と eval/results/*.json は意図的に commit する
-# (実験の再現性・ブログでの引用のため)。ここでは除外しない。
+# NOTE: 各実験の fixtures 生成物と eval/results/*.json は意図的に commit する
+# (実験の再現性のため)。ここでは除外しない。

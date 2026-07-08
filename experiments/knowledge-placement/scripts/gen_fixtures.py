@@ -5,7 +5,7 @@
 - warehouse/daily_active_users.csv: 日次アクティブユーザー
 - slack_data.json                 : #general/#alerts/#support/#releases のメッセージ
 
-生成物は src/lab/fixtures/ に書き出し、リポジトリに commit する (再現性・ブログ引用のため)。
+生成物は src/lab/fixtures/ に書き出し、リポジトリに commit する (実験の再現性のため)。
 seed 固定なので何度実行しても同一出力になる。
 
 Usage:  uv run python scripts/gen_fixtures.py
