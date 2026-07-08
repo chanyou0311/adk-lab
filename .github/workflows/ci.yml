@@ -1,0 +1,43 @@
+# 全実験のオフライン検証。Vertex / secrets 不要 — LLM を呼ぶ検証はここには置かない。
+#
+# rescore 冪等性チェックが本 CI の核: コミット済みの results_<tag>_rescored.* を現行の
+# 採点器で再生成し byte 一致を検証する。採点器を変えたのに再採点結果を更新し忘れた
+# (= コードと結果が矛盾した) PR を機械的に弾く。
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  experiments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Lint / test / rescore-idempotency (per experiment)
+        run: |
+          set -eux
+          for dir in experiments/*/; do
+            [ -f "${dir}pyproject.toml" ] || continue
+            (
+              cd "$dir"
+              uv sync --frozen
+              uv run ruff check .
+              uv run pytest -q
+              # コミット済みの再採点結果がある tag だけ、現行採点器で再生成する
+              if [ -f eval/rescore.py ]; then
+                for f in eval/results/results_*_rescored.json; do
+                  [ -e "$f" ] || continue
+                  tag=$(basename "$f" _rescored.json)
+                  tag=${tag#results}
+                  uv run python eval/rescore.py --tag "$tag"
+                done
+              fi
+            )
+          done
+
+      - name: Verify committed results match current scorers
+        run: git diff --exit-code

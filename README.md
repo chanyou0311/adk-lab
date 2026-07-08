@@ -14,6 +14,11 @@ Google ADK (Agent Development Kit) の実験場。エージェント設計に関
 
 ## 実験の追加方法
 
-1. `experiments/<name>/` を作り、独立した uv プロジェクト (pyproject.toml) として初期化する
-2. fixtures・採点・結果 (JSON/Markdown) をリポジトリに commit し、再現可能に保つ
+1. `experiments/<name>/` を作り、独立した uv プロジェクト (pyproject.toml + uv.lock) として初期化する
+2. **[AGENTS.md](AGENTS.md) の「実験の再現性チェックリスト」を満たす** — 決定的 fixture (生成物 commit)・
+   raw record 全量保存・オフライン再採点器 (rescore)・採点器のユニットテスト・モデル/依存 pin・
+   runs≥10 + Wilson CI
 3. この README の実験一覧に 1 行追加する
+
+CI (`.github/workflows/ci.yml`) が `experiments/*/` ごとに ruff / pytest / **rescore 冪等性**
+(コミット済み再採点結果と現行採点器の一致) をオフラインで検証する。
