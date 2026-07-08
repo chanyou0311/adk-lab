@@ -6,8 +6,6 @@ uv プロジェクトとして置く。
 
 ## 実験の再現性チェックリスト (新規実験の必須要素)
 
-knowledge-placement 実験の教訓 (採点器バグで結論が 3 回変わった) の蒸留。
-
 1. **決定的 fixture**: seed 固定・**生成物を commit**・GT 健全性を pytest で固定。
    既存 fixture への追加生成は独立 RNG (`random.Random(SEED + n)`) を使い、
    既存ファイルをバイト不変に保つ
@@ -30,8 +28,8 @@ knowledge-placement 実験の教訓 (採点器バグで結論が 3 回変わっ�
 - **LLM を呼ぶ eval (run_eval.py 等) は課金があるため、明示指示があるときのみ実行**する。
   ruff / pytest / rescore / 静的検証はオフラインなので自由に実行してよい
 - **フレームワーク内部挙動を計測の前提にするときは、ソースを読んで検証してから**
-  (例: ADK の SkillToolset が何を system instruction に注入するかを未検証で仮定し、
-  計測方法論を一度誤った。ADK ソースは `.venv/lib/python*/site-packages/google/adk/`)
+  (例: 「SkillToolset が何を system instruction に注入するか」は仮定せず実装で確認する。
+  ADK ソースは `.venv/lib/python*/site-packages/google/adk/`)
 - 結果の解釈を変える修正 (採点器・計測方法論) は、影響する数値の before/after を
   PR description に書く
 
