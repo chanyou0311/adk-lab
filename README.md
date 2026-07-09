@@ -11,6 +11,7 @@ Google ADK (Agent Development Kit) の実験場。エージェント設計に関
 | 実験 | 問い | 状態 |
 |---|---|---|
 | [knowledge-placement](experiments/knowledge-placement/) | ドメイン知識をどこに置くと、root instruction を薄く保ちつつタスク品質を維持できるか (6 配置バリアント × 16 タスクの比較) | 完了 |
+| [agent-composition](experiments/agent-composition/) | 単一 LLM エージェント vs multi-agent 構成 — 単一は「紛らわしさ」で壊れるのか、分割の対価は品質でなくトークンコストか | WIP |
 
 ## 実験の追加方法
 
