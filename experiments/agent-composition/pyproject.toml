@@ -31,7 +31,9 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
-# 生成スクリプトとレポート出力は日本語のデータ/Markdown 文字列が長くなる (折り返すと可読性が落ちる)。
+# 生成スクリプト・タスク定義・レポート出力は日本語のデータ/プロンプト/Markdown 文字列が長くなる
+# (折り返すと可読性が落ちる)。
 "scripts/gen_fixtures.py" = ["E501"]
 "eval/run_eval.py" = ["E501"]
 "eval/report.py" = ["E501"]
+"eval/tasks.py" = ["E501"]

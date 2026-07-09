@@ -141,6 +141,7 @@ def _zero_metrics() -> dict:
     """メトリクスの空形。_run_once の初期値と error fallback で共有し、スキーマを 1 箇所にする。"""
     return {
         "final": "",
+        "turns": [],
         "latency": 0.0,
         "tool_calls": [],
         "tool_names": [],
@@ -157,7 +158,14 @@ def _zero_metrics() -> dict:
     }
 
 
-async def _run_once(variant: str, prompt: str) -> dict:
+async def _run_once(variant: str, prompts: list[str]) -> dict:
+    """1 ジョブを実行する。マルチターンは同一 session を turn 間で共有する。
+
+    session を turn ごとに作り直さないのが要点 — turn 2 は turn 1 の結果を参照するので、
+    session を使い回すことで AgentTool の文脈喪失 (sub-agent が前 turn の文脈を持たない) を
+    露出させる。全 turn の最終応答を turns に残し、採点は最終 turn (final) で行う。tool_names は
+    全 turn を通した順序付き trajectory (Plugin が累積)。
+    """
     root = VARIANTS[variant]()
     plugin = MetricsPlugin()
     app = App(name=APP_NAME, root_agent=root, plugins=[plugin])
@@ -165,26 +173,30 @@ async def _run_once(variant: str, prompt: str) -> dict:
     session = await runner.session_service.create_session(
         app_name=runner.app_name, user_id=USER_ID
     )
-    message = types.UserContent(prompt)
 
-    final = ""
+    turns: list[str] = []
     start = time.perf_counter()
     try:
-        async for event in runner.run_async(
-            user_id=USER_ID, session_id=session.id, new_message=message
-        ):
-            content = getattr(event, "content", None)
-            parts = content.parts if content is not None else None
-            text = "".join(p.text for p in (parts or []) if getattr(p, "text", None))
-            if event.is_final_response() and text:
-                final = text
+        for prompt in prompts:
+            message = types.UserContent(prompt)
+            final = ""
+            async for event in runner.run_async(
+                user_id=USER_ID, session_id=session.id, new_message=message
+            ):
+                content = getattr(event, "content", None)
+                parts = content.parts if content is not None else None
+                text = "".join(p.text for p in (parts or []) if getattr(p, "text", None))
+                if event.is_final_response() and text:
+                    final = text
+            turns.append(final)
     finally:
         latency = time.perf_counter() - start
         await runner.close()
 
     return {
         **_zero_metrics(),
-        "final": final,
+        "final": turns[-1] if turns else "",
+        "turns": turns,
         "latency": latency,
         "tool_calls": plugin.tool_calls,
         "tool_names": plugin.tool_names,
@@ -200,12 +212,12 @@ async def _run_once(variant: str, prompt: str) -> dict:
     }
 
 
-async def _eval_one(variant: str, task, sem: asyncio.Semaphore) -> dict:
+async def _eval_one(variant: str, task, run_index: int, sem: asyncio.Semaphore) -> dict:
     async with sem:
         metrics: dict = {}
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             try:
-                metrics = await _run_once(variant, task.prompt)
+                metrics = await _run_once(variant, task.prompts)
                 break
             except Exception as exc:  # noqa: BLE001
                 if attempt < _MAX_ATTEMPTS and _is_transient(exc):
@@ -222,7 +234,10 @@ async def _eval_one(variant: str, task, sem: asyncio.Semaphore) -> dict:
         metrics.update(
             score_record(task, metrics["final"], metrics["tool_names"], metrics.get("error"))
         )
-        metrics.update({"variant": variant, "task_id": task.id, "category": task.category})
+        # run_index は環境のツール提示順 shuffle の seed (environments.shuffle_tools) に使う値。
+        # raw record に残すことで、どの提示順で得た結果かを後から再現できる。
+        metrics.update({"variant": variant, "task_id": task.id, "category": task.category,
+                        "run_index": run_index})
         return metrics
 
 
@@ -233,12 +248,13 @@ async def _main_async(args) -> None:
     categories = sorted({t.category for t in tasks})
     sem = asyncio.Semaphore(args.concurrency)
 
-    jobs = [_eval_one(v, t, sem) for v in variants for t in tasks for _ in range(args.runs)]
+    jobs = [_eval_one(v, t, run_idx, sem)
+            for v in variants for t in tasks for run_idx in range(args.runs)]
     total = len(jobs)
     print(f"running {total} cells (variants={variants}, tasks={task_ids}, "
           f"runs={args.runs}, concurrency={args.concurrency}, model={MODEL})", flush=True)
     if total == 0:
-        print("no cells to run — VARIANTS / TASKS が空 (scaffold)。バリアントとタスクを追加してください。")
+        print("no cells to run — VARIANTS が空 (バリアント未実装) か、tasks フィルタが全除外。")
         return
 
     records: list[dict] = []
