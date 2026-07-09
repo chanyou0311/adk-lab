@@ -3,7 +3,7 @@
 Google ADK (Python) エージェントで、**単一の LLM エージェントと multi-agent 構成 (agent
 composition) を統制比較する**実験 ([adk-lab](../../README.md) の実験のひとつ)。
 
-> **状態: WIP (本収集前)。** ハーネス・16 タスク・5 バリアント・3 環境 (CLEAN/DISTINCT/
+> **状態: WIP (本収集前)。** ハーネス・16 タスク・6 バリアント・3 環境 (CLEAN/DISTINCT/
 > CONFUSABLE) を実装済み。V-1 smoke と難度プローブ (単発実行) で計測健全性・採点器・罠の発動を
 > 確認済み。**本収集 (runs≥8 の全セル) はこれから。** 較正メモ: gemini-3-flash は強く、多段導出で
 > 硬化しても CLEAN ベースラインは天井寄り。品質だけでなく環境劣化・コスト差・trajectory 指標で
@@ -65,7 +65,7 @@ Plugin は AgentTool 経由で子 Runner に伝播するので、multi-agent 構
 streaming の partial レスポンスは usage が二重に来るため、`after_model_callback` の冒頭で
 `partial` をガードする。thought part (推論の途中出力) は最終回答テキストから除外する。
 
-## バリアント (5)
+## バリアント (6)
 
 同一のタスク・環境・役割文言 (SUBAGENT_PERSONA + OPEN_MANDATE) のまま、**構成 (composition) だけ**を変える。
 
@@ -75,7 +75,13 @@ streaming の partial レスポンスは usage が二重に来るため、`after
 | `single_skills` | SkillToolset でドメイン別ツールをゲーティング (root は直接ツールを持たない) | CLEAN/CONFUSABLE |
 | `multi_agenttool` | root + ドメイン別 sub-agent を AgentTool で保持 (LLM が function-calling で委譲) | CLEAN/CONFUSABLE |
 | `multi_transfer` | 同じ分割を `sub_agents` (transfer_to_agent) で委譲 | CLEAN/CONFUSABLE |
+| `multi_taskmode` | Collaborative task-mode 委譲 (transfer の現代版)。sub-agent を `mode='single_turn'` で `sub_agents=` に接続 → coordinator が `_SingleTurnAgentTool` (name=sub 名) で委譲 | CLEAN/CONFUSABLE |
 | `workflow_graph` | ADK 2.4.0 の Workflow (graph) エンジン。planner→dispatcher→synthesizer の spine、planner が構造化出力でドメインを選び dispatcher が `ctx.run_node` で専門ノードを動的実行 | CLEAN/CONFUSABLE |
+
+> `multi_taskmode` は **`mode='single_turn'`** を使う (`mode='task'` を避ける): 本 eval はバッチ実行で
+> ユーザー応答が無く、task-mode は途中でユーザーへ chat 確認する可能性があり**ハング要因**になる。
+> single_turn は「会話せず単発でタスクを完了する」モード。委譲ツール名は `{domain}_assistant` (sub 名
+> そのもの、`request_task_*` ではない — ソース検証済み) で、AgentTool と同じく naming で対称に扱われる。
 
 > `workflow_graph` の調整: 当初の「条件エッジ + JoinNode」構成は、JoinNode が全静的前任者の完了を待つため
 > 条件スキップされたドメインで **deadlock** する (`_workflow.py` の `_requires_all_predecessors`)。
@@ -91,7 +97,7 @@ streaming の partial レスポンスは usage が二重に来るため、`after
 | `src/lab/environments.py` | CLEAN(6) / DISTINCT(12) / CONFUSABLE(18)。`tools_for_env` / `ordered_domains` / `shuffle_tools` |
 | `src/lab/tools/` | mock ツール (bq=DuckDB, slack/billing/oncall/portal=JSON)。`_fixtures.load_fixture` で共有ロード |
 | `src/lab/fixtures/` | 決定的 fixture (seed 固定・commit 済み。billing=SEED+2 / oncall=SEED+3 / portal=SEED+4) |
-| `src/lab/variants/` | `single_flat` / `single_skills` / `multi_agenttool` / `multi_transfer` / `workflow_graph` + `common.py` |
+| `src/lab/variants/` | `single_flat` / `single_skills` / `multi_agenttool` / `multi_transfer` / `multi_taskmode` / `workflow_graph` + `common.py` |
 | `eval/tasks.py` | 16 タスク (A/B/C/D/E) + `_compute_gt` (fixture から機械導出) + `score_record` |
 | `eval/run_eval.py` | (variant,env,task,run) 直交ランナー + `MetricsPlugin` |
 | `eval/report.py` | Wilson CI 集計 (group_field で cell 群化) + Markdown |
@@ -106,10 +112,10 @@ uv sync --frozen
 uv run python scripts/gen_fixtures.py   # 決定的 fixture 再生成 (commit 済みと同一)
 uv run pytest -q && uv run ruff check .  # オフライン検証 (Vertex 不要)
 
-# クロス評価 (Vertex 接続。ADC + env 必要)。収集セル計画 11 セル (single_flat×3env + 他 4×2env)
+# クロス評価 (Vertex 接続。ADC + env 必要)。収集セル計画 13 セル (single_flat×3env + 他 5×2env)
 export GOOGLE_GENAI_USE_VERTEXAI=TRUE GOOGLE_CLOUD_PROJECT=<your-project>
-uv run python eval/run_eval.py --smoke --tag _smoke        # V-1 smoke (11セル×A1/C1/E1×1run)
-uv run python eval/run_eval.py --runs 8 --tag _main        # 本番 (11セル×16タスク×8run)
+uv run python eval/run_eval.py --smoke --tag _smoke        # V-1 smoke (13セル×A1/C1/E1×1run)
+uv run python eval/run_eval.py --runs 8 --tag _main        # 本番 (13セル×16タスク×8run)
 uv run python eval/run_eval.py --variants single_flat --envs clean --tasks B1 C1  # 絞り込み
 
 # 採点器を修正した後の再採点 (完全オフライン・LLM 不要)。新 tag は _rescored も併せて commit
@@ -132,7 +138,7 @@ raw record は append-only なので追い足しは既存結果を壊さない�
 
 ## 後続作業 (TODO)
 
-- **本収集** — `--runs 8` で 11 セル × 16 タスクを実測し `eval/results/` に保存 (raw + `_rescored` 同時 commit)。
+- **本収集** — `--runs 8` で 13 セル × 16 タスクを実測し `eval/results/` に保存 (raw + `_rescored` 同時 commit)。
 - **report.py の見出し** を agent-composition 用に更新 (現在は流用元「知識配置バリアント評価」のまま)。
 - 天井が問題になる場合の追加硬化 (portal 罠の巧妙化など) は結果を見て判断。
 

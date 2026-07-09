@@ -17,9 +17,10 @@ from lab.variants import VARIANTS
 _ENV_EXPECT = {CLEAN: (2, 6), DISTINCT: (4, 12), CONFUSABLE: (5, 18)}
 
 
-def test_registry_has_five_variants():
+def test_registry_has_six_variants():
     assert set(VARIANTS) == {
-        "single_flat", "single_skills", "multi_agenttool", "multi_transfer", "workflow_graph",
+        "single_flat", "single_skills", "multi_agenttool", "multi_transfer",
+        "multi_taskmode", "workflow_graph",
     }
     assert all(callable(b) for b in VARIANTS.values())
 
@@ -105,6 +106,34 @@ def test_multi_transfer_uses_sub_agents_not_tools():
         assert {s.name for s in agent.sub_agents} == {f"{d}_assistant" for d in domains_for_env(env)}
 
 
+def test_multi_taskmode_single_turn_delegation():
+    from lab.naming import is_real_tool
+    for env in (CLEAN, CONFUSABLE):
+        n_domains, _ = _ENV_EXPECT[env]
+        agent = VARIANTS["multi_taskmode"](env)
+        # sub-agent は単発 (single_turn) で sub_agents に接続、env と同数・同名。
+        assert len(agent.sub_agents) == n_domains
+        assert all(s.mode == "single_turn" for s in agent.sub_agents)
+        assert {s.name for s in agent.sub_agents} == {f"{d}_assistant" for d in domains_for_env(env)}
+        # single_turn は coordinator に委譲ツール (_SingleTurnAgentTool, name=sub 名) として現れる。
+        assert {t.name for t in agent.tools} == {f"{d}_assistant" for d in domains_for_env(env)}
+        # 委譲ツールは実ツール扱いされない (trajectory 指標の対称性)。
+        assert all(not is_real_tool(t.name) for t in agent.tools)
+
+
+def test_routed_domains_symmetric_across_three_delegation_mechanisms():
+    # transfer / AgentTool / task-mode(single_turn) の 3 機構が同じ粒度の routed_domains を返す。
+    from lab.naming import routed_domains
+    # AgentTool と single_turn は委譲ツール名が sub-agent 名そのもの (bq_assistant)。
+    agenttool_or_taskmode = [{"name": "bq_assistant", "args": {}}]
+    # transfer は transfer_to_agent + args.agent_name。
+    transfer = [{"name": "transfer_to_agent", "args": {"agent_name": "bq_assistant"}}]
+    assert routed_domains(agenttool_or_taskmode) == ["bq"]
+    assert routed_domains(transfer) == ["bq"]
+    # finish_task (task-mode の完了通知) は委譲でも実ツールでもない。
+    assert routed_domains([{"name": "finish_task", "args": {}}]) == []
+
+
 def test_iso_thinking_level_across_all_agents():
     # 全バリアント・全 sub-agent が temperature=1.0 + thinking_level=LOW (統制)。
     from google.genai import types
@@ -121,6 +150,10 @@ def test_iso_thinking_level_across_all_agents():
     mt = VARIANTS["multi_transfer"](CONFUSABLE)
     _assert_cfg(mt)
     for s in mt.sub_agents:
+        _assert_cfg(s)
+    tm = VARIANTS["multi_taskmode"](CONFUSABLE)
+    _assert_cfg(tm)
+    for s in tm.sub_agents:
         _assert_cfg(s)
 
 

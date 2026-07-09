@@ -53,10 +53,11 @@ def test_domain_of_real_tools_and_exclusions():
     assert domain_of("slack_read_channel") == "slack"
     assert domain_of("billing_list_charges") == "billing"
     assert domain_of("portal_run_report") == "portal"
-    # 委譲呼び出し・skill メタは実ツールでないので None。
+    # 委譲呼び出し・skill メタ・フレームワークメタは実ツールでないので None。
     assert domain_of("bq_assistant") is None
     assert domain_of("transfer_to_agent") is None
     assert domain_of("list_skills") is None
+    assert domain_of("finish_task") is None  # task-mode の完了通知ツール
     assert domain_of("some_other_tool") is None
 
 

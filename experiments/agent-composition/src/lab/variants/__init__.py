@@ -9,6 +9,7 @@
 - single_skills   : SkillToolset でドメイン別にツールをゲーティング (root は直接ツールを持たない)
 - multi_agenttool : root + ドメイン別 sub-agent を AgentTool で保持
 - multi_transfer  : 同じドメイン分割を transfer (sub_agents) で
+- multi_taskmode  : 同じ分割を task-mode (single_turn の sub_agents) で委譲
 - workflow_graph  : Workflow (graph) エンジンで planner→dispatcher→synthesizer を写像
 """
 
@@ -19,6 +20,7 @@ from typing import Any
 
 from . import (
     multi_agenttool,
+    multi_taskmode,
     multi_transfer,
     single_flat,
     single_skills,
@@ -31,6 +33,7 @@ VARIANTS: dict[str, Callable[..., Any]] = {
     single_skills.NAME: single_skills.build,
     multi_agenttool.NAME: multi_agenttool.build,
     multi_transfer.NAME: multi_transfer.build,
+    multi_taskmode.NAME: multi_taskmode.build,
     workflow_graph.NAME: workflow_graph.build,
 }
 

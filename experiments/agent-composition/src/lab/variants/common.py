@@ -77,12 +77,15 @@ DOMAIN_DESCRIPTIONS = {
 }
 
 
-def make_domain_subagent(domain: str) -> Agent:
-    """ドメイン別スペシャリスト sub-agent を構築する (multi_agenttool / multi_transfer で共有)。
+def make_domain_subagent(domain: str, mode: str | None = None) -> Agent:
+    """ドメイン別スペシャリスト sub-agent を構築する (multi_agenttool / multi_transfer /
+    multi_taskmode / workflow_graph で共有)。
 
     name は naming.subagent_name(domain) を使い、採点側の DELEGATION_NAMES と機構的に一致させる
     (文字列規約の二重定義を避ける)。instruction は SUBAGENT_PERSONA + OPEN_MANDATE で役割文言を
-    root と揃える (過剰拒否を抑える)。
+    root と揃える (過剰拒否を抑える)。**素材 (persona/tools/model) はバリアント間で完全に同一で、
+    委譲機構だけが差** = 統制。mode は task-mode 委譲用 (single_turn 等)、既定 None は
+    AgentTool/transfer 用。
     """
     return Agent(
         name=subagent_name(domain),
@@ -90,5 +93,6 @@ def make_domain_subagent(domain: str) -> Agent:
         description=DOMAIN_DESCRIPTIONS[domain],
         instruction=f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}",
         tools=make_domain_tools(domain),
+        mode=mode,
         generate_content_config=make_generate_config(),
     )

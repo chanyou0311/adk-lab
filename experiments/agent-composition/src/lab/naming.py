@@ -16,8 +16,12 @@ GOLD_DOMAINS = ("bq", "slack")
 # distractor (near-synonym の罠) ドメイン。trap_hit はここから導出する。
 DISTRACTOR_DOMAINS = frozenset({"portal"})
 
-# multi バリアントの委譲呼び出し名。AgentTool は subagent_name(domain)、transfer は
-# "transfer_to_agent" (対象は args.agent_name)。これらは「実ツール」ではないので scoring から除外する。
+# multi バリアントの委譲呼び出し名。ADK 2.4.0 では **委譲ツール名は sub-agent 名そのもの**
+# (= subagent_name(domain))。ソース検証: AgentTool / _SingleTurnAgentTool / _TaskAgentTool は
+# いずれも AgentTool サブクラスで tool.name == sub_agent.name (agents/tools/agent_tool.py)。
+# よって multi_agenttool (AgentTool)・multi_taskmode (single_turn の _SingleTurnAgentTool) は同じ
+# `{domain}_assistant` 名で委譲し、multi_transfer は transfer_to_agent (対象は args.agent_name)。
+# request_task_* のような別名は 2.4.0 では生成されない。これらは実ツールでないので scoring から除外。
 _SUBAGENT_SUFFIX = "_assistant"
 _TRANSFER_TOOL = "transfer_to_agent"
 
@@ -41,10 +45,20 @@ SKILL_TOOLS = frozenset({
     "search_skills",
 })
 
+# フレームワークが自動注入する非ドメイン・非委譲のメタツール。finish_task は task-mode の sub-agent が
+# 完了を通知するツール (agents/llm/task/_finish_task_tool.py, FINISH_TASK_TOOL_NAME='finish_task')。
+# 本実験は single_turn を使うため通常は現れないが、mode を task に変えても trajectory 指標が対称に
+# 保たれるよう除外しておく。
+FRAMEWORK_META_TOOLS = frozenset({"finish_task"})
+
 
 def is_real_tool(tool_name: str) -> bool:
-    """委譲呼び出し・skill メタを除いた実ツール呼び出しか。"""
-    return tool_name not in DELEGATION_NAMES and tool_name not in SKILL_TOOLS
+    """委譲呼び出し・skill メタ・フレームワークメタを除いた実ツール呼び出しか。"""
+    return (
+        tool_name not in DELEGATION_NAMES
+        and tool_name not in SKILL_TOOLS
+        and tool_name not in FRAMEWORK_META_TOOLS
+    )
 
 
 def domain_of(tool_name: str) -> str | None:
