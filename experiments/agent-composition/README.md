@@ -3,9 +3,11 @@
 Google ADK (Python) エージェントで、**単一の LLM エージェントと multi-agent 構成 (agent
 composition) を統制比較する**実験 ([adk-lab](../../README.md) の実験のひとつ)。
 
-> **状態: WIP (scaffold のみ)。** 実験ハーネス (モデル設定・計測 Plugin・mock ツール・
-> 決定的 fixture・採点/集計/再採点の骨格) は用意したが、バリアント実装・タスク定義・
-> fixture 拡張・smoke はまだ入っていない (後続作業)。
+> **状態: WIP (本収集前)。** ハーネス・16 タスク・4 バリアント・3 環境 (CLEAN/DISTINCT/
+> CONFUSABLE) を実装済み。V-1 smoke と難度プローブ (単発実行) で計測健全性・採点器・罠の発動を
+> 確認済み。**本収集 (runs≥8 の全セル) はこれから。** 較正メモ: gemini-3-flash は強く、多段導出で
+> 硬化しても CLEAN ベースラインは天井寄り。品質だけでなく環境劣化・コスト差・trajectory 指標で
+> 仮説を検証する設計 (下記「較正と runs 設計」参照)。
 
 ## 問い
 
@@ -23,12 +25,17 @@ composition) を統制比較する**実験 ([adk-lab](../../README.md) の実験
 
 | # | 軸 | 測るもの |
 |---|---|---|
-| 1 | 正答率 (quality) | タスク別 pass rate + Wilson 95% CI |
+| 1 | 正答率 (quality) | タスク別 pass rate + Wilson 95% CI。trap 発動 (trap_hit/trap_fatal) と捏造 (fabricated) も |
 | 2 | トークンコスト | 総トークン + 内訳 (prompt / candidates / **thoughts** / tool-use-prompt / cached) |
-| 3 | ルーティング精度 | 呼ばれた tool family (bq/slack) が expected と一致した割合 |
-| 4 | 過剰拒否 (refusal) | 能力を「持たない」と誤って拒否した割合 |
+| 3 | ルーティング精度 | 呼ばれた**実ツール**のドメインが expected と一致した割合 (route_ok) + 委譲先 (delegations) |
+| 4 | 過剰拒否 (refusal) | 能力を「持たない」と誤って拒否した割合。E 以外は refused=True で不正解にする (refused ゲート) |
 | 5 | レイテンシ・LLM 呼び出し数 | ジョブ毎の壁時計時間と LLM 呼び出し回数 |
-| 6 | thought signature 健全性 | function_call part の thought_signature 欠落数 / 起因の 400 発生 |
+| 6 | thought signature 健全性 | function_call part の thought_signature 欠落 (per-request 最大 / ever) と起因の 400 発生 |
+
+> trajectory 指標 (trap_hit / route_ok / offtask_calls / selection) は**実ツール呼び出しのみ**で判定
+> する — 委譲呼び出し (`*_assistant` / `transfer_to_agent`) と skill メタツールを除外することで、
+> single / multi_agenttool / multi_transfer / single_skills が同じ trajectory を同じスコアにする
+> (バリアント間の測定を対称にする)。委譲先ドメインは `delegations` に別記録する。
 
 > 6 は Gemini 3 (thinking) 特有の軸。multi-agent (AgentTool) 構成では sub-agent の
 > thought signature が親リクエストへ伝播せず 400 になりうるため、欠落を計測して切り分ける。
@@ -50,64 +57,70 @@ Plugin は AgentTool 経由で子 Runner に伝播するので、multi-agent 構
 
 `MetricsPlugin` は標準トークンに加えて Gemini 3 向けに次を独立集計する:
 - `thoughts_tokens` / `tool_use_prompt_tokens` / `cached_tokens` (usage_metadata の内訳)
-- `signature_missing_count` (送信 contents 中の function_call part で thought_signature が欠落した数)
+- `signature_missing_max` (各リクエストで欠落した function_call part 数の **リクエスト単位の最大**) /
+  `signature_ever_missing` (一度でも欠落したか) — 全履歴を毎リクエスト数えて累積すると超線形に
+  膨らむため per-request の値を集約する。smoke ゲートは `ever_missing==False` で判定する
 - `signature_400` (thought_signature 起因の 400 でジョブが失敗したか)
 
 streaming の partial レスポンスは usage が二重に来るため、`after_model_callback` の冒頭で
-`partial` をガードしてトークンの二重計上を防ぐ。
+`partial` をガードする。thought part (推論の途中出力) は最終回答テキストから除外する。
 
-## ハーネス構成 (scaffold)
+## 構成
 
-| パス | 役割 | 状態 |
-|---|---|---|
-| `src/lab/model.py` | Gemini (global 固定 / temp=1.0 / thinking LOW) | ✅ |
-| `src/lab/tools/` | mock ツール (bq=DuckDB in-memory, slack=JSON fixture) | ✅ (knowledge-placement から流用) |
-| `src/lab/knowledge.py` | ドメイン知識の単一定義 (K1–K8) | ✅ (流用。ドメイン拡張は後続) |
-| `src/lab/fixtures/` | 決定的 fixture (seed 固定・commit 済み) | ✅ (byte 一致で流用) |
-| `src/lab/variants/common.py` | 共通 instruction 部品 (PERSONA / OPEN_MANDATE / ROUTING_GUIDANCE …) | ✅ |
-| `src/lab/variants/__init__.py` | バリアントレジストリ `VARIANTS` | ⬚ 空 (後続) |
-| `eval/tasks.py` | Task dataclass・score_record・汎用判定ヘルパー | ✅ 骨格 (TASKS は空) |
-| `eval/run_eval.py` | クロス評価ランナー + `MetricsPlugin` (Gemini 3 計測拡張) | ✅ |
-| `eval/report.py` | Wilson CI 集計 + Markdown レポート | ✅ 流用 |
-| `eval/rescore.py` | 保存済み結果のオフライン再採点 | ✅ 流用 |
-| `scripts/gen_fixtures.py` | 決定的 fixture 生成 (seed=42) | ✅ 流用 |
-| `tests/` | fixture 健全性 + 採点ヘルパー回帰テスト | ✅ (汎用分のみ) |
+| パス | 役割 |
+|---|---|
+| `src/lab/model.py` | Gemini (global 固定 / temp=1.0 / thinking LOW) |
+| `src/lab/naming.py` | ドメイン名・委譲名・skill メタの単一ソース (ADK 非依存)。採点と構築が共有 |
+| `src/lab/environments.py` | CLEAN(6) / DISTINCT(12) / CONFUSABLE(18)。`tools_for_env` / `ordered_domains` / `shuffle_tools` |
+| `src/lab/tools/` | mock ツール (bq=DuckDB, slack/billing/oncall/portal=JSON)。`_fixtures.load_fixture` で共有ロード |
+| `src/lab/fixtures/` | 決定的 fixture (seed 固定・commit 済み。billing=SEED+2 / oncall=SEED+3 / portal=SEED+4) |
+| `src/lab/variants/` | `single_flat` / `single_skills` / `multi_agenttool` / `multi_transfer` + `common.py` |
+| `eval/tasks.py` | 16 タスク (A/B/C/D/E) + `_compute_gt` (fixture から機械導出) + `score_record` |
+| `eval/run_eval.py` | (variant,env,task,run) 直交ランナー + `MetricsPlugin` |
+| `eval/report.py` | Wilson CI 集計 (group_field で cell 群化) + Markdown |
+| `eval/rescore.py` | 保存済み結果のオフライン再採点 (cell 集計) |
+| `scripts/gen_fixtures.py` | 決定的 fixture 生成 (seed=42) |
+| `tests/` | fixture 健全性 + 採点器 (gaming/terse 両側) + バリアント構築 + naming |
 
 ## 実行方法
 
 ```bash
 uv sync --frozen
+uv run python scripts/gen_fixtures.py   # 決定的 fixture 再生成 (commit 済みと同一)
+uv run pytest -q && uv run ruff check .  # オフライン検証 (Vertex 不要)
 
-# 決定的 fixture を生成 (seed=42、生成物は commit 済み。再生成しても同一)
-uv run python scripts/gen_fixtures.py
-
-# fixture と GT の健全性テスト・採点ヘルパー回帰テスト (Vertex 不要)
-uv run pytest -q
-uv run ruff check .
-
-# クロスバリアント eval (Vertex に接続する。ADC + 下記 env が必要)
-# NOTE: バリアント・タスク追加までは 0 cell。
+# クロス評価 (Vertex 接続。ADC + env 必要)。収集セル計画 9 セル (single_flat×3env + 他 3×2env)
 export GOOGLE_GENAI_USE_VERTEXAI=TRUE GOOGLE_CLOUD_PROJECT=<your-project>
-uv run python eval/run_eval.py --runs 8
+uv run python eval/run_eval.py --smoke --tag _smoke        # V-1 smoke (9セル×A1/C1/E1×1run)
+uv run python eval/run_eval.py --runs 8 --tag _main        # 本番 (9セル×16タスク×8run)
+uv run python eval/run_eval.py --variants single_flat --envs clean --tasks B1 C1  # 絞り込み
 
-# 採点器を修正した後の再採点 (完全オフライン・LLM 不要)
-uv run python eval/rescore.py --tag _main
+# 採点器を修正した後の再採点 (完全オフライン・LLM 不要)。新 tag は _rescored も併せて commit
+uv run python eval/rescore.py --tag _smoke
 ```
 
 `.env.example` を `.env` にコピーして値を設定してもよい (`.env` は commit しない)。
 
+## 較正と runs 設計
+
+gemini-3-flash-preview は強く、多段導出でタスクを硬化しても CLEAN 単一 flat のベースラインは
+天井 (probe で 16/16) に張り付く。よって本実験は**品質 (pass rate) の差だけに依存しない**設計にする:
+CONFUSABLE 環境での劣化・トークンコスト差 (multi > single を probe で観測)・trajectory 指標
+(trap_hit / trap_fatal / selection / delegations) で仮説を検証する。
+
+**runs 設計 (ユーザー承認済みの縮退)**: temperature=1.0 (thinking モデルの公式推奨) で分散が大きい
+ため本来は runs≥10 が望ましいが、コスト都合で**既定 runs=8 に縮退**する。Wilson 95% CI が割れる
+(隣接セルと CI が重なって差を主張できない) セルに限り、事後に runs を 10 へ追い足して CI を締める。
+raw record は append-only なので追い足しは既存結果を壊さない。
+
 ## 後続作業 (TODO)
 
-1. **fixture 拡張** — agent composition の紛らわしさを引き出すドメイン/ツールの追加
-   (独立 RNG `random.Random(SEED + n)` で既存 fixture をバイト不変に保つ)。
-2. **タスク設計** — 単一 vs 分割で差が出るタスク群と、その決定的採点器 + GT を `eval/tasks.py` に追加。
-3. **バリアント実装** — 単一エージェント (全ツール) / 役割分割 (AgentTool) など構成バリアントを
-   `src/lab/variants/` に追加し `VARIANTS` へ登録。
-4. **smoke → 本番 eval** — 小規模 smoke で健全性を確認後、runs≥8 で本番計測し `eval/results/` に保存
-   (raw record 全量 + `_rescored` を同時 commit)。
+- **本収集** — `--runs 8` で 9 セル × 16 タスクを実測し `eval/results/` に保存 (raw + `_rescored` 同時 commit)。
+- **report.py の見出し** を agent-composition 用に更新 (現在は流用元「知識配置バリアント評価」のまま)。
+- 天井が問題になる場合の追加硬化 (portal 罠の巧妙化など) は結果を見て判断。
 
 ## バージョン注記
 
-- **`google-adk==2.4.0` を pin**。依存は `==` / lower-bound pin + `uv.lock` を commit
+- **`google-adk==2.4.0` を pin**。依存は `==` または lower-bound pin + `uv.lock` を commit
   (`uv sync --frozen` が通ること)。
 - ローカルの `python3` が 3.11 未満でも、uv がプロジェクト用に Python 3.11+ を用意する。
