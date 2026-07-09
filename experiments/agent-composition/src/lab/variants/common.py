@@ -10,6 +10,7 @@ from google.adk.agents import Agent
 
 from ..environments import make_domain_tools
 from ..model import make_generate_config, make_model
+from ..naming import subagent_name
 
 # ~3 文。トーン・言語・データ接地の指針。全バリアント共通。
 PERSONA = (
@@ -79,11 +80,12 @@ DOMAIN_DESCRIPTIONS = {
 def make_domain_subagent(domain: str) -> Agent:
     """ドメイン別スペシャリスト sub-agent を構築する (multi_agenttool / multi_transfer で共有)。
 
-    name は f"{domain}_assistant" (naming.DELEGATION_NAMES と一致)。instruction は
-    SUBAGENT_PERSONA + OPEN_MANDATE で役割文言を root と揃える (過剰拒否を抑える)。
+    name は naming.subagent_name(domain) を使い、採点側の DELEGATION_NAMES と機構的に一致させる
+    (文字列規約の二重定義を避ける)。instruction は SUBAGENT_PERSONA + OPEN_MANDATE で役割文言を
+    root と揃える (過剰拒否を抑える)。
     """
     return Agent(
-        name=f"{domain}_assistant",
+        name=subagent_name(domain),
         model=make_model(),
         description=DOMAIN_DESCRIPTIONS[domain],
         instruction=f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}",

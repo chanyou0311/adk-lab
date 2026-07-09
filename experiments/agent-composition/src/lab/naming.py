@@ -16,11 +16,21 @@ GOLD_DOMAINS = ("bq", "slack")
 # distractor (near-synonym の罠) ドメイン。trap_hit はここから導出する。
 DISTRACTOR_DOMAINS = frozenset({"portal"})
 
-# multi バリアントの委譲呼び出し名。AgentTool は f"{domain}_assistant"、transfer は
+# multi バリアントの委譲呼び出し名。AgentTool は subagent_name(domain)、transfer は
 # "transfer_to_agent" (対象は args.agent_name)。これらは「実ツール」ではないので scoring から除外する。
 _SUBAGENT_SUFFIX = "_assistant"
 _TRANSFER_TOOL = "transfer_to_agent"
-DELEGATION_NAMES = frozenset({f"{d}{_SUBAGENT_SUFFIX}" for d in DOMAINS} | {_TRANSFER_TOOL})
+
+
+def subagent_name(domain: str) -> str:
+    """ドメイン別 sub-agent の名前 (multi バリアントの Agent.name と一致させる単一ソース)。"""
+    return f"{domain}{_SUBAGENT_SUFFIX}"
+
+
+# ドメイン ⇔ sub-agent 名の対応。DELEGATION_NAMES / routed 復元はここから機構的に導く
+# (命名規約を文字列操作で二重定義しない)。
+_SUBAGENT_TO_DOMAIN = {subagent_name(d): d for d in DOMAINS}
+DELEGATION_NAMES = frozenset(_SUBAGENT_TO_DOMAIN) | {_TRANSFER_TOOL}
 
 # single_skills の skill メタツール (ルーティング判定で無視する)。
 SKILL_TOOLS = frozenset({
@@ -32,22 +42,22 @@ SKILL_TOOLS = frozenset({
 })
 
 
+def is_real_tool(tool_name: str) -> bool:
+    """委譲呼び出し・skill メタを除いた実ツール呼び出しか。"""
+    return tool_name not in DELEGATION_NAMES and tool_name not in SKILL_TOOLS
+
+
 def domain_of(tool_name: str) -> str | None:
     """実ツール名をドメインに写す (bq_/slack_/billing_/oncall_/portal_ prefix)。
 
     委譲呼び出し (*_assistant / transfer_to_agent) と skill メタツールは実ツールでないので None。
     """
-    if tool_name in DELEGATION_NAMES or tool_name in SKILL_TOOLS:
+    if not is_real_tool(tool_name):
         return None
     for d in DOMAINS:
         if tool_name.startswith(f"{d}_"):
             return d
     return None
-
-
-def is_real_tool(tool_name: str) -> bool:
-    """委譲呼び出し・skill メタを除いた実ツール呼び出しか。"""
-    return tool_name not in DELEGATION_NAMES and tool_name not in SKILL_TOOLS
 
 
 def real_tool_names(tool_names: list[str]) -> list[str]:
@@ -66,12 +76,8 @@ def has_distractor_call(tool_names: list[str]) -> bool:
 
 
 def _routed_domain_of(name: str) -> str | None:
-    """委譲名 f"{domain}_assistant" からドメインを復元 (それ以外は None)。"""
-    if name.endswith(_SUBAGENT_SUFFIX):
-        candidate = name[: -len(_SUBAGENT_SUFFIX)]
-        if candidate in DOMAINS:
-            return candidate
-    return None
+    """委譲名 (subagent_name の逆写像) からドメインを復元 (それ以外は None)。"""
+    return _SUBAGENT_TO_DOMAIN.get(name)
 
 
 def routed_domains(tool_calls: list[dict]) -> list[str]:
