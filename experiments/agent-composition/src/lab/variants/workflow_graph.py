@@ -43,8 +43,15 @@ class _Plan(BaseModel):
 
 
 def _domain_agents(env: str, seed: int | None = None) -> dict:
-    """env に存在するドメインの専門ノードを構築する (multi の sub-agent と同一構成)。"""
-    return {d: make_domain_subagent(d) for d in ordered_domains(env, seed)}
+    """env に存在するドメインの専門ノードを構築する (multi の sub-agent と同一構成)。
+
+    dispatcher が ``ctx.run_node`` で **動的スケジュール**するので rerun_on_resume=True が必須
+    (既定 False だと context._run_node_internal が「A node must have rerun_on_resume=True」で
+    ValueError にする — 動的ノードは interrupt/resume で親から再実行されうるため)。
+    """
+    return {
+        d: make_domain_subagent(d, rerun_on_resume=True) for d in ordered_domains(env, seed)
+    }
 
 
 def _planner(available: str) -> Agent:

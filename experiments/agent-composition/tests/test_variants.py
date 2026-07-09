@@ -197,6 +197,9 @@ def test_workflow_graph_domain_node_count_matches_env():
         assert set(agents) == set(domains_for_env(env))
         # ドメインノードは multi の sub-agent と同一命名 (統制)。
         assert all(a.name == f"{d}_assistant" for d, a in agents.items())
+        # ctx.run_node で動的スケジュールするので rerun_on_resume=True が必須
+        # (False だと実行時に ValueError で全滅する。回帰ガード)。
+        assert all(a.rerun_on_resume is True for a in agents.values())
     # CONFUSABLE では portal ドメインノードも存在する。
     assert "portal" in wg._domain_agents(CONFUSABLE)
 
