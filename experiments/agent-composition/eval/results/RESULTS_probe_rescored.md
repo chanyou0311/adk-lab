@@ -1,15 +1,15 @@
 # 知識配置バリアント評価 — 結果 (再採点: results_probe.json)
 
-- model: `gemini-3-flash-preview`  ·  runs/(variant,task): 1  ·  variants: 4  ·  tasks: 16
-- pass rate は Wilson 95% CI 付き。route ok = 呼ばれた tool family (bq/slack) が expected と完全一致した割合 (skill 系呼び出しは無視、C3 は記録のみ)。
-- refusal rate = capability 拒否フレーズを含んだ応答の割合 (全タスクで記録、C カテゴリの合否に使用)。
+- model: `gemini-3-flash-preview`  ·  runs/(variant,task): 1  ·  cells: 4  ·  tasks: 16
+- pass rate は Wilson 95% CI 付き。route ok = 呼ばれた実ツールのドメインが expected と完全一致した割合 (委譲呼び出し *_assistant / transfer_to_agent と skill メタは無視)。
+- refusal rate = capability 拒否フレーズを含んだ応答の割合 (全タスクで記録)。E 以外は refused=True で不正解にする (refused ゲート)。
 
 ## バリアント別サマリ
 
 | variant | pass (95% CI) | route ok | refusal | tokens | latency(s) | tool calls | LLM calls | errors |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `single_flat@clean` | 81% [57%–93%] | 81% | 0% | 6096 | 10.4 | 4.3 | 5.2 | 0 |
-| `single_flat@confusable` | 81% [57%–93%] | 81% | 0% | 8921 | 8.4 | 4.4 | 5.0 | 0 |
+| `single_flat@confusable` | 81% [57%–93%] | 44% | 0% | 8921 | 8.4 | 4.4 | 5.0 | 0 |
 | `multi_agenttool@clean` | 100% [34%–100%] | 100% | 0% | 10003 | 23.3 | 8.5 | 12.5 | 0 |
 | `multi_agenttool@confusable` | 100% [34%–100%] | 100% | 0% | 9780 | 21.5 | 7.0 | 11.5 | 0 |
 

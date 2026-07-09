@@ -80,7 +80,7 @@
         0.2076549551264879,
         0.9385096847238394
       ],
-      "route_ok_rate": 0.6666666666666666,
+      "route_ok_rate": 0.3333333333333333,
       "refusal_rate": 0.0,
       "tokens": 11133.666666666666,
       "latency": 11.626626541217169,
@@ -184,7 +184,7 @@
         0.2076549551264879,
         0.9385096847238394
       ],
-      "route_ok_rate": 1.0,
+      "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
       "tokens": 4835,
       "latency": 10.828418889082968,
@@ -236,7 +236,7 @@
         0.2076549551264879,
         0.9385096847238394
       ],
-      "route_ok_rate": 1.0,
+      "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
       "tokens": 6453.666666666667,
       "latency": 7.826952625066042,
@@ -296,12 +296,6 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
@@ -314,7 +308,14 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月の完了売上（テスト注文を除く）について、以下の通りレポートいたします。\n\n### 2026年6月 売上レポート\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**: \n    *   ステータス: `completed`（完了）\n    *   テスト注文: 除外 (`is_test = false`)\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウスの注文レコードを基に集計いたしました。詳細な内訳や、チャネル別の分析が必要な際はお申し付けください。",
@@ -369,16 +370,10 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 2,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "single_skills",
@@ -387,7 +382,14 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年5月に新しく採用されたメンバーに関する具体的な人数や情報は、Slackのログからは確認できませんでした。\n\nなお、直近の動きとしては、6月15日の投稿で「来週（6月下旬）に新しいメンバーが入社する」という旨の通知が確認されています。\n\nもし特定の部署や、入社案内などの別のキーワードでお調べする必要があればお知らせください。",
@@ -452,14 +454,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 6,
+      "offtask_calls": 5,
       "fabricated": false,
       "selection": "no_call",
       "variant": "multi_agenttool",
@@ -468,7 +466,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "slack"
+      ]
     },
     {
       "final": "2026年6月10日の注文件数は18件です。",
@@ -511,16 +516,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_transfer",
@@ -529,7 +528,16 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "Slackのメッセージを確認しましたが、2026年5月に新しく採用（入社）したメンバーの人数を明記した情報は見つかりませんでした。\n\n関連する情報として、6月15日に「新しいメンバーが来週入社します」というメッセージ（rinさんより）があり、6月22日の週に新メンバーが加わることが示唆されていますが、5月の採用人数については言及がありません。\n\nもし人事関連の特定のチャンネルや、別のキーワードでの検索が必要であればお知らせください。",
@@ -629,14 +637,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 11,
+      "offtask_calls": 10,
       "fabricated": false,
       "selection": "no_call",
       "variant": "multi_transfer",
@@ -645,7 +649,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "slack"
+      ]
     },
     {
       "final": "2026年6月10日の注文数は、合計で18件でした。",
@@ -688,16 +699,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_agenttool",
@@ -706,7 +711,16 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "提供されたデータ（Slackのメッセージおよびデータベース）を確認しましたが、2026年5月に新しく採用・入社したメンバーの人数を明示する記録は見当たりませんでした。\n\nなお、Slackの `general` チャンネルにおいて、2026年6月15日に「新しいメンバーが来週入社します」という投稿（rinさんによる）があり、同年6月27日には歓迎会の調整が行われていることから、**2026年6月**には新メンバーが加わったことが推測されます。\n\n5月の採用状況についてより正確な情報が必要な場合は、人事管理システムや他のドキュメントを確認する必要があるかもしれません。",
@@ -833,11 +847,6 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq",
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": false,
       "trap_fatal": false,
@@ -850,7 +859,13 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
     },
     {
       "final": "2026年6月10日の注文は、テスト注文を除いて**18件**ありました。",
@@ -886,12 +901,6 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
@@ -904,7 +913,14 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "先月（2026年5月）に新しく採用されたメンバーに関する直接的な記録（人事データや5月中の入社通知など）は見当たりませんでした。\n\nしかし、Slackの `#general` チャンネルにおける6月15日の投稿で、「新しいメンバーが来週入社します」というアナウンスがありました。このことから、直近では**2026年6月下旬に1名**が新しく加わった（あるいは加わる予定である）ことが確認できています。\n\n5月中に採用・入社したメンバーについて、より詳細な情報が必要な場合は、人事担当者へ確認するか、別のキーワードでの検索を試みることができます。",
@@ -1014,11 +1030,6 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq",
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": false,
       "trap_fatal": false,
@@ -1031,7 +1042,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "oncall",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
     },
     {
       "final": "提供されたツールを使って、Slackのメッセージやデータベースを検索しましたが、2026年5月に新しく採用・入社したメンバーに関する直接的な記録は見当たりませんでした。\n\nなお、Slackの `#general` チャンネルにおいて、2026年6月15日に「新しいメンバーが来週入社します」という投稿（投稿者: rin）があり、6月下旬に新メンバーが加わった可能性は確認できています。\n\nもし特定の部署や、上記以外のキーワード（氏名など）でお心当たりがあれば、再度お調べいたします。",
@@ -1154,15 +1172,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq",
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 15,
+      "offtask_calls": 12,
       "fabricated": false,
       "selection": "no_call",
       "variant": "single_skills",
@@ -1171,7 +1184,13 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
     },
     {
       "final": "2026年6月10日の注文数は、テスト用の注文を除いて合計で18件でした。",
@@ -1219,16 +1238,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 2,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "single_skills",
@@ -1237,7 +1250,14 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月のテスト注文を除いた完了売上の集計結果は以下の通りです。\n\n### 2026年6月 売上レポート（確定分）\n*   **合計売上額**: 8,020,316円\n*   **合計注文本数**: 471件\n\n**集計条件:**\n*   **期間**: 2026年6月1日 〜 2026年6月30日\n*   **ステータス**: 完了（completed）\n*   **除外データ**: テスト注文（is_test = true）を除外",
@@ -1287,16 +1307,10 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_transfer",
@@ -1305,7 +1319,16 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "2026年6月10日の注文数は、テスト用の注文を除いて合計 **18件** でした。",
@@ -1341,12 +1364,6 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
@@ -1359,7 +1376,14 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月の売上集計レポート（テスト注文を除く）をご報告します。\n\n### 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計対象**: 完了済み注文（status = 'completed'）、テスト注文を除く（is_test = false）\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウス内の注文（`orders`）テーブルより、上記条件で集計を行いました。",
@@ -1414,16 +1438,10 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 2,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "single_skills",
@@ -1432,7 +1450,14 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月の完了売上の集計結果を報告します。\n\n### 2026年6月 完了売上レポート\n*   **合計売上:** 8,020,316円\n*   **条件:**\n    *   期間: 2026年6月1日 〜 2026年6月30日\n    *   ステータス: 完了 (completed)\n    *   除外項目: テスト注文 (`is_test = TRUE`) を除外済",
@@ -1488,13 +1513,7 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
-      "route_ok": true,
+      "route_ok": false,
       "trap_hit": true,
       "trap_fatal": true,
       "offtask_calls": 3,
@@ -1506,7 +1525,15 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "portal"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月の完了売上（テスト注文を除く）について報告します。\n\n### **売上集計レポート：2026年6月**\n\n*   **合計売上高**: **8,020,316円**\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   ステータスが「完了（completed）」の注文のみを合算\n    *   テスト用注文フラグ（`is_test = true`）が付与されているデータを除外\n\n以上の通り、2026年6月期の実績は確定しております。詳細な内訳（日別推移や商品別売上など）が必要な場合は、追加で指示をいただけますと幸いです。",
@@ -1556,16 +1583,10 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_agenttool",
@@ -1574,7 +1595,16 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "2026年5月に新しく採用されたメンバーに関する情報は、社内アーカイブおよびグループ一覧からは確認できませんでした。\n\nお手数ですが、人事関連の公式通知チャンネル（`#announcements` など）や、最新の組織図などをご確認いただけますでしょうか。もし特定のチームや役割（例：エンジニア、サポートなど）に関する情報であれば、再度キーワードを変えてお調べいたします。",
@@ -1645,12 +1675,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [],
-      "expected_families": [],
-      "route_ok": true,
+      "route_ok": false,
       "trap_hit": true,
       "trap_fatal": false,
-      "offtask_calls": 7,
+      "offtask_calls": 6,
       "fabricated": false,
       "selection": "wrong_tool",
       "variant": "multi_transfer",
@@ -1659,7 +1687,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "portal"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "portal"
+      ]
     },
     {
       "final": "2026年6月10日の注文数は、テスト注文を除いて合計18件でした。",
@@ -1702,12 +1737,6 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
@@ -1720,7 +1749,14 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年5月に新しく採用されたメンバーについて社内ポータルのアーカイブやメッセージを調査しましたが、該当する人数や紹介に関する情報は見当たりませんでした。\n\nより詳細な情報が必要な場合は、特定の部署（エンジニアリング、サポートなど）を指定していただくか、人事関連の通知が行われる特定のチャンネルやドキュメントについてお知らせいただけますと、再度調査いたします。",
@@ -1805,12 +1841,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [],
-      "expected_families": [],
-      "route_ok": true,
+      "route_ok": false,
       "trap_hit": true,
       "trap_fatal": false,
-      "offtask_calls": 9,
+      "offtask_calls": 8,
       "fabricated": false,
       "selection": "wrong_tool",
       "variant": "multi_agenttool",
@@ -1819,7 +1853,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "portal"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "portal"
+      ]
     },
     {
       "final": "2026年6月10日の注文は、合計で18件ありました。",
@@ -1862,16 +1903,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_transfer",
@@ -1880,7 +1915,16 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "2026年6月の売上レポート（テスト注文を除く完了済み売上）をまとめました。\n\n### **2026年6月 売上集計レポート**\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計対象**: ステータスが「完了（completed）」かつテスト注文（is_test = FALSE）を除いたデータ\n*   **合計売上額**: **8,020,316円**\n\nご確認のほど、よろしくお願いいたします。",
@@ -1923,12 +1967,6 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
@@ -1941,7 +1979,14 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月10日の注文件数は **18件** です。",
@@ -1979,16 +2024,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_agenttool",
@@ -1997,7 +2036,16 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "提供されているデータ（Slackのメッセージ履歴やアーカイブ）を確認しましたが、2026年5月に新しく採用・入社したメンバーに関する直接的な記録は見当たりませんでした。\n\nなお、直近のSlack（`general` チャンネル）では以下の動きが確認できています。\n*   **6月15日**: 「新しいメンバーが来週入社します」という投稿（rin氏）\n*   **6月27日**: 「歓迎会の日程を調整中です」という投稿（mio氏）\n\nこれらは6月入社のメンバーに関するものと考えられます。5月の採用者数については、人事システムや別の管理台帳を確認する必要があるかもしれません。",
@@ -2102,11 +2150,6 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq",
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": true,
       "trap_fatal": false,
@@ -2119,7 +2162,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "portal",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
     },
     {
       "final": "2026年6月10日の注文件数は18件でした。",
@@ -2167,16 +2217,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 2,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "single_skills",
@@ -2185,7 +2229,14 @@
       "task_id": "A1",
       "category": "A",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
     },
     {
       "final": "2026年6月の売上レポート（テスト注文を除く、完了済み売上）をご報告します。\n\n### 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **ステータス**: 完了 (completed)\n*   **テスト注文**: 除外 (is_test = FALSE)\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウスの注文テーブル (`orders`) より、上記条件に合致するレコードを抽出して集計いたしました。",
@@ -2235,16 +2286,10 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 1,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_transfer",
@@ -2253,7 +2298,16 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
     },
     {
       "final": "2026年5月に新しく採用されたメンバーに関するデータ（Slack のメッセージや社内ポータルのアーカイブ、月次レポートなど）を確認しましたが、該当する情報は見つかりませんでした。\n\n現在、Slack の `#general` チャンネルには 2026年6月中旬以降のメッセージ（歓迎会の調整や新しいメンバーの入社予定に関する話題など）は残っていますが、5月の採用人数を特定できる記録は確認できておりません。\n\nもし、特定の人事システムや別のチャンネルに記録があるようでしたら、そちらを確認いたしますのでお知らせください。",
@@ -2433,15 +2487,10 @@
       "signature_400": false,
       "passed": true,
       "refused": false,
-      "families": [
-        "bq",
-        "slack"
-      ],
-      "expected_families": [],
       "route_ok": false,
       "trap_hit": true,
       "trap_fatal": false,
-      "offtask_calls": 23,
+      "offtask_calls": 19,
       "fabricated": false,
       "selection": "wrong_tool",
       "variant": "single_skills",
@@ -2450,7 +2499,14 @@
       "task_id": "E1",
       "category": "E",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "portal",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
     },
     {
       "final": "2026年6月の完了売上（テスト注文を除く）について報告します。\n\n### **2026年6月 売上レポート**\n\n*   **合計売上高**: 8,020,316円\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   ステータスが「完了（completed）」の注文のみを集計\n    *   テスト注文（is_test = true）をすべて除外\n\n以上です。詳細な内訳や日次の推移が必要な場合はお知らせください。",
@@ -2500,16 +2556,10 @@
       "signature_400": false,
       "passed": false,
       "refused": false,
-      "families": [
-        "bq"
-      ],
-      "expected_families": [
-        "bq"
-      ],
       "route_ok": true,
       "trap_hit": false,
       "trap_fatal": false,
-      "offtask_calls": 2,
+      "offtask_calls": 0,
       "fabricated": false,
       "selection": "correct_tool",
       "variant": "multi_agenttool",
@@ -2518,7 +2568,17 @@
       "task_id": "C1",
       "category": "C",
       "run_index": 0,
-      "tool_order_seed": 0
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq",
+        "bq"
+      ]
     }
   ]
 }
