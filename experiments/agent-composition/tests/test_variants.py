@@ -17,8 +17,10 @@ from lab.variants import VARIANTS
 _ENV_EXPECT = {CLEAN: (2, 6), DISTINCT: (4, 12), CONFUSABLE: (5, 18)}
 
 
-def test_registry_has_four_variants():
-    assert set(VARIANTS) == {"single_flat", "single_skills", "multi_agenttool", "multi_transfer"}
+def test_registry_has_five_variants():
+    assert set(VARIANTS) == {
+        "single_flat", "single_skills", "multi_agenttool", "multi_transfer", "workflow_graph",
+    }
     assert all(callable(b) for b in VARIANTS.values())
 
 
@@ -32,9 +34,9 @@ def test_cell_plan_covers_exactly_the_registry():
 def test_all_variants_build_for_clean_and_confusable():
     for name, build in VARIANTS.items():
         for env in (CLEAN, CONFUSABLE):
-            agent = build(env)
-            assert isinstance(agent, Agent)
-            assert agent.name == name
+            root = build(env)
+            # root は Agent (single/multi) か Workflow (workflow_graph)。name はバリアント名に一致。
+            assert root.name == name
 
 
 def test_single_flat_tool_counts_match_env():
@@ -140,3 +142,51 @@ def test_single_flat_seed_shuffles_tool_order():
     assert sorted(canonical) == sorted(seeded)  # 同じ集合
     # 18 ツールなら seed 付きで順序が変わる可能性が高い (決定性は別途 environments テストで担保)。
     assert set(canonical) == set(seeded)
+
+
+# --------------------------------------------------------------------------- #
+# workflow_graph (Workflow graph エンジン)
+# --------------------------------------------------------------------------- #
+def test_workflow_graph_spine_is_planner_dispatcher_synthesizer():
+    from google.adk import Workflow
+    for env in (CLEAN, CONFUSABLE):
+        wf = VARIANTS["workflow_graph"](env)
+        assert isinstance(wf, Workflow)
+        # 静的グラフの spine は env に依らず planner → dispatcher → synthesizer (+ START)。
+        node_names = [n.name for n in wf.graph.nodes]
+        assert node_names == ["__START__", "planner", "dispatcher", "synthesizer"]
+
+
+def test_workflow_graph_domain_node_count_matches_env():
+    from lab.variants import workflow_graph as wg
+    for env in (CLEAN, DISTINCT, CONFUSABLE):
+        agents = wg._domain_agents(env)
+        assert set(agents) == set(domains_for_env(env))
+        # ドメインノードは multi の sub-agent と同一命名 (統制)。
+        assert all(a.name == f"{d}_assistant" for d, a in agents.items())
+    # CONFUSABLE では portal ドメインノードも存在する。
+    assert "portal" in wg._domain_agents(CONFUSABLE)
+
+
+def test_workflow_graph_iso_thinking_across_nodes():
+    from google.genai import types
+
+    from lab.variants import workflow_graph as wg
+
+    def _ok(agent):
+        cfg = agent.generate_content_config
+        return cfg.temperature == 1.0 and cfg.thinking_config.thinking_level == types.ThinkingLevel.LOW
+
+    wf = VARIANTS["workflow_graph"](CONFUSABLE)
+    planner = next(n for n in wf.graph.nodes if n.name == "planner")
+    synth = next(n for n in wf.graph.nodes if n.name == "synthesizer")
+    assert _ok(planner) and _ok(synth)
+    assert all(_ok(a) for a in wg._domain_agents(CONFUSABLE).values())
+
+
+def test_workflow_graph_builds_into_app_runner():
+    # run_eval と同じ経路 (App(root_agent=Workflow) + InMemoryRunner) で構築できる (LLM 実行なし)。
+    from google.adk.apps import App
+    from google.adk.runners import InMemoryRunner
+    wf = VARIANTS["workflow_graph"](CLEAN)
+    InMemoryRunner(app=App(name="t", root_agent=wf))

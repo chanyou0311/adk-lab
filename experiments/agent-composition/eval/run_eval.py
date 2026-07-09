@@ -16,13 +16,13 @@ function_call part の thought_signature 欠落数 (signature_missing_count) も
 (multi-agent 構成で thought signature が伝播せず 400 になる回帰を検知するため)。
 
 ジョブは (variant, env, task, run) の直交。収集セル計画 (_CELL_ENVS) は single_flat を 3 環境、
-他 3 バリアントを CLEAN/CONFUSABLE の 2 環境で回す計 9 セル。record に variant/env/cell/
+他 4 バリアントを CLEAN/CONFUSABLE の 2 環境で回す計 11 セル。record に variant/env/cell/
 tool_order_seed を残し、集計は cell (variant×env) 単位で行う。
 
 Usage:
-    # V-1 smoke (9 セル × 代表 3 タスク × 1 run)
+    # V-1 smoke (11 セル × 代表 3 タスク × 1 run)
     GOOGLE_CLOUD_PROJECT=<proj> uv run python eval/run_eval.py --smoke --tag _smoke
-    # 本番 (9 セル × 16 タスク × runs=8)
+    # 本番 (11 セル × 16 タスク × runs=8)
     GOOGLE_CLOUD_PROJECT=<proj> uv run python eval/run_eval.py --runs 8 --tag _main
     # 絞り込み (バリアント/環境/タスク)
     uv run python eval/run_eval.py --variants single_flat --envs clean --tasks A1 C1
@@ -59,13 +59,14 @@ load_dotenv()
 USER_ID = "eval"
 APP_NAME = "adk_agent_composition_lab"
 
-# 収集セル計画: single_flat は 3 環境で劣化曲線を引き、他 3 バリアントは CLEAN と CONFUSABLE の
-# 両端で比較する (計 9 セル)。DISTINCT の中間点は single_flat のみで測る。
+# 収集セル計画: single_flat は 3 環境で劣化曲線を引き、他 4 バリアントは CLEAN と CONFUSABLE の
+# 両端で比較する (計 11 セル)。DISTINCT の中間点は single_flat のみで測る。
 _CELL_ENVS: dict[str, list[str]] = {
     "single_flat": [CLEAN, DISTINCT, CONFUSABLE],
     "single_skills": [CLEAN, CONFUSABLE],
     "multi_agenttool": [CLEAN, CONFUSABLE],
     "multi_transfer": [CLEAN, CONFUSABLE],
+    "workflow_graph": [CLEAN, CONFUSABLE],
 }
 # smoke (V-1) 用の代表タスク: A (単純 lookup) / C (confusable 罠) / E (捏造) を 1 本ずつ。
 _SMOKE_TASKS = ["A1", "C1", "E1"]
@@ -397,7 +398,7 @@ def main() -> None:
     p.add_argument("--concurrency", type=int, default=4)
     p.add_argument("--tag", default=None, help="出力ファイル名のサフィックス (例: _main)")
     p.add_argument("--smoke", action="store_true",
-                   help="V-1 smoke: 9 セル × 代表 3 タスク (A1/C1/E1) × 1 run に絞る")
+                   help="V-1 smoke: 11 セル × 代表 3 タスク (A1/C1/E1) × 1 run に絞る")
     p.add_argument("--resume", action="store_true",
                    help="checkpoint (results_<tag>.checkpoint.jsonl) の完了済みジョブを"
                         "スキップして再開 (error record も完了扱い = 自動再実行しない)")
