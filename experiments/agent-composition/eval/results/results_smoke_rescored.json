@@ -23,10 +23,10 @@
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
@@ -36,16 +36,42 @@
       "llm_calls": 8,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "E1": 1.0,
         "A1": 1.0,
-        "C1": 1.0
+        "C1": 0.0
       }
     },
     "single_flat@distinct": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.3333333333333333,
+      "pass_ci": [
+        0.0614903152761605,
+        0.7923450448735121
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 6735.333333333333,
+      "latency": 8.843748680471132,
+      "tool_calls": 6,
+      "llm_calls": 5,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 0.0
+      },
+      "by_task": {
+        "C1": 0.0,
+        "A1": 1.0,
+        "E1": 0.0
+      }
+    },
+    "single_flat@confusable": {
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
@@ -56,44 +82,18 @@
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
-      "tokens": 6735.333333333333,
-      "latency": 8.843748680471132,
-      "tool_calls": 6,
-      "llm_calls": 5,
-      "by_category": {
-        "A": 1.0,
-        "C": 1.0,
-        "E": 0.0
-      },
-      "by_task": {
-        "C1": 1.0,
-        "A1": 1.0,
-        "E1": 0.0
-      }
-    },
-    "single_flat@confusable": {
-      "n": 3,
-      "n_ok": 3,
-      "n_error": 0,
-      "pass_rate": 1.0,
-      "pass_ci": [
-        0.43849391955098227,
-        1.0
-      ],
-      "route_ok_rate": 0.6666666666666666,
-      "refusal_rate": 0.0,
       "tokens": 11133.666666666666,
       "latency": 11.626626541217169,
       "tool_calls": 6.333333333333333,
       "llm_calls": 7.333333333333333,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "A1": 1.0,
-        "C1": 1.0,
+        "C1": 0.0,
         "E1": 1.0
       }
     },
@@ -101,10 +101,10 @@
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
@@ -114,11 +114,11 @@
       "llm_calls": 9,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
-        "C1": 1.0,
+        "C1": 0.0,
         "E1": 1.0,
         "A1": 1.0
       }
@@ -127,10 +127,10 @@
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
@@ -140,12 +140,12 @@
       "llm_calls": 9.333333333333334,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "A1": 1.0,
-        "C1": 1.0,
+        "C1": 0.0,
         "E1": 1.0
       }
     },
@@ -153,10 +153,10 @@
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
@@ -166,23 +166,23 @@
       "llm_calls": 6.333333333333333,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "E1": 1.0,
         "A1": 1.0,
-        "C1": 1.0
+        "C1": 0.0
       }
     },
     "multi_agenttool@confusable": {
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 1.0,
       "refusal_rate": 0.0,
@@ -192,12 +192,12 @@
       "llm_calls": 6.333333333333333,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "A1": 1.0,
-        "C1": 1.0,
+        "C1": 0.0,
         "E1": 1.0
       }
     },
@@ -205,10 +205,10 @@
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
@@ -218,23 +218,23 @@
       "llm_calls": 6,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "E1": 1.0,
         "A1": 1.0,
-        "C1": 1.0
+        "C1": 0.0
       }
     },
     "multi_transfer@confusable": {
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 1.0,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.43849391955098227,
-        1.0
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 1.0,
       "refusal_rate": 0.0,
@@ -244,12 +244,12 @@
       "llm_calls": 5.666666666666667,
       "by_category": {
         "A": 1.0,
-        "C": 1.0,
+        "C": 0.0,
         "E": 1.0
       },
       "by_task": {
         "A1": 1.0,
-        "C1": 1.0,
+        "C1": 0.0,
         "E1": 1.0
       }
     }
@@ -294,7 +294,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -367,7 +367,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -1285,7 +1285,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -1412,7 +1412,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -1486,7 +1486,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -1496,7 +1496,7 @@
       ],
       "route_ok": true,
       "trap_hit": true,
-      "trap_fatal": false,
+      "trap_fatal": true,
       "offtask_calls": 3,
       "fabricated": false,
       "selection": "wrong_tool",
@@ -1554,7 +1554,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -1921,7 +1921,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -2233,7 +2233,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"
@@ -2498,7 +2498,7 @@
       "cached_tokens": 0,
       "signature_missing_count": 0,
       "signature_400": false,
-      "passed": true,
+      "passed": false,
       "refused": false,
       "families": [
         "bq"

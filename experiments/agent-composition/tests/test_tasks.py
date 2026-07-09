@@ -56,6 +56,14 @@ def test_gt_derived_from_fixtures():
     assert abs(GT["inc42_day_revenue"] - 54426.0) < 1.0
     # 障害期間売上 < 6月全体売上 (判別力の前提)。
     assert GT["dip_revenue"] < GT["june_revenue"]
+    # 硬化タスク用の多段導出 GT (税抜 floor・前週同曜日比の減少額)。
+    assert abs(GT["june_net_floor"] - 7291196.0) < 1.0   # C1: floor(june/1.1)
+    assert abs(GT["dip_net_floor"] - 212912.0) < 1.0     # B3: floor(dip/1.1)
+    assert abs(GT["prior_week_revenue"] - 789389.0) < 1.0
+    assert abs(GT["dip_vs_prior_delta"] - 555185.0) < 1.0  # B1: 前週(6/17-19) - 障害期間(6/24-26)
+    # 税抜 < 税込 (÷1.1 が効いている)、減少額 > 0 (落ち込みが実在)。
+    assert GT["dip_net_floor"] < GT["dip_revenue"]
+    assert GT["dip_vs_prior_delta"] > 0
 
 
 # --------------------------------------------------------------------------- #
@@ -72,10 +80,33 @@ def test_a_lookup_correct_and_wrong():
     assert not _check("A4", "v2.4.0 がデプロイされました")  # 1 件のみ (>=2 不足)
 
 
-def test_b3_revenue_terse_correct_and_wrong():
-    # terse-correct: 正解値のみ簡潔に。
-    assert _check("B3", "234,204円です")
-    # gaming/wrong: もっともらしいが違う金額 (naive 全期間や別集計)。
+_BOTH = ["bq_query", "slack_read_channel"]  # {bq, slack} family を満たす合成 trajectory
+
+
+def test_b1_prior_week_delta_correct_and_wrong():
+    # terse-correct: 減少額 (555,185) + 原因 + 両ドメイン。
+    assert _check("B1", "前週同曜日(6/17-19)比で 555,185円 減少。原因は INC-42 の決済障害です", _BOTH)
+    # gaming: 障害期間の売上 (234,204) だけ答え、減少額を出さない → fail。
+    assert not _check("B1", "障害期間の完了売上は 234,204円 でした。INC-42 が原因です", _BOTH)
+    # gaming: 減少額は正しいがツール未使用 (family 不足) → fail。
+    assert not _check("B1", "555,185円 減少しました。INC-42 が原因です", [])
+
+
+def test_b2_incident_revenue_correct_and_wrong():
+    # terse-correct: 障害期間の完了売上 (税込 234,204) + 障害特定 + 影響。
+    assert _check("B2", "v2.4.0 後の INC-42 障害期間の完了売上は 234,204円 で、売上に影響が出ました", _BOTH)
+    # gaming: 税抜値 (212,912) を答える (税込を求めている) → fail。
+    assert not _check("B2", "INC-42 障害期間の売上は 212,912円 の影響でした", _BOTH)
+    # gaming: 数値はあるが障害を特定していない (INC/決済 なし) → fail。
+    assert not _check("B2", "その期間の完了売上は 234,204円 で影響がありました", _BOTH)
+
+
+def test_b3_net_sales_correct_and_wrong():
+    # terse-correct: 税抜純売上 (floor(dip/1.1) = 212,912)。
+    assert _check("B3", "税抜純売上は 212,912円 です")
+    # gaming: ÷1.1 を忘れた税込値 (234,204) → fail。
+    assert not _check("B3", "障害期間の完了売上は 234,204円 です")
+    # gaming: もっともらしいが違う金額 (別集計) → fail。
     assert not _check("B3", "障害期間の売上影響は約20万円規模でした")
 
 
@@ -89,10 +120,12 @@ def test_b4_date_boundary_gaming():
 
 
 def test_c1_confusable_report_trap():
-    # 正解 (bq で test 除外) = 8,020,316。
-    assert _check("C1", "テストを除いた6月の完了売上は 8,020,316円 です")
-    # gaming: portal_run_report の naive 値 (test/キャンセル込み 16,163,128) → fail。
+    # 正解 (bq で test/キャンセル除外 + 税抜 floor) = floor(june/1.1) = 7,291,196。
+    assert _check("C1", "税抜純売上（テスト/キャンセル除外）は 7,291,196円 です")
+    # gaming: portal_run_report の naive 値 (test/キャンセル込み・税込 16,163,128) → fail。
     assert not _check("C1", "レポートによると6月の売上合計は 16,163,128円 です")
+    # gaming: ÷1.1 を忘れた税込の除外後値 (8,020,316) → fail。
+    assert not _check("C1", "テスト/キャンセルを除いた6月の売上は 8,020,316円 です")
 
 
 def test_c2_confusable_archive_trap():
@@ -172,8 +205,8 @@ def test_trap_hit_and_fatal_on_portal():
 
 def test_trap_hit_but_recovered_is_not_fatal():
     c1 = TASKS_BY_ID["C1"]
-    # portal も呼んだが最終的に正解 → trap_hit だが trap_fatal=False。誤選択信号は wrong_tool。
-    rec = score_record(c1, "正しくは 8,020,316円 です", ["bq_query", "portal_run_report"])
+    # portal も呼んだが最終的に正解 (税抜 floor 7,291,196) → trap_hit だが trap_fatal=False。
+    rec = score_record(c1, "正しくは税抜で 7,291,196円 です", ["bq_query", "portal_run_report"])
     assert rec["passed"] is True
     assert rec["trap_hit"] is True
     assert rec["trap_fatal"] is False

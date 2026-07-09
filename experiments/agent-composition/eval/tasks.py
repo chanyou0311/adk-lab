@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import unicodedata
 from collections.abc import Callable
@@ -59,6 +60,11 @@ def _compute_gt() -> dict:
     dip_revenue = con.execute(
         f"SELECT SUM(amount) FROM orders WHERE order_date BETWEEN '2026-06-24' AND '2026-06-26' AND {valid}"
     ).fetchone()[0]
+    # 前週の同じ曜日 (6/17-19 = Wed/Thu/Fri、6/24-26 と同曜日) の完了売上。B1 の「同曜日比較で
+    # どれだけ減ったか」の基準。dip_vs_prior_delta = 減少額 (前週 - 障害期間)。
+    prior_week_revenue = con.execute(
+        f"SELECT SUM(amount) FROM orders WHERE order_date BETWEEN '2026-06-17' AND '2026-06-19' AND {valid}"
+    ).fetchone()[0]
     worst = con.execute(
         f"SELECT order_date, SUM(amount) d FROM orders WHERE {valid} "
         "GROUP BY order_date ORDER BY d ASC, order_date ASC LIMIT 1"
@@ -80,7 +86,11 @@ def _compute_gt() -> dict:
         "orders_0610": int(orders_0610),
         "max_dau": int(max_dau),
         "june_revenue": float(june_revenue),
+        "june_net_floor": float(math.floor(june_revenue / 1.1)),  # 税抜 (÷1.1) 円未満切り捨て
         "dip_revenue": float(dip_revenue),
+        "dip_net_floor": float(math.floor(dip_revenue / 1.1)),  # 障害期間の税抜純売上 (切り捨て)
+        "prior_week_revenue": float(prior_week_revenue),
+        "dip_vs_prior_delta": float(prior_week_revenue - dip_revenue),  # 前週同曜日比の減少額
         "worst_day": worst_day,
         "worst_day_revenue": float(worst[1]),
         "inc42_first": inc42_first,
@@ -336,30 +346,44 @@ TASKS: list[Task] = [
     Task("A4", "A", ["2026年6月に #releases で告知されたリリースのバージョンを挙げて"], SLACK_TOOLS,
          lambda t, tc, gt, r: sum(1 for v in _RELEASE_VERSIONS if v in t) >= 2),
 
-    # --- B: クロスドメイン統合 (bq + slack。中難度) ---
-    Task("B1", "B", ["2026年6月下旬に売上が落ち込んでいないか確認し、落ちていればその原因を障害情報から説明して"],
+    # --- B: クロスドメイン統合 (bq + slack。多段導出で難度を稼ぐ。不正直な罠は無し) ---
+    # B1: 落ち込みの確認 + 前週同曜日 (6/17-19) 比の減少額 (円) を要求 = 2 期間の集計 + 差分。
+    Task("B1", "B",
+         ["2026年6月下旬（6/24-26）に売上が落ち込んでいないか確認し、落ちていればその原因を障害情報から説明して。"
+          "あわせて、その3日間の完了売上合計が前週の同じ曜日（6/17-19）と比べて何円減ったかを数字で示して"],
          BQ_TOOLS | SLACK_TOOLS,
          lambda t, tc, gt, r: (
              {"bq", "slack"} <= called_families(tc)
-             and any(s in t for s in ["下旬", "6/24", "6/25", "6/26", "6月24", "6月25", "6月26", "落ち込", "減少"])
+             and answer_contains_number(t, gt["dip_vs_prior_delta"], rel_tol=0.01)
              and ("INC-42" in _up(t) or "決済" in t or "チェックアウト" in t))),
-    Task("B2", "B", ["v2.4.0 のデプロイ後に起きた障害を特定し、その障害期間の売上への影響を数字を挙げて説明して"],
+    # B2: v2.4.0 デプロイ → 障害特定 → その期間の完了売上合計 (税込) を具体値で要求。
+    Task("B2", "B",
+         ["v2.4.0 のデプロイ後に起きた障害を特定し、その障害が発生していた期間の完了注文の売上合計（税込）を"
+          "数字で示して、ビジネス影響を説明して"],
          BQ_TOOLS | SLACK_TOOLS,
          lambda t, tc, gt, r: (
              {"bq", "slack"} <= called_families(tc)
-             and _has_number(t) and ("INC-42" in _up(t) or "決済" in t)
-             and ("売上" in t or "注文" in t or "影響" in t))),
-    Task("B3", "B", ["INC-42 の障害が発生していた期間の、完了注文の売上合計はいくらですか？"],
+             and answer_contains_number(t, gt["dip_revenue"], rel_tol=0.01)
+             and ("INC-42" in _up(t) or "決済" in t)
+             and ("影響" in t or "売上" in t or "v2.4.0" in t))),
+    # B3: 障害期間の税抜純売上 (÷1.1・テスト除外・円未満切り捨て) = 期間特定 + 集計 + 税抜換算 + 端数処理。
+    Task("B3", "B",
+         ["INC-42 の障害が発生していた期間について、完了注文（テスト注文は除く）の税抜純売上"
+          "（税込金額の合計を1.1で割った額、円未満切り捨て）の合計を教えて"],
          BQ_TOOLS | SLACK_TOOLS,
-         lambda t, tc, gt, r: answer_contains_number(t, gt["dip_revenue"], rel_tol=0.01)),
+         lambda t, tc, gt, r: answer_contains_number(t, gt["dip_net_floor"], rel_tol=0.01)),
     Task("B4", "B", ["2026年6月で最も売上が落ち込んだ日を特定し、その日に #support に届いていた顧客の苦情キーワードを答えて"],
          BQ_TOOLS | SLACK_TOOLS,
          lambda t, tc, gt, r: answer_contains_date(t, gt["worst_day"]) and "決済" in t),
 
     # --- C: confusable 罠 (質問語彙を portal の description に寄せる。CLEAN では成立、CONFUSABLE で罠) ---
-    # C1: 「レポート」→ portal_run_report が完璧に見えるが、テスト込み集計で値が違う。正解=bq で test 除外。
-    Task("C1", "C", ["テスト注文を除いた2026年6月の完了売上の合計を、レポートとしてまとめて教えて"], BQ_TOOLS,
-         lambda t, tc, gt, r: answer_contains_number(t, gt["june_revenue"], rel_tol=0.01)),
+    # C1: 「レポート」→ portal_run_report が完璧に見えるが naive 集計 (テスト/キャンセル込み・税込)。
+    # 正解 = bq で test/キャンセル除外 + 税抜 (÷1.1) 切り捨て。portal の naive 値 (16.16M) との乖離も
+    # 広がり (正解 7.29M) 罠の判別力が上がる。
+    Task("C1", "C",
+         ["テスト注文とキャンセル注文を除いた2026年6月の売上について、税抜純売上"
+          "（税込合計を1.1で割った額、円未満切り捨て）の合計をレポートとしてまとめて教えて"], BQ_TOOLS,
+         lambda t, tc, gt, r: answer_contains_number(t, gt["june_net_floor"], rel_tol=0.01)),
     # C2: 「過去のメッセージを横断検索」→ portal_search_archive が候補に見えるが 30 日制限で INC-42 が漏れる。
     Task("C2", "C", ["過去のメッセージを横断検索して、INC-42 の最初の報告がいつだったか特定して"], SLACK_TOOLS,
          lambda t, tc, gt, r: answer_contains_date(t, gt["inc42_first"]) and "INC-42" in _up(t)),
