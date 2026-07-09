@@ -15,11 +15,17 @@ Gemini 3 (thinking) 向けに、thoughts / tool-use-prompt / cached の各トー
 function_call part の thought_signature 欠落数 (signature_missing_count) も計測する
 (multi-agent 構成で thought signature が伝播せず 400 になる回帰を検知するため)。
 
-NOTE: バリアント (VARIANTS) とタスク (TASKS) は後続作業で追加する。scaffold 時点では
-両者とも空なので、このモジュールは import は通るが実行しても 0 cell になる。
+ジョブは (variant, env, task, run) の直交。収集セル計画 (_CELL_ENVS) は single_flat を 3 環境、
+他 3 バリアントを CLEAN/CONFUSABLE の 2 環境で回す計 9 セル。record に variant/env/cell/
+tool_order_seed を残し、集計は cell (variant×env) 単位で行う。
 
-Usage (バリアント/タスク追加後):
-    GOOGLE_CLOUD_PROJECT=<proj> uv run python eval/run_eval.py --runs 8 --tag _smoke
+Usage:
+    # V-1 smoke (9 セル × 代表 3 タスク × 1 run)
+    GOOGLE_CLOUD_PROJECT=<proj> uv run python eval/run_eval.py --smoke --tag _smoke
+    # 本番 (9 セル × 16 タスク × runs=8)
+    GOOGLE_CLOUD_PROJECT=<proj> uv run python eval/run_eval.py --runs 8 --tag _main
+    # 絞り込み (バリアント/環境/タスク)
+    uv run python eval/run_eval.py --variants single_flat --envs clean --tasks A1 C1
 """
 
 from __future__ import annotations
@@ -44,6 +50,7 @@ sys.path.insert(0, str(EVAL_DIR))
 from report import aggregate, render_markdown  # noqa: E402
 from tasks import TASKS, score_record  # noqa: E402
 
+from lab.environments import CLEAN, CONFUSABLE, DISTINCT, ENVIRONMENTS  # noqa: E402
 from lab.model import MODEL  # noqa: E402
 from lab.variants import VARIANTS  # noqa: E402
 
@@ -51,6 +58,17 @@ load_dotenv()
 
 USER_ID = "eval"
 APP_NAME = "adk_agent_composition_lab"
+
+# 収集セル計画: single_flat は 3 環境で劣化曲線を引き、他 3 バリアントは CLEAN と CONFUSABLE の
+# 両端で比較する (計 9 セル)。DISTINCT の中間点は single_flat のみで測る。
+_CELL_ENVS: dict[str, list[str]] = {
+    "single_flat": [CLEAN, DISTINCT, CONFUSABLE],
+    "single_skills": [CLEAN, CONFUSABLE],
+    "multi_agenttool": [CLEAN, CONFUSABLE],
+    "multi_transfer": [CLEAN, CONFUSABLE],
+}
+# smoke (V-1) 用の代表タスク: A (単純 lookup) / C (confusable 罠) / E (捏造) を 1 本ずつ。
+_SMOKE_TASKS = ["A1", "C1", "E1"]
 _MAX_ATTEMPTS = 3
 _BACKOFF = [5, 15]  # seconds before retry attempt 2 / 3 (最終試行後は sleep しない)
 # 一時的エラーの部分一致マーカー (照合は小文字化して行う)。
@@ -158,15 +176,15 @@ def _zero_metrics() -> dict:
     }
 
 
-async def _run_once(variant: str, prompts: list[str]) -> dict:
+async def _run_once(variant: str, env: str, prompts: list[str], seed: int) -> dict:
     """1 ジョブを実行する。マルチターンは同一 session を turn 間で共有する。
 
-    session を turn ごとに作り直さないのが要点 — turn 2 は turn 1 の結果を参照するので、
-    session を使い回すことで AgentTool の文脈喪失 (sub-agent が前 turn の文脈を持たない) を
-    露出させる。全 turn の最終応答を turns に残し、採点は最終 turn (final) で行う。tool_names は
-    全 turn を通した順序付き trajectory (Plugin が累積)。
+    variant を env でツール環境化し、seed で提示順を run 毎シャッフルして構築する。session を turn
+    ごとに作り直さないのが要点 — turn 2 は turn 1 の結果を参照するので、session を使い回すことで
+    AgentTool の文脈喪失 (sub-agent が前 turn の文脈を持たない) を露出させる。全 turn の最終応答を
+    turns に残し、採点は最終 turn (final) で行う。tool_names は全 turn を通した順序付き trajectory。
     """
-    root = VARIANTS[variant]()
+    root = VARIANTS[variant](env, seed)
     plugin = MetricsPlugin()
     app = App(name=APP_NAME, root_agent=root, plugins=[plugin])
     runner = InMemoryRunner(app=app)
@@ -212,12 +230,12 @@ async def _run_once(variant: str, prompts: list[str]) -> dict:
     }
 
 
-async def _eval_one(variant: str, task, run_index: int, sem: asyncio.Semaphore) -> dict:
+async def _eval_one(variant: str, env: str, task, run_index: int, sem: asyncio.Semaphore) -> dict:
     async with sem:
         metrics: dict = {}
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             try:
-                metrics = await _run_once(variant, task.prompts)
+                metrics = await _run_once(variant, env, task.prompts, run_index)
                 break
             except Exception as exc:  # noqa: BLE001
                 if attempt < _MAX_ATTEMPTS and _is_transient(exc):
@@ -234,27 +252,42 @@ async def _eval_one(variant: str, task, run_index: int, sem: asyncio.Semaphore) 
         metrics.update(
             score_record(task, metrics["final"], metrics["tool_names"], metrics.get("error"))
         )
-        # run_index は環境のツール提示順 shuffle の seed (environments.shuffle_tools) に使う値。
-        # raw record に残すことで、どの提示順で得た結果かを後から再現できる。
-        metrics.update({"variant": variant, "task_id": task.id, "category": task.category,
-                        "run_index": run_index})
+        # tool_order_seed = run_index。提示順 shuffle (environments) の seed であり、raw record に
+        # 残すことでどの提示順で得た結果かを後から再現できる。cell は (variant,env) の集計キー。
+        metrics.update({"variant": variant, "env": env, "cell": f"{variant}@{env}",
+                        "task_id": task.id, "category": task.category,
+                        "run_index": run_index, "tool_order_seed": run_index})
         return metrics
 
 
+def _planned_cells(variant_filter: list[str] | None, env_filter: list[str] | None) -> list[tuple[str, str]]:
+    """収集セル (variant, env) の一覧を計画から生成し、CLI フィルタで絞る。"""
+    cells = [(v, e) for v, envs in _CELL_ENVS.items() for e in envs]
+    if variant_filter:
+        cells = [(v, e) for (v, e) in cells if v in variant_filter]
+    if env_filter:
+        cells = [(v, e) for (v, e) in cells if e in env_filter]
+    return cells
+
+
 async def _main_async(args) -> None:
-    variants = args.variants or list(VARIANTS)
-    tasks = [t for t in TASKS if not args.tasks or t.id in args.tasks]
+    cells = _planned_cells(args.variants, args.envs)
+    task_filter = _SMOKE_TASKS if args.smoke else args.tasks
+    runs = 1 if args.smoke else args.runs
+    tasks = [t for t in TASKS if not task_filter or t.id in task_filter]
     task_ids = [t.id for t in tasks]
     categories = sorted({t.category for t in tasks})
+    cell_labels = [f"{v}@{e}" for (v, e) in cells]
     sem = asyncio.Semaphore(args.concurrency)
 
-    jobs = [_eval_one(v, t, run_idx, sem)
-            for v in variants for t in tasks for run_idx in range(args.runs)]
+    jobs = [_eval_one(v, e, t, run_idx, sem)
+            for (v, e) in cells for t in tasks for run_idx in range(runs)]
     total = len(jobs)
-    print(f"running {total} cells (variants={variants}, tasks={task_ids}, "
-          f"runs={args.runs}, concurrency={args.concurrency}, model={MODEL})", flush=True)
+    mode = "SMOKE " if args.smoke else ""
+    print(f"running {mode}{total} jobs ({len(cells)} cells={cell_labels}, tasks={task_ids}, "
+          f"runs={runs}, concurrency={args.concurrency}, model={MODEL})", flush=True)
     if total == 0:
-        print("no cells to run — VARIANTS が空 (バリアント未実装) か、tasks フィルタが全除外。")
+        print("no jobs to run — cells が空 (variant/env フィルタが全除外) か、tasks フィルタが全除外。")
         return
 
     records: list[dict] = []
@@ -266,18 +299,21 @@ async def _main_async(args) -> None:
         if done % 5 == 0 or done == total:
             print(f"  [{done}/{total}]", flush=True)
 
-    summary = aggregate(records, variants, categories)
+    # 集計は cell 単位 (variant×env)。report.py は "variant" フィールドで群化するので、cell を
+    # その位置に写した浅いコピーで集計する (raw records は variant/env/cell を別々に保持)。
+    cell_records = [{**r, "variant": r["cell"]} for r in records]
+    summary = aggregate(cell_records, cell_labels, categories)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    suffix = args.tag or ""
+    suffix = args.tag or ("_smoke" if args.smoke else "")
     (RESULTS_DIR / f"results{suffix}.json").write_text(
         json.dumps(
-            {"model": MODEL, "runs": args.runs, "variants": variants, "task_ids": task_ids,
+            {"model": MODEL, "runs": runs, "cells": cell_labels, "task_ids": task_ids,
              "summary": summary, "records": records},
             ensure_ascii=False, indent=2,
         ),
         encoding="utf-8",
     )
-    md = render_markdown(summary, variants, task_ids, categories, args.runs, MODEL)
+    md = render_markdown(summary, cell_labels, task_ids, categories, runs, MODEL)
     (RESULTS_DIR / f"RESULTS{suffix}.md").write_text(md, encoding="utf-8")
     print("\n" + md)
 
@@ -287,12 +323,15 @@ async def _main_async(args) -> None:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Cross-variant agent-composition eval.")
+    p = argparse.ArgumentParser(description="Cross-variant×env agent-composition eval.")
     p.add_argument("--variants", nargs="*", choices=sorted(VARIANTS))
+    p.add_argument("--envs", nargs="*", choices=list(ENVIRONMENTS))
     p.add_argument("--tasks", nargs="*")
     p.add_argument("--runs", type=int, default=8)
     p.add_argument("--concurrency", type=int, default=4)
-    p.add_argument("--tag", default=None, help="出力ファイル名のサフィックス (例: _smoke)")
+    p.add_argument("--tag", default=None, help="出力ファイル名のサフィックス (例: _main)")
+    p.add_argument("--smoke", action="store_true",
+                   help="V-1 smoke: 9 セル × 代表 3 タスク (A1/C1/E1) × 1 run に絞る")
     asyncio.run(_main_async(p.parse_args()))
 
 

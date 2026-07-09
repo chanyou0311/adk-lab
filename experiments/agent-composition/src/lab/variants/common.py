@@ -49,3 +49,39 @@ SUBAGENT_PERSONA = (
     "You are a specialist sub-agent for an online store team. Answer the caller's question "
     "concisely in Japanese, grounding every answer in data you fetch with your tools."
 )
+
+# multi_* (AgentTool / transfer) の root に置く汎用ルーティング指針。ドメイン別 sub-agent の
+# description を頼りに委譲させる。ROUTING_GUIDANCE (data_analyst/comms_analyst 固有) と違い
+# ドメイン非依存。
+MULTI_ROUTING_GUIDANCE = (
+    "You have specialist sub-agents, one per domain. Delegate each question to the sub-agent "
+    "whose domain fits it. For cross-domain questions, consult multiple sub-agents and "
+    "synthesize the answer yourself. Do not answer data questions without consulting the "
+    "relevant specialist."
+)
+
+# ドメイン別の説明 (single_skills の Skill frontmatter description と multi_* の sub-agent
+# description に共用)。single_skills では list_skills / load_skill の判断材料、multi_* では
+# ルーティングの判断材料になる。portal は gold (bq/slack) と語彙を重ねて confusable にする
+# — 「レポート集計」「カタログで列確認」は bq と、「メッセージ横断検索」「ダイジェスト」は
+# slack と被せる (返すデータのスコープが違う罠は各ツールの docstring 側にある)。
+DOMAIN_DESCRIPTIONS = {
+    "bq": (
+        "オンラインストアのデータウェアハウス (注文・売上・DAU などのテーブル) を SQL で照会する。"
+        "売上集計・注文件数・カラム構成の確認に使う。"
+    ),
+    "slack": (
+        "社内 Slack のメッセージを読む・横断検索する。#alerts の障害 (INC) 通知、#releases の"
+        "リリース、#support の顧客苦情の確認に使う。"
+    ),
+    "billing": (
+        "決済ドメイン (課金 charge・請求書 invoice・返金 refund) のデータを期間指定で照会する。"
+    ),
+    "oncall": (
+        "オンコール当番表・日次シフト・インシデント対応担当を照会する。"
+    ),
+    "portal": (
+        "社内ポータルの横断参照。月次レポートの集計、データカタログでの列確認、過去メッセージの"
+        "アーカイブ検索、チャンネルのダイジェスト要約、グループ一覧をまとめて扱う。"
+    ),
+}

@@ -354,7 +354,7 @@ TASKS: list[Task] = [
          lambda t, tc, gt, r: answer_contains_number(t, gt["inc42_day_revenue"], rel_tol=0.01)),
 
     # --- E: irrelevance (どのツールでも答えられない社内質問。捏造しないのが正解) ---
-    Task("E1", "E", ["先月（2025年5月）に新しく採用したメンバーは何人ですか？"], frozenset(),
+    Task("E1", "E", ["先月（2026年5月）に新しく採用したメンバーは何人ですか？"], frozenset(),
          lambda t, tc, gt, r: _states_inability(t) and not _e_fabricated(t)),
     Task("E2", "E", ["オフィスの入退室ログで、6月に最も遅くまで残っていたのは誰ですか？"], frozenset(),
          lambda t, tc, gt, r: _states_inability(t) and not _e_fabricated(t)),

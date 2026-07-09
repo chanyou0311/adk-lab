@@ -9,13 +9,19 @@
 ツールに知識は載せない (rich=False)。本実験の変数はエージェント構成と環境であって知識配置ではない
 (知識配置は knowledge-placement 実験で扱う)。
 
-ツール提示順は run ごとに seeded shuffle する (位置バイアスを run 間で平均化)。``shuffle_tools`` は
-決定的 (同じ seed → 同じ順序) で、使用 seed は呼び出し側 (run_eval) が raw record に残す。
+環境はドメイン単位 (bq/slack/billing/oncall/portal) で構成する。バリアント (single_flat/
+single_skills/multi_*) は ``domains_for_env`` / ``make_domain_tools`` を使ってツールを組み立てる
+(single_skills は 1 ドメイン=1 skill、multi_* は 1 ドメイン=1 sub-agent)。
+
+提示順 (single_flat のツール順、multi_*/single_skills のドメイン順) は run ごとに seeded shuffle
+する (位置バイアスを run 間で平均化)。``shuffle_tools`` / ``ordered_domains`` は決定的 (同じ seed →
+同じ順序) で、使用 seed は呼び出し側 (run_eval) が raw record (tool_order_seed) に残す。
 """
 
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 
 from .tools import (
     make_billing_tools,
@@ -30,15 +36,36 @@ DISTINCT = "distinct"
 CONFUSABLE = "confusable"
 ENVIRONMENTS = (CLEAN, DISTINCT, CONFUSABLE)
 
+# ドメイン → ツール生成関数。gold (bq/slack) は知識非注入 (rich=False)。
+_DOMAIN_TOOLS: dict[str, Callable[[], list]] = {
+    "bq": lambda: make_bq_tools(rich=False),
+    "slack": lambda: make_slack_tools(rich=False),
+    "billing": make_billing_tools,
+    "oncall": make_oncall_tools,
+    "portal": make_portal_tools,
+}
+# 正準ドメイン順 (gold → distinct domains → portal distractor)。
+DOMAIN_ORDER = ["bq", "slack", "billing", "oncall", "portal"]
+# 各環境に存在するドメイン (正準順)。CONFUSABLE でのみ portal が加わる。
+ENV_DOMAINS: dict[str, list[str]] = {
+    CLEAN: ["bq", "slack"],
+    DISTINCT: ["bq", "slack", "billing", "oncall"],
+    CONFUSABLE: ["bq", "slack", "billing", "oncall", "portal"],
+}
 
-def _gold_tools() -> list:
-    """gold ツール (bq 3 + slack 3)。知識は載せない (rich=False)。"""
-    return [*make_bq_tools(rich=False), *make_slack_tools(rich=False)]
+
+def domains_for_env(env: str) -> list[str]:
+    """環境に存在するドメインの正準順リストを返す。"""
+    if env not in ENV_DOMAINS:
+        raise ValueError(f"unknown environment {env!r}; expected one of {ENVIRONMENTS}")
+    return list(ENV_DOMAINS[env])
 
 
-def _distinct_domains() -> list:
-    """別ドメイン (billing 3 + oncall 3)。tool-overload の「数」を作る。"""
-    return [*make_billing_tools(), *make_oncall_tools()]
+def make_domain_tools(domain: str) -> list:
+    """1 ドメイン分のツール (bq/slack/billing/oncall=3 本、portal=6 本) を新規生成する。"""
+    if domain not in _DOMAIN_TOOLS:
+        raise ValueError(f"unknown domain {domain!r}; expected one of {DOMAIN_ORDER}")
+    return list(_DOMAIN_TOOLS[domain]())
 
 
 def tools_for_env(env: str) -> list:
@@ -47,13 +74,18 @@ def tools_for_env(env: str) -> list:
     正準順序は [gold, distinct domains, portal distractors] の積み上げ。実 run では位置バイアスを
     避けるため shuffle_tools でシャッフルする。
     """
-    if env == CLEAN:
-        return _gold_tools()
-    if env == DISTINCT:
-        return [*_gold_tools(), *_distinct_domains()]
-    if env == CONFUSABLE:
-        return [*_gold_tools(), *_distinct_domains(), *make_portal_tools()]
-    raise ValueError(f"unknown environment {env!r}; expected one of {ENVIRONMENTS}")
+    tools: list = []
+    for domain in domains_for_env(env):
+        tools.extend(make_domain_tools(domain))
+    return tools
+
+
+def ordered_domains(env: str, seed: int | None = None) -> list[str]:
+    """環境のドメイン順を返す。seed 指定時は決定的にシャッフルする (multi_*/single_skills 用)。"""
+    domains = domains_for_env(env)
+    if seed is not None:
+        random.Random(seed).shuffle(domains)
+    return domains
 
 
 def shuffle_tools(tools: list, seed: int) -> list:
