@@ -43,25 +43,30 @@ def _rescore_record(rec: dict) -> dict:
     return out
 
 
-def _pass_counts(records: list[dict]) -> dict[tuple[str, str], list[int]]:
-    """(task_id, variant) → [pass 数, ok 数] を 1 パスで集計する。"""
+def _group_key(records: list[dict]) -> str:
+    """集計群のキー。agent-composition は cell (variant×env)、旧実験は variant。"""
+    return "cell" if any("cell" in r for r in records) else "variant"
+
+
+def _pass_counts(records: list[dict], group_key: str) -> dict[tuple[str, str], list[int]]:
+    """(task_id, group) → [pass 数, ok 数] を 1 パスで集計する。"""
     counts: dict[tuple[str, str], list[int]] = {}
     for r in records:
         if r.get("error"):
             continue
-        cell = counts.setdefault((r["task_id"], r["variant"]), [0, 0])
+        cell = counts.setdefault((r["task_id"], r[group_key]), [0, 0])
         cell[1] += 1
         cell[0] += int(bool(r["passed"]))
     return counts
 
 
-def _task_before_after_table(before: dict, after: dict, task_id: str) -> str:
-    variants = sorted({v for (t, v) in before if t == task_id})
-    lines = [f"| variant | {task_id} before | {task_id} after |", "| --- | --- | --- |"]
-    for v in variants:
-        b = before.get((task_id, v), [0, 0])
-        a = after.get((task_id, v), [0, 0])
-        lines.append(f"| `{v}` | {b[0]}/{b[1]} | {a[0]}/{a[1]} |")
+def _task_before_after_table(before: dict, after: dict, task_id: str, group_label: str) -> str:
+    groups = sorted({g for (t, g) in before if t == task_id})
+    lines = [f"| {group_label} | {task_id} before | {task_id} after |", "| --- | --- | --- |"]
+    for g in groups:
+        b = before.get((task_id, g), [0, 0])
+        a = after.get((task_id, g), [0, 0])
+        lines.append(f"| `{g}` | {b[0]}/{b[1]} | {a[0]}/{a[1]} |")
     return "\n".join(lines)
 
 
@@ -75,23 +80,29 @@ def main() -> None:
     original = data["records"]
     rescored = [_rescore_record(r) for r in original]
 
-    variants = data.get("variants") or sorted({r["variant"] for r in rescored})
+    # 集計群は run_eval と揃える (agent-composition は cell=variant×env)。report.py は "variant"
+    # フィールドで群化するので、group_key を "variant" 位置に写した浅いコピーで集計する。
+    group_key = _group_key(rescored)
+    groups = (data.get("cells") if group_key == "cell" else data.get("variants")) \
+        or sorted({r[group_key] for r in rescored})
     task_ids = data.get("task_ids") or sorted({r["task_id"] for r in rescored})
     categories = sorted({r["category"] for r in rescored})
     runs = data.get("runs", 0)
     model = data.get("model", "")
 
-    summary = aggregate(rescored, variants, categories)
+    group_records = [{**r, "variant": r[group_key]} for r in rescored]
+    summary = aggregate(group_records, groups, categories)
     out_json = RESULTS_DIR / f"results{args.tag}_rescored.json"
+    out_key = "cells" if group_key == "cell" else "variants"
     out_json.write_text(
         json.dumps(
-            {"model": model, "runs": runs, "variants": variants, "task_ids": task_ids,
+            {"model": model, "runs": runs, out_key: groups, "task_ids": task_ids,
              "rescored_from": src.name, "summary": summary, "records": rescored},
             ensure_ascii=False, indent=2,
         ),
         encoding="utf-8",
     )
-    md = render_markdown(summary, variants, task_ids, categories, runs, model)
+    md = render_markdown(summary, groups, task_ids, categories, runs, model)
     md = md.replace(
         "# 知識配置バリアント評価 — 結果",
         f"# 知識配置バリアント評価 — 結果 (再採点: {src.name})",
@@ -110,14 +121,14 @@ def main() -> None:
     print(f"rescored {src.name} -> {out_json.name}")
     print(f"総合 pass: before {kb}/{nb} ({kb / nb * 100:.1f}%)  ->  after {ka}/{na} ({ka / na * 100:.1f}%)")
 
-    before_counts = _pass_counts(original)
-    after_counts = _pass_counts(rescored)
-    changed = sorted({t for (t, v), b in before_counts.items() if b != after_counts.get((t, v))})
+    before_counts = _pass_counts(original, group_key)
+    after_counts = _pass_counts(rescored, group_key)
+    changed = sorted({t for (t, g), b in before_counts.items() if b != after_counts.get((t, g))})
     if not changed:
         print("\n(採点結果に変化のあったタスクはありません)")
     for tid in changed:
-        print(f"\n{tid} before/after (variant 別):")
-        print(_task_before_after_table(before_counts, after_counts, tid))
+        print(f"\n{tid} before/after ({group_key} 別):")
+        print(_task_before_after_table(before_counts, after_counts, tid, group_key))
 
 
 if __name__ == "__main__":

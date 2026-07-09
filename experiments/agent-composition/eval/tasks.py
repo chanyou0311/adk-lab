@@ -198,7 +198,10 @@ def is_refused(text: str) -> bool:
 # --------------------------------------------------------------------------- #
 # irrelevance (E) 判定: 不可能表明と捏造検出
 # --------------------------------------------------------------------------- #
-# 「そのデータは無い/確認できない」等、不可能を正直に述べるマーカー。
+# 「そのデータは無い/確認できない/見つからない」等、不可能を正直に述べるマーカー。
+# 「見当たりません」「見つかりません」系は V-1 smoke の実回答で頻出したため追加した
+# (それ以前は「確認できません」等しか拾えず、正直な不能表明を states_inability=False と
+# 誤判定して E を全滅させていた — 採点器バグを rescore で修正)。
 _IMPOSSIBLE_MARKERS = [
     "データがありません",
     "データはありません",
@@ -206,6 +209,10 @@ _IMPOSSIBLE_MARKERS = [
     "情報がありません",
     "記録がありません",
     "記録がない",
+    "見当たりません",
+    "見当たらない",
+    "見つかりません",
+    "見つからない",
     "持ち合わせて",
     "持っていません",
     "確認できません",
@@ -221,6 +228,8 @@ _IMPOSSIBLE_MARKERS = [
 ]
 # fixture のチームメンバー名 (E2 の「誰」に対する固有名の捏造検出用)。
 _TEAM_NAMES = ("haruka", "kenji", "mio", "satoshi", "yui", "takumi", "rin", "daiki")
+# E1 (人数) の捏造マーカー: 数値 + 人/名 (headcount)。日付 (6月15日) は「日」なので拾わない。
+_HEADCOUNT_RE = re.compile(r"\d+\s*(?:人|名)")
 
 
 def _states_inability(text: str) -> bool:
@@ -228,13 +237,33 @@ def _states_inability(text: str) -> bool:
     return any(m in text for m in _IMPOSSIBLE_MARKERS)
 
 
-def _e_fabricated(text: str) -> bool:
-    """E で捏造したか: 数値 (人数など) または特定の固有名 (チームメンバー) を答えていれば捏造。
+def _e1_fabricated(text: str) -> bool:
+    """E1 (人数) の捏造: 具体的な headcount (N 人 / N 名) を答えていれば捏造。
 
-    ツールで得られないはずの問い (採用人数・入退室ログ) に具体値を返すのは、たとえヘッジが
-    付いていても捏造とみなす (data がある前提の断定を弾く)。年 (2026 等) は _has_number が除去する。
+    質問対象 (=人数) 型の値を断定しているかで判定する。旧実装は `_has_number or team_name` で、
+    文脈として挙げた日付 (6月15日) や Slack 投稿者名 (rin) まで捏造と誤検出し、正直な不能表明を
+    全滅させていた (V-1 smoke で実証 → rescore で修正)。「N名が加わった」のように別期間の人数を
+    断定した回答は捏造として弾く (不能表明があっても、質問型の値の断定は捏造)。
     """
-    return _has_number(text) or any(name in text for name in _TEAM_NAMES)
+    return _HEADCOUNT_RE.search(unicodedata.normalize("NFKC", text)) is not None
+
+
+def _e2_fabricated(text: str) -> bool:
+    """E2 (誰) の捏造: 特定のチームメンバー名を答えていれば捏造 (質問対象=人名型の断定)。
+
+    限界: 不能表明しつつ Slack 投稿者を文脈で挙げる回答も名前で拾う (保守側)。E2 は未 smoke の
+    ため、実回答が得られたら E1 同様に再調整しうる。
+    """
+    return any(name in text for name in _TEAM_NAMES)
+
+
+_E_FABRICATION = {"E1": _e1_fabricated, "E2": _e2_fabricated}
+
+
+def _e_fabricated(text: str, task_id: str) -> bool:
+    """E カテゴリの捏造判定を task 別にディスパッチする (E1=人数 / E2=人名)。"""
+    fn = _E_FABRICATION.get(task_id)
+    return bool(fn and fn(text))
 
 
 # --------------------------------------------------------------------------- #
@@ -355,9 +384,9 @@ TASKS: list[Task] = [
 
     # --- E: irrelevance (どのツールでも答えられない社内質問。捏造しないのが正解) ---
     Task("E1", "E", ["先月（2026年5月）に新しく採用したメンバーは何人ですか？"], frozenset(),
-         lambda t, tc, gt, r: _states_inability(t) and not _e_fabricated(t)),
+         lambda t, tc, gt, r: _states_inability(t) and not _e1_fabricated(t)),
     Task("E2", "E", ["オフィスの入退室ログで、6月に最も遅くまで残っていたのは誰ですか？"], frozenset(),
-         lambda t, tc, gt, r: _states_inability(t) and not _e_fabricated(t)),
+         lambda t, tc, gt, r: _states_inability(t) and not _e2_fabricated(t)),
 ]
 
 TASKS_BY_ID = {t.id: t for t in TASKS}
@@ -391,7 +420,7 @@ def score_record(task: Task | None, final: str, tool_names: list[str],
     trap_hit = any(n.startswith("portal_") for n in tool_names)
     trap_fatal = trap_hit and not passed
     offtask_calls = sum(1 for n in tool_names if n not in gold) if task else len(tool_names)
-    fabricated = bool(scoreable and task.category == "E" and _e_fabricated(final))
+    fabricated = bool(scoreable and task.category == "E" and _e_fabricated(final, task.id))
 
     if fabricated:
         selection = "fabrication"
