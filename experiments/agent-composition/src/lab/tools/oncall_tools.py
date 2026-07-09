@@ -6,11 +6,10 @@ fixture はモジュールロード時に読み込む (欠落/破損なら impor
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
+from ._fixtures import load_fixture
+from .billing_tools import _parse_date  # 日付 parse (非ゼロ埋め対応) を共有
 
-_DATA_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "oncall_data.json"
-_DATA = json.loads(_DATA_PATH.read_text(encoding="utf-8"))  # fail-fast: 欠落/破損で import 時に落とす
+_DATA = load_fixture("oncall_data")
 _SCHEDULES: list[dict] = _DATA["schedules"]
 _SHIFTS: list[dict] = _DATA["shifts"]
 _ASSIGNMENTS: dict[str, dict] = {a["incident_id"]: a for a in _DATA["assignments"]}
@@ -25,7 +24,10 @@ def make_oncall_tools() -> list:
 
     def oncall_get_shift(date: str) -> dict:
         """Get who is on-call on a given date (ISO YYYY-MM-DD)."""
-        hits = [s for s in _SHIFTS if s["date"] == date]
+        target = _parse_date(date)
+        if target is None:
+            return {"status": "error", "error_message": f"invalid date {date!r} (use ISO YYYY-MM-DD)"}
+        hits = [s for s in _SHIFTS if _parse_date(s["date"]) == target]
         if not hits:
             return {"status": "error", "error_message": f"no shift for {date!r}"}
         return {"status": "ok", "date": date, "shifts": hits}

@@ -77,8 +77,8 @@ _TRANSIENT_MARKERS = (
     "deadline", "timeout", "temporarily", "connection", "servererror",
     "serviceunavailable",
 )
-# thought signature 起因の 400 を切り分けるマーカー (照合は小文字化して行う)。
-_SIGNATURE_MARKER = "thought_signature"
+# thought signature 起因の 400 を切り分けるマーカー (照合は小文字化して行う。両表記に対応)。
+_SIGNATURE_MARKERS = ("thought_signature", "thought signature")
 
 
 class MetricsPlugin(BasePlugin):
@@ -100,17 +100,20 @@ class MetricsPlugin(BasePlugin):
         self.tool_use_prompt_tokens = 0
         self.cached_tokens = 0
         self.llm_calls = 0
-        # signature 監査: model ロールの function_call part のうち thought_signature が
-        # 欠落しているものの累積数 (multi-agent で signature が伝播しないと増える)。
-        self.signature_missing_count = 0
+        # signature 監査。各リクエストで欠落した function_call part 数の「リクエスト単位の最大」
+        # (signature_missing_max) と「一度でも欠落したか」(signature_ever_missing) を持つ。全履歴を
+        # 毎リクエスト再走査して累積すると超線形に膨らむため、per-request の値を集約する。
+        self.signature_missing_max = 0
+        self.signature_ever_missing = False
 
     async def before_model_callback(self, *, callback_context, llm_request) -> None:
-        """リクエストに載る履歴を走査し、function_call part の thought_signature 欠落を数える。
+        """送信前 contents を走査し、model ロールの function_call part の thought_signature 欠落を数える。
 
-        Gemini 3 は multi-turn の tool 利用で function_call part の thought_signature を
-        次リクエストへ echo する必要がある。これが欠落すると 400 になりうるため、送信前の
-        contents (model ロールの function_call part) を監査して欠落数を累積する。
+        Gemini 3 は multi-turn の tool 利用で function_call part の thought_signature を次リクエストへ
+        echo する必要がある。欠落すると 400 になりうるため監査する。累積ではなく **このリクエストの
+        欠落数** を取り、per-job の最大と ever フラグに集約する (全履歴を毎回数える二重計上を回避)。
         """
+        missing = 0
         for content in getattr(llm_request, "contents", None) or []:
             if getattr(content, "role", None) != "model":
                 continue
@@ -118,7 +121,11 @@ class MetricsPlugin(BasePlugin):
                 if getattr(part, "function_call", None) is None:
                     continue
                 if getattr(part, "thought_signature", None) is None:
-                    self.signature_missing_count += 1
+                    missing += 1
+        if missing > self.signature_missing_max:
+            self.signature_missing_max = missing
+        if missing > 0:
+            self.signature_ever_missing = True
         return None
 
     async def before_tool_callback(self, *, tool, tool_args, tool_context) -> dict | None:
@@ -152,7 +159,8 @@ def _is_transient(exc: Exception) -> bool:
 
 
 def _is_signature_error(exc: Exception) -> bool:
-    return _SIGNATURE_MARKER in str(exc).lower()
+    msg = str(exc).lower()
+    return any(m in msg for m in _SIGNATURE_MARKERS)
 
 
 def _zero_metrics() -> dict:
@@ -171,7 +179,8 @@ def _zero_metrics() -> dict:
         "thoughts_tokens": 0,
         "tool_use_prompt_tokens": 0,
         "cached_tokens": 0,
-        "signature_missing_count": 0,
+        "signature_missing_max": 0,
+        "signature_ever_missing": False,
         "signature_400": False,
     }
 
@@ -203,7 +212,11 @@ async def _run_once(variant: str, env: str, prompts: list[str], seed: int) -> di
             ):
                 content = getattr(event, "content", None)
                 parts = content.parts if content is not None else None
-                text = "".join(p.text for p in (parts or []) if getattr(p, "text", None))
+                # thought part (推論の途中出力) は最終回答に含めない (採点対象は最終応答テキスト)。
+                text = "".join(
+                    p.text for p in (parts or [])
+                    if getattr(p, "text", None) and not getattr(p, "thought", False)
+                )
                 if event.is_final_response() and text:
                     final = text
             turns.append(final)
@@ -226,7 +239,8 @@ async def _run_once(variant: str, env: str, prompts: list[str], seed: int) -> di
         "thoughts_tokens": plugin.thoughts_tokens,
         "tool_use_prompt_tokens": plugin.tool_use_prompt_tokens,
         "cached_tokens": plugin.cached_tokens,
-        "signature_missing_count": plugin.signature_missing_count,
+        "signature_missing_max": plugin.signature_missing_max,
+        "signature_ever_missing": plugin.signature_ever_missing,
     }
 
 
@@ -250,7 +264,8 @@ async def _eval_one(variant: str, env: str, task, run_index: int, sem: asyncio.S
                 break
 
         metrics.update(
-            score_record(task, metrics["final"], metrics["tool_names"], metrics.get("error"))
+            score_record(task, metrics["final"], metrics["tool_names"], metrics.get("error"),
+                         tool_calls=metrics.get("tool_calls"))
         )
         # tool_order_seed = run_index。提示順 shuffle (environments) の seed であり、raw record に
         # 残すことでどの提示順で得た結果かを後から再現できる。cell は (variant,env) の集計キー。
@@ -299,10 +314,8 @@ async def _main_async(args) -> None:
         if done % 5 == 0 or done == total:
             print(f"  [{done}/{total}]", flush=True)
 
-    # 集計は cell 単位 (variant×env)。report.py は "variant" フィールドで群化するので、cell を
-    # その位置に写した浅いコピーで集計する (raw records は variant/env/cell を別々に保持)。
-    cell_records = [{**r, "variant": r["cell"]} for r in records]
-    summary = aggregate(cell_records, cell_labels, categories)
+    # 集計は cell 単位 (variant×env)。aggregate に group_field="cell" を渡し、詐称コピーを作らない。
+    summary = aggregate(records, cell_labels, categories, group_field="cell")
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     suffix = args.tag or ("_smoke" if args.smoke else "")
     (RESULTS_DIR / f"results{suffix}.json").write_text(

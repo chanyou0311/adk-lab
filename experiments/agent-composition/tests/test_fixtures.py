@@ -11,6 +11,8 @@ from pathlib import Path
 
 import duckdb
 
+from lab.tools.bq_tools import register_warehouse  # DuckDB 登録を bq_tools と 1 本化
+
 ROOT = Path(__file__).resolve().parent.parent
 WAREHOUSE = ROOT / "src" / "lab" / "fixtures" / "warehouse"
 SLACK = ROOT / "src" / "lab" / "fixtures" / "slack_data.json"
@@ -22,21 +24,13 @@ _THR = f"(CASE WHEN plan='pro' OR {_PAY} THEN 4 ELSE 24 END)*3600"
 
 def _tickets() -> duckdb.DuckDBPyConnection:
     con = duckdb.connect(":memory:")
-    con.execute(
-        f"CREATE TABLE t AS SELECT * FROM read_csv("
-        f"'{WAREHOUSE / 'support_tickets.csv'}', header=true, auto_detect=true)"
-    )
+    register_warehouse(con, ["support_tickets"])
     return con
 
 
 def _con() -> duckdb.DuckDBPyConnection:
     con = duckdb.connect(":memory:")
-    con.execute(
-        f"""CREATE TABLE orders AS SELECT * FROM read_csv(
-            '{WAREHOUSE / "orders.csv"}', header=true,
-            columns={{'order_id':'VARCHAR','order_date':'DATE','amount':'BIGINT',
-                      'status':'VARCHAR','is_test':'BOOLEAN','channel':'VARCHAR'}})"""
-    )
+    register_warehouse(con, ["orders"])
     return con
 
 
@@ -106,14 +100,14 @@ def test_support_complaints_have_keywords():
 # --- UC3 (support-sla) F1/F2 GT の健全性 ---
 def test_uc3_violation_count_in_expected_range():
     con = _tickets()
-    n = con.execute(f"SELECT count(*) FROM t WHERE {_LAT} > {_THR}").fetchone()[0]
+    n = con.execute(f"SELECT count(*) FROM support_tickets WHERE {_LAT} > {_THR}").fetchone()[0]
     assert 5 <= n <= 8  # F1 の GT が仕様レンジ内
 
 
 def test_uc3_pro_violations_nonempty():
     con = _tickets()
     ids = [r[0] for r in con.execute(
-        f"SELECT ticket_id FROM t WHERE plan='pro' AND {_LAT} > 4*3600 ORDER BY ticket_id"
+        f"SELECT ticket_id FROM support_tickets WHERE plan='pro' AND {_LAT} > 4*3600 ORDER BY ticket_id"
     ).fetchall()]
     assert len(ids) >= 1  # F2 の GT (pro 違反 ticket_id) が非空
 
@@ -123,7 +117,7 @@ def test_uc3_payment_override_creates_violation():
     # (K8 を知らないと basic=24h 内として見逃す)。
     con = _tickets()
     n = con.execute(
-        f"SELECT count(*) FROM t WHERE plan!='pro' AND {_PAY} "
+        f"SELECT count(*) FROM support_tickets WHERE plan!='pro' AND {_PAY} "
         f"AND {_LAT} > 4*3600 AND {_LAT} < 24*3600"
     ).fetchone()[0]
     assert n >= 1
@@ -199,3 +193,44 @@ def test_portal_archive_excludes_incident_period():
     data = json.loads(PORTAL.read_text(encoding="utf-8"))
     assert data["archive"]  # 非空 (空で誤魔化していない)
     assert all(m["date"] < "2026-06-01" for m in data["archive"])
+
+
+# --------------------------------------------------------------------------- #
+# billing ツールの日付正規化 + 件数上限 (レビュー fix)
+# --------------------------------------------------------------------------- #
+def _billing():
+    from lab.tools import make_billing_tools
+    return make_billing_tools()
+
+
+def test_billing_accepts_non_zero_padded_dates():
+    charges_fn = _billing()[0]
+    # 非ゼロ埋め '2026-6-1'..'2026-6-30' でも 6 月全 charge を拾う。
+    res = charges_fn("2026-6-1", "2026-6-30")
+    assert res["status"] == "ok"
+    assert res["count"] == 362  # 6 月の全 charge 件数
+    # ゼロ埋め表記と同一結果。
+    assert charges_fn("2026-06-01", "2026-06-30")["count"] == 362
+
+
+def test_billing_invalid_date_returns_error():
+    charges_fn = _billing()[0]
+    res = charges_fn("2026/06/01", "2026-06-30")  # ISO でない → parse 不能
+    assert res["status"] == "error"
+
+
+def test_billing_caps_sample_to_50():
+    charges_fn = _billing()[0]
+    res = charges_fn("2026-06-01", "2026-06-30")
+    # count は全件 (362) だが返すサンプルは 50 件上限 (コンテキスト圧迫を防ぐ)。
+    assert res["count"] == 362
+    assert res["returned"] == 50
+    assert len(res["charges"]) == 50
+
+
+def test_oncall_get_shift_accepts_non_zero_padded_date():
+    from lab.tools import make_oncall_tools
+    get_shift = make_oncall_tools()[1]
+    res = get_shift("2026-6-24")  # 非ゼロ埋め
+    assert res["status"] == "ok"
+    assert res["shifts"]

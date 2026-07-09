@@ -1,13 +1,15 @@
-"""バリアント共通の instruction 部品。
+"""バリアント共通の instruction 部品と sub-agent ファクトリ。
 
-知識の *配置* を変える実験なので、instruction の共有骨格 (PERSONA / 役割指示) はここに 1 本化し、
-各バリアントで同期させる。役割の与え方には 2 系統ある:
-- OPEN_MANDATE (役割指示): 「ツールは取得、分析・予測は自分の仕事」と明示する。
-- CLOSED_ENUMERATION: できることをツール用途の列挙で閉じる (役割指示なし)。
-どちらを使うかと知識配置は別変数なので、fat_closed / fat_open で交絡を分離する。
+役割文言 (PERSONA / OPEN_MANDATE) をここに 1 本化し、全バリアント・全 sub-agent で同期させる
+(役割の与え方を統制する)。multi_* の sub-agent 構築も make_domain_subagent に 1 本化する。
 """
 
 from __future__ import annotations
+
+from google.adk.agents import Agent
+
+from ..environments import make_domain_tools
+from ..model import make_generate_config, make_model
 
 # ~3 文。トーン・言語・データ接地の指針。全バリアント共通。
 PERSONA = (
@@ -29,19 +31,6 @@ OPEN_MANDATE = (
     "user. For estimates and forecasts, briefly state your method and key assumptions and "
     "label the result as an estimate, not a guarantee. If data is insufficient, state your "
     "assumptions and give a best-effort bounded estimate rather than refusing."
-)
-
-# 閉じた列挙。ツールの用途を並べるだけで、役割指示を意図的に持たない。
-CLOSED_ENUMERATION = (
-    "You can use the bq tools to look up sales and order data (totals and breakdowns), and "
-    "the slack tools to read team communication (incident notices, support inquiries, "
-    "release notes)."
-)
-
-# subagents バリアントの root に置くルーティング指針。
-ROUTING_GUIDANCE = (
-    "Use data_analyst for warehouse/sales questions, comms_analyst for Slack/incident "
-    "questions; for cross-domain questions call both and synthesize yourself."
 )
 
 # subagents の各スペシャリストが持つ短いロール文 (呼び出し元=root に簡潔に答える)。
@@ -85,3 +74,19 @@ DOMAIN_DESCRIPTIONS = {
         "アーカイブ検索、チャンネルのダイジェスト要約、グループ一覧をまとめて扱う。"
     ),
 }
+
+
+def make_domain_subagent(domain: str) -> Agent:
+    """ドメイン別スペシャリスト sub-agent を構築する (multi_agenttool / multi_transfer で共有)。
+
+    name は f"{domain}_assistant" (naming.DELEGATION_NAMES と一致)。instruction は
+    SUBAGENT_PERSONA + OPEN_MANDATE で役割文言を root と揃える (過剰拒否を抑える)。
+    """
+    return Agent(
+        name=f"{domain}_assistant",
+        model=make_model(),
+        description=DOMAIN_DESCRIPTIONS[domain],
+        instruction=f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}",
+        tools=make_domain_tools(domain),
+        generate_content_config=make_generate_config(),
+    )

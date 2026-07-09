@@ -1,6 +1,6 @@
 """single_flat: 単一 LlmAgent が env の全ツールを直接持つ (基準線)。
 
-instruction は PERSONA + 開いた役割指示 (OPEN_MANDATE) のみ。ツールに知識は載せない (rich=False)。
+instruction は PERSONA + 開いた役割指示 (OPEN_MANDATE) のみ。ツールに知識は載せない。
 提示順は seed 指定時に run 毎シャッフルする (位置バイアスの平均化)。
 """
 

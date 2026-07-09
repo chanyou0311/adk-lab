@@ -64,6 +64,8 @@ def test_gt_derived_from_fixtures():
     # 税抜 < 税込 (÷1.1 が効いている)、減少額 > 0 (落ち込みが実在)。
     assert GT["dip_net_floor"] < GT["dip_revenue"]
     assert GT["dip_vs_prior_delta"] > 0
+    # C4: 未解決 INC は slack のクローズ報有無から導出され、INC-43/INC-44 (クローズ報なし)。
+    assert GT["unresolved_incs"] == ["INC-43", "INC-44"]
 
 
 # --------------------------------------------------------------------------- #
@@ -80,7 +82,7 @@ def test_a_lookup_correct_and_wrong():
     assert not _check("A4", "v2.4.0 がデプロイされました")  # 1 件のみ (>=2 不足)
 
 
-_BOTH = ["bq_query", "slack_read_channel"]  # {bq, slack} family を満たす合成 trajectory
+_BOTH = ["bq_query", "slack_read_channel"]  # {bq, slack} ドメインを満たす合成 trajectory
 
 
 def test_b1_prior_week_delta_correct_and_wrong():
@@ -261,3 +263,56 @@ def test_error_record_not_scored():
     rec = score_record(a1, "", [], error="RuntimeError: boom")
     assert rec["passed"] is False
     assert rec["route_ok"] is None
+
+
+# --------------------------------------------------------------------------- #
+# 測定の公平性: 委譲呼び出しの対称性 + refused ゲート
+# --------------------------------------------------------------------------- #
+def test_trajectory_symmetric_across_delegation_styles():
+    """single / AgentTool / transfer / skills が同じ実ツール列なら同じスコアになる。"""
+    a1 = TASKS_BY_ID["A1"]
+    final = "6月10日の注文は18件です"
+    # single_flat: 直接呼び出し。
+    flat = ["bq_list_tables", "bq_query"]
+    # multi_agenttool: 委譲名 + sub-agent 内の実ツール。
+    agenttool = ["bq_assistant", "bq_list_tables", "bq_query"]
+    at_calls = [{"name": "bq_assistant", "args": {}}, {"name": "bq_list_tables", "args": {}},
+                {"name": "bq_query", "args": {"sql": "..."}}]
+    # multi_transfer: transfer + 実ツール。
+    transfer = ["transfer_to_agent", "bq_list_tables", "bq_query"]
+    tr_calls = [{"name": "transfer_to_agent", "args": {"agent_name": "bq_assistant"}},
+                {"name": "bq_list_tables", "args": {}}, {"name": "bq_query", "args": {"sql": "..."}}]
+    # single_skills: skill メタ + 実ツール。
+    skills = ["list_skills", "load_skill", "bq_list_tables", "bq_query"]
+
+    def score(names, calls):
+        r = score_record(a1, final, names, tool_calls=calls)
+        return (r["passed"], r["route_ok"], r["trap_hit"], r["offtask_calls"], r["selection"],
+                tuple(sorted(r["domains"])))
+
+    base = score(flat, [{"name": n, "args": {}} for n in flat])
+    assert base == score(agenttool, at_calls)   # AgentTool は single と同一スコア
+    assert base == score(transfer, tr_calls)     # transfer も同一
+    assert base == score(skills, [{"name": n, "args": {}} for n in skills])  # skills も同一
+    # 委譲は delegations に別記録される (routed domain = bq)。
+    assert score_record(a1, final, agenttool, tool_calls=at_calls)["delegations"] == ["bq"]
+    assert score_record(a1, final, transfer, tool_calls=tr_calls)["delegations"] == ["bq"]
+
+
+def test_refused_gate_non_e_fails_even_if_tokens_echoed():
+    # B3 の正解トークン (212,912) をエコーしつつ「算出できません」と拒否 → refused ゲートで fail。
+    b3 = TASKS_BY_ID["B3"]
+    hedged_refusal = "税抜純売上 212,912 円は算出できません。"
+    rec = score_record(b3, hedged_refusal, ["bq_query"])
+    assert rec["refused"] is True
+    assert rec["passed"] is False  # 数値照合は満たすが refused ゲートで不正解
+    # 拒否せず素直に答えれば pass。
+    ok = score_record(b3, "税抜純売上は 212,912 円です", ["bq_query"])
+    assert ok["passed"] is True
+
+
+def test_refused_gate_does_not_touch_e():
+    # E は不能表明が正解挙動。refused 判定に引っかかっても _states_inability ロジックで pass しうる。
+    e1 = TASKS_BY_ID["E1"]
+    rec = score_record(e1, "採用データは持ち合わせておらず、お答えできません", [])
+    assert rec["passed"] is True

@@ -17,11 +17,9 @@ fixture はモジュールロード時に読み込む (欠落/破損なら impor
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
+from ._fixtures import load_fixture
 
-_DATA_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "portal_data.json"
-_DATA = json.loads(_DATA_PATH.read_text(encoding="utf-8"))  # fail-fast: 欠落/破損で import 時に落とす
+_DATA = load_fixture("portal_data")
 _REPORTS: dict[str, dict] = _DATA["reports"]
 _DATASETS: dict[str, dict] = _DATA["datasets"]
 _DATASET_LIST: list[str] = _DATA["dataset_list"]

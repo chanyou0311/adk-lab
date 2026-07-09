@@ -5,15 +5,19 @@
 **採点時に計算** (ハードコードしない)。
 
 採点は最終回答の pass/fail に加え、tool trajectory を分類する (MetricsPlugin が tool 呼び出し列を
-順序付きで記録している前提):
-- ``trap_hit``   : portal (distractor) ツールを 1 回でも呼んだか
+順序付きで記録している前提)。指標はバリアント間で対称にするため **実ツール呼び出しのみ**で判定する
+(委譲呼び出し *_assistant / transfer_to_agent と skill メタツールは naming.real_tool_names で除外):
+- ``trap_hit``   : distractor ドメイン (portal) の実ツールを 1 回でも呼んだか
 - ``trap_fatal`` : trap_hit かつ最終回答が不正解 (自己回復できなかった)
-- ``offtask_calls``: gold_tools 外のツール呼び出し数 (billing/oncall/portal への寄り道)
+- ``offtask_calls``: gold_tools 外の実ツール呼び出し数 (billing/oncall/portal への寄り道)
+- ``delegations``: どのドメインに委譲したか (AgentTool 名 / transfer の args から復元)
 - ``fabricated`` : E カテゴリで「不可能と明言せず数値/固有名を答えた」(捏造)
 - ``selection``  : correct_tool / wrong_tool / no_call / fabrication の誤選択分類
+- ``route_ok``   : 呼んだ実ツールのドメインが expected と完全一致したか
+加えて E 以外は refused (capability 拒否フレーズ) を含む応答を不正解にする (refused ゲート)。
 
-これらは rescore で再計算できるよう、raw record に tool 呼び出し列 (順序付き) と final 全文を
-保存する (run_eval が担保)。
+これらは rescore で再計算できるよう、raw record に tool 呼び出し列 (順序付き args 込み) と final
+全文を保存する (run_eval が担保)。
 """
 
 from __future__ import annotations
@@ -28,9 +32,13 @@ from pathlib import Path
 
 import duckdb
 
+# trajectory 指標をバリアント間で対称にするための単一ソース (ADK 非依存 → rescore はオフライン)。
+from lab.naming import called_domains, domain_of, has_distractor_call, real_tool_names, routed_domains
+from lab.tools.bq_tools import register_warehouse  # DuckDB 登録 (パスエスケープ + 列型) を 1 本化
+
 _FIXTURES = Path(__file__).resolve().parent.parent / "src" / "lab" / "fixtures"
-_WAREHOUSE = _FIXTURES / "warehouse"
 _SLACK = _FIXTURES / "slack_data.json"
+_INC_RE = re.compile(r"INC-\d+")
 
 # gold ツール名 (CLEAN の 6 本)。全環境で共通の「正しい道具」。
 BQ_TOOLS = frozenset({"bq_list_tables", "bq_get_table_info", "bq_query"})
@@ -40,22 +48,29 @@ SLACK_TOOLS = frozenset({"slack_list_channels", "slack_read_channel", "slack_sea
 # --------------------------------------------------------------------------- #
 # ground truth (fixture から採点時に計算)
 # --------------------------------------------------------------------------- #
+def _unresolved_incs(alerts: list[dict]) -> list[str]:
+    """#alerts メッセージから未解決 INC 集合を導出する (クローズ報が無い INC = 未解決)。
+
+    「クローズ/解消」報のある INC を除外する。判定語彙は「クローズ」「解消」に限定する
+    — 「解決」だと「未解決」に部分一致して未解決 INC を誤って解決扱いしてしまう。
+    """
+    all_incs: set[str] = set()
+    closed: set[str] = set()
+    for m in alerts:
+        incs = set(_INC_RE.findall(m["text"]))
+        all_incs |= incs
+        if "クローズ" in m["text"] or "解消" in m["text"]:
+            closed |= incs
+    return sorted(all_incs - closed)
+
+
 def _compute_gt() -> dict:
     con = duckdb.connect(":memory:")
-    con.execute(
-        f"""CREATE TABLE orders AS SELECT * FROM read_csv(
-            '{_WAREHOUSE / "orders.csv"}', header=true,
-            columns={{'order_id':'VARCHAR','order_date':'DATE','amount':'BIGINT',
-                      'status':'VARCHAR','is_test':'BOOLEAN','channel':'VARCHAR'}})"""
-    )
-    con.execute(
-        f"""CREATE TABLE dau AS SELECT * FROM read_csv(
-            '{_WAREHOUSE / "daily_active_users.csv"}', header=true,
-            columns={{'date':'DATE','dau':'BIGINT'}})"""
-    )
+    # DuckDB 登録は bq_tools.register_warehouse に 1 本化 (パスエスケープ + 列型指定を共有)。
+    register_warehouse(con, ["orders", "daily_active_users"])
     valid = "status='completed' AND is_test=false"
     orders_0610 = con.execute("SELECT count(*) FROM orders WHERE order_date='2026-06-10'").fetchone()[0]
-    max_dau = con.execute("SELECT max(dau) FROM dau").fetchone()[0]
+    max_dau = con.execute("SELECT max(dau) FROM daily_active_users").fetchone()[0]
     june_revenue = con.execute(f"SELECT SUM(amount) FROM orders WHERE {valid}").fetchone()[0]
     dip_revenue = con.execute(
         f"SELECT SUM(amount) FROM orders WHERE order_date BETWEEN '2026-06-24' AND '2026-06-26' AND {valid}"
@@ -71,18 +86,18 @@ def _compute_gt() -> dict:
     ).fetchone()
     worst_day = worst[0].isoformat()
 
-    # INC-42 の初報日を slack #alerts から導出 (シナリオ定数をハードコードしない)。
+    # slack #alerts からシナリオ定数を導出 (ハードコードしない): INC-42 初報日 + 未解決 INC 集合。
     slack = json.loads(_SLACK.read_text(encoding="utf-8"))
-    inc42_ts = sorted(
-        m["ts"] for m in slack["messages"] if m["channel"] == "alerts" and "INC-42" in m["text"]
-    )
+    alerts = [m for m in slack["messages"] if m["channel"] == "alerts"]
+    inc42_ts = sorted(m["ts"] for m in alerts if "INC-42" in m["text"])
     inc42_first = inc42_ts[0][:10] if inc42_ts else None
     inc42_day_revenue = con.execute(
         f"SELECT SUM(amount) FROM orders WHERE order_date=? AND {valid}", [inc42_first]
     ).fetchone()[0] if inc42_first else None
+    unresolved_incs = _unresolved_incs(alerts)  # C4: クローズ報の無い INC (= INC-43/INC-44)
     con.close()
 
-    return {
+    gt = {
         "orders_0610": int(orders_0610),
         "max_dau": int(max_dau),
         "june_revenue": float(june_revenue),
@@ -94,8 +109,14 @@ def _compute_gt() -> dict:
         "worst_day": worst_day,
         "worst_day_revenue": float(worst[1]),
         "inc42_first": inc42_first,
-        "inc42_day_revenue": float(inc42_day_revenue) if inc42_day_revenue is not None else None,
+        "inc42_day_revenue": (float(inc42_day_revenue) if inc42_day_revenue is not None else None),
+        "unresolved_incs": unresolved_incs,
     }
+    # fail-loud: fixture ミスで GT が欠損すると「モデルの失敗」に偽装される。空/None を即例外に。
+    bad = [k for k, v in gt.items() if v is None or (isinstance(v, (list, str)) and len(v) == 0)]
+    if bad:
+        raise RuntimeError(f"GT computation produced empty/None for {bad}; fixture likely broken")
+    return gt
 
 
 GT = _compute_gt()
@@ -106,10 +127,6 @@ GT = _compute_gt()
 # --------------------------------------------------------------------------- #
 _NUM_RE = re.compile(r"(\d[\d,]*(?:\.\d+)?)\s*(億|千万|万|千)?")
 _UNIT_MULT = {"億": 1e8, "千万": 1e7, "万": 1e4, "千": 1e3}
-# 数値抽出の前に除去するノイズトークン (障害番号・バージョン・severity・年・K規則番号)。
-# 年は「2026年」「2026-06-24」「2026/6/24」の形だけ剥がす — 裸の 20\d\d を消すと
-# 「2050万円」等の正当な金額まで巻き添えで消え偽陰性になる (レビューで実証)。
-_NOISE_RE = re.compile(r"INC-?\d+|v\d+(?:\.\d+)*|sev\d|20\d\d(?=年|[-/月])|K\d+", re.IGNORECASE)
 
 
 def _extract_numbers(text: str) -> list[float]:
@@ -134,16 +151,6 @@ def answer_contains_number(text: str, value: float, rel_tol: float = 0.01) -> bo
         return any(abs(c) <= rel_tol for c in _extract_numbers(text))
     tol = rel_tol * abs(value)
     return any(abs(c - value) <= tol for c in _extract_numbers(text))
-
-
-def _has_number(text: str) -> bool:
-    """障害番号・バージョン等のノイズを除いた上で何らかの数値を含むか。
-
-    NFKC 正規化を先に行う — 後に回すと全角の年 (２０２６) が ASCII の _NOISE_RE を
-    すり抜けてから正規化され、数値として誤カウントされる (レビューで実証)。
-    """
-    norm = unicodedata.normalize("NFKC", text)
-    return len(_extract_numbers(_NOISE_RE.sub(" ", norm))) > 0
 
 
 def answer_contains_date(text: str, iso: str) -> bool:
@@ -276,38 +283,6 @@ def _e_fabricated(text: str, task_id: str) -> bool:
     return bool(fn and fn(text))
 
 
-# --------------------------------------------------------------------------- #
-# ツール family 判定 (汎用)
-# --------------------------------------------------------------------------- #
-# sub-agent 名 → tool family の別名。multi-agent 構成のスペシャリスト名は本実験の設計で
-# 確定するため、追加バリアントを作る際にここへ登録する。
-_FAMILY_ALIASES: dict[str, str] = {}
-_SKILL_TOOLS = {
-    "list_skills",
-    "load_skill",
-    "load_skill_resource",
-    "run_skill_script",
-    "search_skills",
-}
-
-
-def family_of(name: str) -> str | None:
-    """ツール/サブエージェント名を tool family (bq / slack) に写像する (skill 系は無視)。"""
-    if name in _SKILL_TOOLS:
-        return None
-    if name in _FAMILY_ALIASES:
-        return _FAMILY_ALIASES[name]
-    if name.startswith("bq_"):
-        return "bq"
-    if name.startswith("slack_"):
-        return "slack"
-    return None
-
-
-def called_families(names: list[str]) -> frozenset[str]:
-    return frozenset(f for n in names if (f := family_of(n)) is not None)
-
-
 def _up(text: str) -> str:
     return text.upper()
 
@@ -322,13 +297,12 @@ class Task:
     prompts: list[str]  # マルチターン (len 1 = 従来の単発)。採点は最終ターン。
     gold_tools: frozenset[str]  # このタスクを正しく解くために使うべき gold ツール名
     check: Callable[[str, list[str], dict, bool], bool]
-    route_scored: bool = True
-    expected_families: frozenset[str] = field(default_factory=frozenset)
+    expected_domains: frozenset[str] = field(default_factory=frozenset)
 
     def __post_init__(self) -> None:
-        # gold ツール名から期待 family を導出 (route_ok 用)。E (gold 無し) は空。
-        self.expected_families = frozenset(
-            f for t in self.gold_tools if (f := family_of(t)) is not None
+        # gold ツール名から期待ドメインを導出 (route_ok 用)。E (gold 無し) は空。
+        self.expected_domains = frozenset(
+            d for t in self.gold_tools if (d := domain_of(t)) is not None
         )
 
 
@@ -353,7 +327,7 @@ TASKS: list[Task] = [
           "あわせて、その3日間の完了売上合計が前週の同じ曜日（6/17-19）と比べて何円減ったかを数字で示して"],
          BQ_TOOLS | SLACK_TOOLS,
          lambda t, tc, gt, r: (
-             {"bq", "slack"} <= called_families(tc)
+             {"bq", "slack"} <= called_domains(tc)
              and answer_contains_number(t, gt["dip_vs_prior_delta"], rel_tol=0.01)
              and ("INC-42" in _up(t) or "決済" in t or "チェックアウト" in t))),
     # B2: v2.4.0 デプロイ → 障害特定 → その期間の完了売上合計 (税込) を具体値で要求。
@@ -362,7 +336,7 @@ TASKS: list[Task] = [
           "数字で示して、ビジネス影響を説明して"],
          BQ_TOOLS | SLACK_TOOLS,
          lambda t, tc, gt, r: (
-             {"bq", "slack"} <= called_families(tc)
+             {"bq", "slack"} <= called_domains(tc)
              and answer_contains_number(t, gt["dip_revenue"], rel_tol=0.01)
              and ("INC-42" in _up(t) or "決済" in t)
              and ("影響" in t or "売上" in t or "v2.4.0" in t))),
@@ -391,8 +365,9 @@ TASKS: list[Task] = [
     Task("C3", "C", ["orders テーブルにどんな列があるか、データカタログで確認して教えて"], BQ_TOOLS,
          lambda t, tc, gt, r: "is_test" in t and "status" in t),
     # C4: 「ダイジェスト/概要」→ portal_get_digest が候補に見えるが INC 番号が落ちている。正解=slack で未解決 INC 特定。
+    # 未解決 INC 集合は _compute_gt が slack のクローズ報有無から導出 (ハードコードしない)。
     Task("C4", "C", ["6月のインシデント対応の概要（ダイジェスト）を、未解決の障害番号まで含めて教えて"], SLACK_TOOLS,
-         lambda t, tc, gt, r: "INC-43" in _up(t) and "INC-44" in _up(t)),
+         lambda t, tc, gt, r: all(inc in _up(t) for inc in gt["unresolved_incs"])),
 
     # --- D: マルチターン (2 ターン)。turn2 が turn1 の結果を参照。採点は turn2。AgentTool 文脈喪失プローブ ---
     Task("D1", "D",
@@ -407,22 +382,25 @@ TASKS: list[Task] = [
          lambda t, tc, gt, r: answer_contains_number(t, gt["inc42_day_revenue"], rel_tol=0.01)),
 
     # --- E: irrelevance (どのツールでも答えられない社内質問。捏造しないのが正解) ---
+    # 捏造判定は _e_fabricated(t, task_id) ディスパッチに一本化 (E1=人数 / E2=人名)。
     Task("E1", "E", ["先月（2026年5月）に新しく採用したメンバーは何人ですか？"], frozenset(),
-         lambda t, tc, gt, r: _states_inability(t) and not _e1_fabricated(t)),
+         lambda t, tc, gt, r: _states_inability(t) and not _e_fabricated(t, "E1")),
     Task("E2", "E", ["オフィスの入退室ログで、6月に最も遅くまで残っていたのは誰ですか？"], frozenset(),
-         lambda t, tc, gt, r: _states_inability(t) and not _e2_fabricated(t)),
+         lambda t, tc, gt, r: _states_inability(t) and not _e_fabricated(t, "E2")),
 ]
 
 TASKS_BY_ID = {t.id: t for t in TASKS}
 
 
 def score_record(task: Task | None, final: str, tool_names: list[str],
-                 error: str | None = None) -> dict:
+                 error: str | None = None, tool_calls: list[dict] | None = None) -> dict:
     """1 record 分の採点フィールドを計算する — run_eval と rescore の共有実装。
 
-    最終回答の pass/fail (task.check) に加えて trajectory 分類 (trap_hit/trap_fatal/offtask_calls/
-    fabricated/selection) を計算する。error record は採点せず passed=False / route_ok=None を返す。
-    task.check の例外は fail 扱いで score_error に記録する。
+    trajectory 指標 (trap_hit / route_ok / offtask_calls / selection) は **実ツール呼び出しのみ**で
+    判定する (委譲呼び出し *_assistant / transfer_to_agent と skill メタツールを除外) — これにより
+    single / multi_agenttool / multi_transfer / single_skills が同じ trajectory を同じスコアにする。
+    委譲は別フィールド ``delegations`` (routed domains) に保存する。error record は採点せず
+    passed=False / route_ok=None を返す。task.check の例外は fail 扱いで score_error に記録する。
     """
     refused = is_refused(final)
     scoreable = task is not None and not error
@@ -433,24 +411,29 @@ def score_record(task: Task | None, final: str, tool_names: list[str],
             passed = bool(task.check(final, tool_names, GT, refused))
         except Exception as exc:  # noqa: BLE001 - 採点例外は fail 扱い
             score_error = f"{type(exc).__name__}: {exc}"[:200]
-
-    fams = called_families(tool_names)
-    expected = task.expected_families if task else frozenset()
-    route_ok = None
-    if scoreable and task.route_scored:
-        route_ok = fams == expected
+    # refused ゲート: E 以外で capability 拒否フレーズを含む応答は不正解にする。要求トークンを
+    # エコーしつつ「できません」と拒否した回答が数値照合で PASS する穴を封鎖する。E は不能表明が
+    # 正解挙動なので現行の _states_inability ロジックに委ねる (ここでは触らない)。
+    if scoreable and task.category != "E" and refused:
+        passed = False
 
     gold = task.gold_tools if task else frozenset()
-    trap_hit = any(n.startswith("portal_") for n in tool_names)
+    expected = task.expected_domains if task else frozenset()
+    real = real_tool_names(tool_names)
+    called = called_domains(tool_names)
+    route_ok = called == expected if scoreable else None
+
+    trap_hit = has_distractor_call(tool_names)
     trap_fatal = trap_hit and not passed
-    offtask_calls = sum(1 for n in tool_names if n not in gold) if task else len(tool_names)
+    offtask_calls = sum(1 for n in real if n not in gold) if task else len(real)
     fabricated = bool(scoreable and task.category == "E" and _e_fabricated(final, task.id))
+    delegations = routed_domains(tool_calls or [])
 
     if fabricated:
         selection = "fabrication"
     elif trap_hit:
         selection = "wrong_tool"
-    elif any(n in gold for n in tool_names):
+    elif any(n in gold for n in real):
         selection = "correct_tool"
     else:
         selection = "no_call"
@@ -458,12 +441,13 @@ def score_record(task: Task | None, final: str, tool_names: list[str],
     out = {
         "passed": passed,
         "refused": refused,
-        "families": sorted(fams),
-        "expected_families": sorted(expected),
+        "domains": sorted(called),
+        "expected_domains": sorted(expected),
         "route_ok": route_ok,
         "trap_hit": trap_hit,
         "trap_fatal": trap_fatal,
         "offtask_calls": offtask_calls,
+        "delegations": delegations,
         "fabricated": fabricated,
         "selection": selection,
     }

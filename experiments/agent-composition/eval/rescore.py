@@ -33,13 +33,13 @@ def _rescore_record(rec: dict) -> dict:
     if rec.get("error"):
         return rec
     out = {**rec}
-    # 旧採点の score_error は現行採点の結果で置き換える (残すと「passed=True なのに
-    # score_error あり」という run_eval では起きない矛盾 record ができる)。
-    out.pop("score_error", None)
+    # 旧採点フィールドは現行採点の結果で置き換える。旧スキーマの残骸 (families/expected_families /
+    # score_error) を除いてから update しないと、新旧フィールドが混在した矛盾 record になる。
+    for stale in ("score_error", "families", "expected_families"):
+        out.pop(stale, None)
     task = TASKS_BY_ID.get(rec["task_id"])
-    out.update(score_record(task, rec.get("final", ""), rec.get("tool_names", [])))
-    if task is None:
-        out["expected_families"] = rec.get("expected_families", [])
+    out.update(score_record(task, rec.get("final", ""), rec.get("tool_names", []),
+                            tool_calls=rec.get("tool_calls")))
     return out
 
 
@@ -90,8 +90,7 @@ def main() -> None:
     runs = data.get("runs", 0)
     model = data.get("model", "")
 
-    group_records = [{**r, "variant": r[group_key]} for r in rescored]
-    summary = aggregate(group_records, groups, categories)
+    summary = aggregate(rescored, groups, categories, group_field=group_key)
     out_json = RESULTS_DIR / f"results{args.tag}_rescored.json"
     out_key = "cells" if group_key == "cell" else "variants"
     out_json.write_text(

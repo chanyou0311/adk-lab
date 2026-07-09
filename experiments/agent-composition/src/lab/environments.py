@@ -6,7 +6,7 @@
 - ``DISTINCT``   = CLEAN + billing 3 + oncall 3 (12 tools) — 別ドメインを足して「数」を増やす
 - ``CONFUSABLE`` = DISTINCT + portal 6          (18 tools) — near-synonym distractor で「紛らわしさ」を足す
 
-ツールに知識は載せない (rich=False)。本実験の変数はエージェント構成と環境であって知識配置ではない
+ツールに知識は載せない。本実験の変数はエージェント構成と環境であって知識配置ではない
 (知識配置は knowledge-placement 実験で扱う)。
 
 環境はドメイン単位 (bq/slack/billing/oncall/portal) で構成する。バリアント (single_flat/
@@ -23,6 +23,7 @@ from __future__ import annotations
 import random
 from collections.abc import Callable
 
+from .naming import DOMAINS
 from .tools import (
     make_billing_tools,
     make_bq_tools,
@@ -36,16 +37,16 @@ DISTINCT = "distinct"
 CONFUSABLE = "confusable"
 ENVIRONMENTS = (CLEAN, DISTINCT, CONFUSABLE)
 
-# ドメイン → ツール生成関数。gold (bq/slack) は知識非注入 (rich=False)。
+# ドメイン → ツール生成関数。ツールに知識は載せない (本実験の変数はエージェント構成と環境)。
 _DOMAIN_TOOLS: dict[str, Callable[[], list]] = {
-    "bq": lambda: make_bq_tools(rich=False),
-    "slack": lambda: make_slack_tools(rich=False),
+    "bq": make_bq_tools,
+    "slack": make_slack_tools,
     "billing": make_billing_tools,
     "oncall": make_oncall_tools,
     "portal": make_portal_tools,
 }
-# 正準ドメイン順 (gold → distinct domains → portal distractor)。
-DOMAIN_ORDER = ["bq", "slack", "billing", "oncall", "portal"]
+# 正準ドメイン順 (naming が単一ソース。gold → distinct domains → portal distractor)。
+DOMAIN_ORDER = list(DOMAINS)
 # 各環境に存在するドメイン (正準順)。CONFUSABLE でのみ portal が加わる。
 ENV_DOMAINS: dict[str, list[str]] = {
     CLEAN: ["bq", "slack"],

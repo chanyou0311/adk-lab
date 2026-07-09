@@ -29,10 +29,16 @@ def pct(x: float) -> str:
     return f"{x * 100:.0f}%"
 
 
-def aggregate(records: list[dict], variants: list[str], categories: list[str]) -> dict:
+def aggregate(records: list[dict], variants: list[str], categories: list[str],
+              group_field: str = "variant") -> dict:
+    """records を group_field (既定 "variant"、agent-composition は "cell") で群化して集計する。
+
+    群化キーを引数化することで、run_eval / rescore が `{**r, "variant": r["cell"]}` の詐称コピーを
+    作らずに済む (cell=variant×env 集計をそのまま渡せる)。
+    """
     summary: dict[str, Any] = {}
     for v in variants:
-        rows = [r for r in records if r["variant"] == v]
+        rows = [r for r in records if r[group_field] == v]
         ok_rows = [r for r in rows if not r.get("error")]
         k = sum(1 for r in ok_rows if r["passed"])
         lo, hi = wilson(k, len(ok_rows))
@@ -67,9 +73,9 @@ def render_markdown(summary: dict, variants: list[str], task_ids: list[str],
     lines = [
         "# 知識配置バリアント評価 — 結果",
         "",
-        f"- model: `{model}`  ·  runs/(variant,task): {runs}  ·  variants: {len(variants)}  ·  tasks: {len(task_ids)}",
-        "- pass rate は Wilson 95% CI 付き。route ok = 呼ばれた tool family (bq/slack) が expected と完全一致した割合 (skill 系呼び出しは無視、C3 は記録のみ)。",
-        "- refusal rate = capability 拒否フレーズを含んだ応答の割合 (全タスクで記録、C カテゴリの合否に使用)。",
+        f"- model: `{model}`  ·  runs/(variant,task): {runs}  ·  cells: {len(variants)}  ·  tasks: {len(task_ids)}",
+        "- pass rate は Wilson 95% CI 付き。route ok = 呼ばれた実ツールのドメインが expected と完全一致した割合 (委譲呼び出し *_assistant / transfer_to_agent と skill メタは無視)。",
+        "- refusal rate = capability 拒否フレーズを含んだ応答の割合 (全タスクで記録)。E 以外は refused=True で不正解にする (refused ゲート)。",
         "",
         "## バリアント別サマリ",
         "",

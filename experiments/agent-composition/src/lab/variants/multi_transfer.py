@@ -13,32 +13,15 @@ from __future__ import annotations
 
 from google.adk.agents import Agent
 
-from ..environments import make_domain_tools, ordered_domains
+from ..environments import ordered_domains
 from ..model import make_generate_config, make_model
-from .common import (
-    DOMAIN_DESCRIPTIONS,
-    MULTI_ROUTING_GUIDANCE,
-    OPEN_MANDATE,
-    PERSONA,
-    SUBAGENT_PERSONA,
-)
+from .common import MULTI_ROUTING_GUIDANCE, OPEN_MANDATE, PERSONA, make_domain_subagent
 
 NAME = "multi_transfer"
 
 
-def _sub_agent(domain: str) -> Agent:
-    return Agent(
-        name=f"{domain}_assistant",
-        model=make_model(),
-        description=DOMAIN_DESCRIPTIONS[domain],
-        instruction=f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}",
-        tools=make_domain_tools(domain),
-        generate_content_config=make_generate_config(),
-    )
-
-
 def build(env: str, seed: int | None = None) -> Agent:
-    sub_agents = [_sub_agent(d) for d in ordered_domains(env, seed)]
+    sub_agents = [make_domain_subagent(d) for d in ordered_domains(env, seed)]
     return Agent(
         name=NAME,
         model=make_model(),

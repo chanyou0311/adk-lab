@@ -1,9 +1,9 @@
 """data warehouse を模した mock ツール群 (DuckDB in-memory バック)。
 
-モジュールロード時に fixtures の CSV を ``orders`` / ``daily_active_users`` テーブルとして
-登録する。``make_bq_tools(rich)`` が返す関数の docstring を rich フラグで切り替えることで
-「知識を tool docstring に置く」バリアント (tool_desc) を実現する — 関数本体・シグネチャ・
-戻り値は不変で、ツールに露出する説明文だけが変わる。
+モジュールロード時に fixtures の CSV を ``orders`` / ``daily_active_users`` / ``support_tickets``
+テーブルとして登録する。CSV 登録 (カラムスペック + read_csv、パスエスケープ込み) は
+``warehouse_csv_source`` / ``register_warehouse`` として export し、eval の GT 計算 (tasks.py) と
+fixture テスト (tests) が同じ登録ロジックを共有する (登録の重複と SQL パス非エスケープを解消)。
 """
 
 from __future__ import annotations
@@ -14,8 +14,6 @@ from decimal import Decimal
 from pathlib import Path
 
 import duckdb
-
-from ..knowledge import knowledge_bodies_for_family
 
 _WAREHOUSE = Path(__file__).resolve().parent.parent / "fixtures" / "warehouse"
 
@@ -46,21 +44,34 @@ _KNOWN_DESCRIPTIONS: dict[str, str] = {
 }
 
 
+def warehouse_csv_source(table: str) -> str:
+    """warehouse テーブルの ``read_csv(...)`` SQL 断片 (パスエスケープ + カラムスペック込み)。
+
+    既知テーブルは列型を明示、それ以外は auto_detect。GT 計算・テスト・ツール登録で共有する。
+    """
+    csv_path = _WAREHOUSE / f"{table}.csv"
+    spec = _COLUMN_SPECS.get(table)
+    if spec:
+        return f"read_csv('{_q(csv_path)}', header=true, columns={spec})"
+    return f"read_csv('{_q(csv_path)}', header=true, auto_detect=true)"
+
+
+def register_warehouse(con: duckdb.DuckDBPyConnection, tables: list[str] | None = None) -> None:
+    """呼び出し側が渡す DuckDB 接続に warehouse テーブルを登録する。
+
+    tables 未指定なら CSV から自動発見した全テーブル。tasks._compute_gt / tests から使い、
+    read_csv のパスエスケープと列型指定を bq_tools と 1 本化する。
+    """
+    names = tables if tables is not None else sorted(p.stem for p in _WAREHOUSE.glob("*.csv"))
+    for name in names:
+        con.execute(f"CREATE TABLE {name} AS SELECT * FROM {warehouse_csv_source(name)}")
+
+
 def _register_warehouse() -> dict[str, str]:
     summary: dict[str, str] = {}
     for csv_path in sorted(_WAREHOUSE.glob("*.csv")):
         name = csv_path.stem
-        spec = _COLUMN_SPECS.get(name)
-        if spec:
-            _CON.execute(
-                f"CREATE TABLE {name} AS SELECT * FROM read_csv("
-                f"'{_q(csv_path)}', header=true, columns={spec})"
-            )
-        else:
-            _CON.execute(
-                f"CREATE TABLE {name} AS SELECT * FROM read_csv("
-                f"'{_q(csv_path)}', header=true, auto_detect=true)"
-            )
+        _CON.execute(f"CREATE TABLE {name} AS SELECT * FROM {warehouse_csv_source(name)}")
         # description 欠落は fail-fast にする — 無内容な説明でツールを公開すると、エージェントが
         # テーブルを選べない失敗が「知識配置の効果」に見えて eval を静かに交絡させる。
         if name not in _KNOWN_DESCRIPTIONS:
@@ -90,13 +101,11 @@ def _jsonable(value):
     return str(value)
 
 
-def make_bq_tools(rich: bool) -> list:
-    """data warehouse ツール 3 種を返す。
+def make_bq_tools() -> list:
+    """data warehouse ツール 3 種 (list_tables / get_table_info / query) を返す。
 
-    rich=False: docstring は 1 行の中立的な説明のみ (知識ゼロ)。
-    rich=True:  docstring に KNOWLEDGE["sales-analytics"] の集計ルールを "Usage rules" として
-                結合し、list_tables / get_table_info にもテーブル選択のヒントを足す
-                (= 知識を tool docstring に配置)。
+    docstring は中立的な 1 行のみ (知識は載せない — 本実験の変数はエージェント構成と環境であって
+    知識配置ではない)。
     """
 
     def bq_list_tables() -> dict:
@@ -156,25 +165,8 @@ def make_bq_tools(rich: bool) -> list:
         except Exception as e:  # noqa: BLE001 - ツールエラーはモデルへ返して自己修復させる
             return {"status": "error", "error_message": str(e)}
 
-    if rich:
-        rules = knowledge_bodies_for_family("bq")
-        bq_query.__doc__ = (
-            "Run a read-only SQL (SELECT) query against the online store's data warehouse "
-            "and return up to 200 rows.\n\n"
-            "Usage rules (社内の集計・判定ルール — 対象の集計/判定では必ず従うこと):\n"
-            f"{rules}"
-        )
-        bq_list_tables.__doc__ = (
-            "List the warehouse tables. `orders` holds per-order records (revenue lives here); "
-            "`daily_active_users` holds daily active user counts."
-        )
-        bq_get_table_info.__doc__ = (
-            "Describe one warehouse table (columns, types, sample rows). Call this before "
-            "writing a query so you filter on the right columns (e.g. is_test, status)."
-        )
-    else:
-        bq_query.__doc__ = "Run a read-only SQL (SELECT) query against the data warehouse."
-        bq_list_tables.__doc__ = "List the tables available in the data warehouse."
-        bq_get_table_info.__doc__ = "Get columns, types and a few sample rows for a warehouse table."
+    bq_query.__doc__ = "Run a read-only SQL (SELECT) query against the data warehouse."
+    bq_list_tables.__doc__ = "List the tables available in the data warehouse."
+    bq_get_table_info.__doc__ = "Get columns, types and a few sample rows for a warehouse table."
 
     return [bq_list_tables, bq_get_table_info, bq_query]

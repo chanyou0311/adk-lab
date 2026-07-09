@@ -22,6 +22,13 @@ def test_registry_has_four_variants():
     assert all(callable(b) for b in VARIANTS.values())
 
 
+def test_cell_plan_covers_exactly_the_registry():
+    # run_eval の収集セル計画 _CELL_ENVS は VARIANTS と過不足なく対応する
+    # (バリアント追加/削除時にセル計画の更新漏れを機械的に検知する)。
+    from run_eval import _CELL_ENVS
+    assert set(_CELL_ENVS) == set(VARIANTS)
+
+
 def test_all_variants_build_for_clean_and_confusable():
     for name, build in VARIANTS.items():
         for env in (CLEAN, CONFUSABLE):
