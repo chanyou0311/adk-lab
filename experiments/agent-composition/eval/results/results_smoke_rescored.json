@@ -49,10 +49,10 @@
       "n": 3,
       "n_ok": 3,
       "n_error": 0,
-      "pass_rate": 0.3333333333333333,
+      "pass_rate": 0.6666666666666666,
       "pass_ci": [
-        0.0614903152761605,
-        0.7923450448735121
+        0.2076549551264879,
+        0.9385096847238394
       ],
       "route_ok_rate": 0.6666666666666666,
       "refusal_rate": 0.0,
@@ -63,12 +63,12 @@
       "by_category": {
         "A": 1.0,
         "C": 0.0,
-        "E": 0.0
+        "E": 1.0
       },
       "by_task": {
         "C1": 0.0,
         "A1": 1.0,
-        "E1": 0.0
+        "E1": 1.0
       }
     },
     "single_flat@confusable": {
@@ -1028,14 +1028,14 @@
       "cached_tokens": 0,
       "signature_missing_count": 24,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "route_ok": false,
       "trap_hit": false,
       "trap_fatal": false,
       "offtask_calls": 13,
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "distinct",
       "cell": "single_flat@distinct",

@@ -36,10 +36,10 @@
       "n": 128,
       "n_ok": 128,
       "n_error": 0,
-      "pass_rate": 0.921875,
+      "pass_rate": 0.9765625,
       "pass_ci": [
-        0.8621517266143844,
-        0.957013089346587
+        0.9333551190997279,
+        0.9919977285598879
       ],
       "route_ok_rate": 0.84375,
       "refusal_rate": 0.0,
@@ -52,7 +52,7 @@
         "B": 1.0,
         "C": 1.0,
         "D": 1.0,
-        "E": 0.375
+        "E": 0.8125
       },
       "by_task": {
         "C2": 1.0,
@@ -62,9 +62,9 @@
         "A1": 1.0,
         "D2": 1.0,
         "A2": 1.0,
-        "E1": 0.5,
+        "E1": 0.875,
         "A3": 1.0,
-        "E2": 0.25,
+        "E2": 0.75,
         "A4": 1.0,
         "B1": 1.0,
         "B2": 1.0,
@@ -77,10 +77,10 @@
       "n": 128,
       "n_ok": 128,
       "n_error": 0,
-      "pass_rate": 0.9453125,
+      "pass_rate": 0.9609375,
       "pass_ci": [
-        0.8914138332864409,
-        0.9732601391168066
+        0.9118117730873819,
+        0.9832016369440498
       ],
       "route_ok_rate": 0.7734375,
       "refusal_rate": 0.0,
@@ -93,7 +93,7 @@
         "B": 1.0,
         "C": 0.9375,
         "D": 1.0,
-        "E": 0.6875
+        "E": 0.8125
       },
       "by_task": {
         "B3": 1.0,
@@ -106,9 +106,9 @@
         "A1": 1.0,
         "D2": 1.0,
         "A2": 1.0,
-        "E1": 0.75,
+        "E1": 0.875,
         "A3": 1.0,
-        "E2": 0.625,
+        "E2": 0.75,
         "A4": 1.0,
         "B1": 1.0,
         "B2": 1.0
@@ -200,10 +200,10 @@
       "n": 128,
       "n_ok": 128,
       "n_error": 0,
-      "pass_rate": 0.890625,
+      "pass_rate": 0.90625,
       "pass_ci": [
-        0.8247641281996283,
-        0.9337218125049749
+        0.8432686438028733,
+        0.945556734529914
       ],
       "route_ok_rate": 0.765625,
       "refusal_rate": 0.0,
@@ -216,7 +216,7 @@
         "B": 0.96875,
         "C": 0.75,
         "D": 1.0,
-        "E": 0.6875
+        "E": 0.8125
       },
       "by_task": {
         "C2": 1.0,
@@ -226,7 +226,7 @@
         "A1": 1.0,
         "D2": 1.0,
         "A2": 1.0,
-        "E1": 0.5,
+        "E1": 0.75,
         "A3": 1.0,
         "E2": 0.875,
         "A4": 1.0,
@@ -241,10 +241,10 @@
       "n": 128,
       "n_ok": 127,
       "n_error": 1,
-      "pass_rate": 0.968503937007874,
+      "pass_rate": 0.9763779527559056,
       "pass_ci": [
-        0.921811474701828,
-        0.9876851991389075
+        0.9328478662011506,
+        0.991934466023463
       ],
       "route_ok_rate": 0.8976377952755905,
       "refusal_rate": 0.0,
@@ -257,7 +257,7 @@
         "B": 1.0,
         "C": 0.96875,
         "D": 1.0,
-        "E": 0.8
+        "E": 0.8666666666666667
       },
       "by_task": {
         "B2": 1.0,
@@ -271,7 +271,7 @@
         "A1": 1.0,
         "D2": 1.0,
         "A2": 1.0,
-        "E1": 0.8571428571428571,
+        "E1": 1.0,
         "A3": 1.0,
         "E2": 0.75,
         "A4": 1.0,
@@ -282,10 +282,10 @@
       "n": 128,
       "n_ok": 128,
       "n_error": 0,
-      "pass_rate": 0.90625,
+      "pass_rate": 0.921875,
       "pass_ci": [
-        0.8432686438028733,
-        0.945556734529914
+        0.8621517266143844,
+        0.957013089346587
       ],
       "route_ok_rate": 0.7109375,
       "refusal_rate": 0.0,
@@ -298,11 +298,11 @@
         "B": 1.0,
         "C": 0.71875,
         "D": 1.0,
-        "E": 0.8125
+        "E": 0.9375
       },
       "by_task": {
         "A3": 1.0,
-        "E2": 0.875,
+        "E2": 1.0,
         "A4": 1.0,
         "B1": 1.0,
         "B2": 1.0,
@@ -316,7 +316,7 @@
         "A1": 1.0,
         "D2": 1.0,
         "A2": 1.0,
-        "E1": 0.75
+        "E1": 0.875
       }
     },
     "multi_transfer@clean": {
@@ -37872,7 +37872,7 @@
       "signature_missing_max": 11,
       "signature_ever_missing": true,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -37884,8 +37884,8 @@
       "trap_fatal": false,
       "offtask_calls": 43,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -38752,7 +38752,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -38764,8 +38764,8 @@
       "trap_fatal": false,
       "offtask_calls": 66,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -45102,7 +45102,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -45112,11 +45112,11 @@
       "expected_domains": [],
       "route_ok": false,
       "trap_hit": true,
-      "trap_fatal": true,
+      "trap_fatal": false,
       "offtask_calls": 30,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "wrong_tool",
       "variant": "single_skills",
       "env": "confusable",
       "cell": "single_skills@confusable",
@@ -45969,7 +45969,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -45981,8 +45981,8 @@
       "trap_fatal": false,
       "offtask_calls": 56,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -47108,7 +47108,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "portal",
@@ -47117,11 +47117,11 @@
       "expected_domains": [],
       "route_ok": false,
       "trap_hit": true,
-      "trap_fatal": true,
+      "trap_fatal": false,
       "offtask_calls": 14,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "wrong_tool",
       "variant": "single_skills",
       "env": "confusable",
       "cell": "single_skills@confusable",
@@ -49968,8 +49968,8 @@
       "trap_fatal": false,
       "offtask_calls": 114,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -51046,7 +51046,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -51058,8 +51058,8 @@
       "trap_fatal": false,
       "offtask_calls": 152,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -52373,7 +52373,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -52385,8 +52385,8 @@
       "trap_fatal": false,
       "offtask_calls": 154,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -53185,7 +53185,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -53197,8 +53197,8 @@
       "trap_fatal": false,
       "offtask_calls": 7,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -57107,7 +57107,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -57119,8 +57119,8 @@
       "trap_fatal": false,
       "offtask_calls": 162,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "clean",
       "cell": "single_flat@clean",
@@ -68410,7 +68410,7 @@
       "signature_missing_max": 10,
       "signature_ever_missing": true,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -68423,8 +68423,8 @@
       "trap_fatal": false,
       "offtask_calls": 22,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "distinct",
       "cell": "single_flat@distinct",
@@ -75537,7 +75537,7 @@
       "signature_missing_max": 3,
       "signature_ever_missing": true,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -75553,8 +75553,8 @@
         "bq",
         "slack"
       ],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "multi_agenttool",
       "env": "clean",
       "cell": "multi_agenttool@clean",
@@ -78150,7 +78150,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -78162,8 +78162,8 @@
       "trap_fatal": false,
       "offtask_calls": 8,
       "delegations": [],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "single_flat",
       "env": "distinct",
       "cell": "single_flat@distinct",
@@ -83092,8 +83092,8 @@
         "bq",
         "slack"
       ],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "no_call",
       "variant": "multi_agenttool",
       "env": "clean",
       "cell": "multi_agenttool@clean",
@@ -99903,7 +99903,7 @@
       "signature_missing_max": 0,
       "signature_ever_missing": false,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "portal"
@@ -99911,13 +99911,13 @@
       "expected_domains": [],
       "route_ok": false,
       "trap_hit": true,
-      "trap_fatal": true,
+      "trap_fatal": false,
       "offtask_calls": 6,
       "delegations": [
         "portal"
       ],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "wrong_tool",
       "variant": "multi_agenttool",
       "env": "confusable",
       "cell": "multi_agenttool@confusable",
@@ -106486,7 +106486,7 @@
       "signature_missing_max": 29,
       "signature_ever_missing": true,
       "signature_400": false,
-      "passed": false,
+      "passed": true,
       "refused": false,
       "domains": [
         "bq",
@@ -106497,7 +106497,7 @@
       "expected_domains": [],
       "route_ok": false,
       "trap_hit": true,
-      "trap_fatal": true,
+      "trap_fatal": false,
       "offtask_calls": 64,
       "delegations": [
         "bq",
@@ -106506,8 +106506,8 @@
         "oncall",
         "slack"
       ],
-      "fabricated": true,
-      "selection": "fabrication",
+      "fabricated": false,
+      "selection": "wrong_tool",
       "variant": "multi_agenttool",
       "env": "confusable",
       "cell": "multi_agenttool@confusable",
