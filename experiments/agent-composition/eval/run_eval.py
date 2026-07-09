@@ -320,6 +320,14 @@ def _load_checkpoint(path) -> list[dict]:
     return records
 
 
+def _pending_specs(cells: list[tuple[str, str]], tasks: list, runs: int,
+                   done_keys: set) -> list[tuple]:
+    """未完了ジョブ (variant, env, task, run_index) を列挙する (done_keys の (cell,task,run) をスキップ)。"""
+    return [(v, e, t, run_idx)
+            for (v, e) in cells for t in tasks for run_idx in range(runs)
+            if (f"{v}@{e}", t.id, run_idx) not in done_keys]
+
+
 async def _main_async(args) -> None:
     cells = _planned_cells(args.variants, args.envs)
     task_filter = _SMOKE_TASKS if args.smoke else args.tasks
@@ -340,8 +348,7 @@ async def _main_async(args) -> None:
     done_keys = {_ckpt_key(r) for r in prior}
 
     jobs = [_eval_one(v, e, t, run_idx, sem)
-            for (v, e) in cells for t in tasks for run_idx in range(runs)
-            if (f"{v}@{e}", t.id, run_idx) not in done_keys]
+            for (v, e, t, run_idx) in _pending_specs(cells, tasks, runs, done_keys)]
     total = len(jobs)
     mode = "SMOKE " if args.smoke else ""
     resumed = f", resumed={len(prior)} from {ckpt_path.name}" if prior else ""

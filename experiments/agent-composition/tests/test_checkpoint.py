@@ -6,7 +6,8 @@
 
 import json
 
-from run_eval import _append_checkpoint, _ckpt_key, _load_checkpoint
+from run_eval import _append_checkpoint, _ckpt_key, _load_checkpoint, _pending_specs
+from tasks import TASKS_BY_ID
 
 
 def _rec(cell: str, task_id: str, run_index: int, **extra) -> dict:
@@ -47,14 +48,24 @@ def test_ckpt_key_matches_job_identity():
 
 
 def test_resume_skip_filtering():
-    """完了済みキー集合によるジョブのスキップが、run_eval と同じ式で成立することを固定する。"""
-    prior = [_rec("single_flat@clean", "A1", 0), _rec("single_flat@clean", "A1", 1)]
+    """_pending_specs が完了済みキーをスキップし残りだけ返すことを固定する (run_eval の実関数)。"""
+    cells = [("single_flat", "clean"), ("multi_agenttool", "confusable")]
+    tasks = [TASKS_BY_ID["A1"], TASKS_BY_ID["C1"]]
+    runs = 2
+    prior = [_rec("single_flat@clean", "A1", 0), _rec("single_flat@clean", "A1", 1),
+             _rec("multi_agenttool@confusable", "C1", 0)]
     done_keys = {_ckpt_key(r) for r in prior}
-    planned = [("single_flat", "clean", "A1", 0), ("single_flat", "clean", "A1", 1),
-               ("single_flat", "clean", "A1", 2), ("single_flat", "clean", "A2", 0)]
-    remaining = [(v, e, t, r) for (v, e, t, r) in planned
-                 if (f"{v}@{e}", t, r) not in done_keys]
-    assert remaining == [("single_flat", "clean", "A1", 2), ("single_flat", "clean", "A2", 0)]
+    pending = _pending_specs(cells, tasks, runs, done_keys)
+    keys = {(f"{v}@{e}", t.id, ri) for (v, e, t, ri) in pending}
+    # 全 8 (2 cells × 2 tasks × 2 runs) から done 3 件を除いた 5 件。完了済みは 1 件も含まない。
+    assert len(pending) == 5
+    assert keys.isdisjoint(done_keys)
+    assert ("single_flat@clean", "C1", 0) in keys  # 未完了は残る
+
+
+def test_pending_specs_empty_done_runs_all():
+    cells = [("single_flat", "clean")]
+    assert len(_pending_specs(cells, [TASKS_BY_ID["A1"]], 8, set())) == 8
 
 
 def test_checkpoint_line_is_single_line(tmp_path):

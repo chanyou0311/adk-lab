@@ -12,3 +12,7 @@ __pycache__/
 
 # NOTE: 各実験の fixtures 生成物と eval/results/*.json は意図的に commit する
 # (実験の再現性のため)。ここでは除外しない。
+
+# checkpoint は kill 耐性のための scratch (--resume で読む)。正常完了時に削除される。
+# results の append-only 規約の対象外なので commit しない。
+*.checkpoint.jsonl
