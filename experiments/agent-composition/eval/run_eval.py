@@ -285,6 +285,41 @@ def _planned_cells(variant_filter: list[str] | None, env_filter: list[str] | Non
     return cells
 
 
+# --------------------------------------------------------------------------- #
+# チェックポイント (kill 耐性)
+# --------------------------------------------------------------------------- #
+# 長時間 run が途中で kill されると、末尾一括書き込みでは課金済みの全ジョブが失われる。
+# ジョブ完了ごとに 1 行 JSON を追記し、--resume で完了済み (cell, task_id, run_index) を
+# スキップして続きから再開する。error record も「完了」扱い (勝手に再実行しない方針)。
+# checkpoint は scratch であり results の append-only 規約の対象外 (.gitignore 済み)。
+
+
+def _ckpt_key(rec: dict) -> tuple[str, str, int]:
+    return (rec["cell"], rec["task_id"], rec["run_index"])
+
+
+def _append_checkpoint(path, rec: dict) -> None:
+    """1 record を 1 行 JSON で追記する (書き込みごとに close = flush)。"""
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+
+def _load_checkpoint(path) -> list[dict]:
+    """checkpoint を読み込む。kill による部分書き込みで壊れた行は捨てる。"""
+    if not path.exists():
+        return []
+    records: list[dict] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return records
+
+
 async def _main_async(args) -> None:
     cells = _planned_cells(args.variants, args.envs)
     task_filter = _SMOKE_TASKS if args.smoke else args.tasks
@@ -295,29 +330,39 @@ async def _main_async(args) -> None:
     cell_labels = [f"{v}@{e}" for (v, e) in cells]
     sem = asyncio.Semaphore(args.concurrency)
 
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    suffix = args.tag or ("_smoke" if args.smoke else "")
+    ckpt_path = RESULTS_DIR / f"results{suffix}.checkpoint.jsonl"
+    prior = _load_checkpoint(ckpt_path) if args.resume else []
+    if not args.resume:
+        # 新規実行: 過去の中断で残った checkpoint を破棄する (追記で新旧が混ざるのを防ぐ)。
+        ckpt_path.unlink(missing_ok=True)
+    done_keys = {_ckpt_key(r) for r in prior}
+
     jobs = [_eval_one(v, e, t, run_idx, sem)
-            for (v, e) in cells for t in tasks for run_idx in range(runs)]
+            for (v, e) in cells for t in tasks for run_idx in range(runs)
+            if (f"{v}@{e}", t.id, run_idx) not in done_keys]
     total = len(jobs)
     mode = "SMOKE " if args.smoke else ""
+    resumed = f", resumed={len(prior)} from {ckpt_path.name}" if prior else ""
     print(f"running {mode}{total} jobs ({len(cells)} cells={cell_labels}, tasks={task_ids}, "
-          f"runs={runs}, concurrency={args.concurrency}, model={MODEL})", flush=True)
-    if total == 0:
+          f"runs={runs}, concurrency={args.concurrency}, model={MODEL}{resumed})", flush=True)
+    if total == 0 and not prior:
         print("no jobs to run — cells が空 (variant/env フィルタが全除外) か、tasks フィルタが全除外。")
         return
 
-    records: list[dict] = []
+    records: list[dict] = list(prior)
     done = 0
     for coro in asyncio.as_completed(jobs):
         rec = await coro
         records.append(rec)
+        _append_checkpoint(ckpt_path, rec)
         done += 1
         if done % 5 == 0 or done == total:
             print(f"  [{done}/{total}]", flush=True)
 
     # 集計は cell 単位 (variant×env)。aggregate に group_field="cell" を渡し、詐称コピーを作らない。
     summary = aggregate(records, cell_labels, categories, group_field="cell")
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    suffix = args.tag or ("_smoke" if args.smoke else "")
     (RESULTS_DIR / f"results{suffix}.json").write_text(
         json.dumps(
             {"model": MODEL, "runs": runs, "cells": cell_labels, "task_ids": task_ids,
@@ -328,6 +373,7 @@ async def _main_async(args) -> None:
     )
     md = render_markdown(summary, cell_labels, task_ids, categories, runs, MODEL)
     (RESULTS_DIR / f"RESULTS{suffix}.md").write_text(md, encoding="utf-8")
+    ckpt_path.unlink(missing_ok=True)  # 正常完了: 最終結果に合流済みなので checkpoint は不要
     print("\n" + md)
 
     n_err = sum(1 for r in records if r.get("error"))
@@ -345,6 +391,9 @@ def main() -> None:
     p.add_argument("--tag", default=None, help="出力ファイル名のサフィックス (例: _main)")
     p.add_argument("--smoke", action="store_true",
                    help="V-1 smoke: 9 セル × 代表 3 タスク (A1/C1/E1) × 1 run に絞る")
+    p.add_argument("--resume", action="store_true",
+                   help="checkpoint (results_<tag>.checkpoint.jsonl) の完了済みジョブを"
+                        "スキップして再開 (error record も完了扱い = 自動再実行しない)")
     asyncio.run(_main_async(p.parse_args()))
 
 
