@@ -43,15 +43,12 @@ class _Plan(BaseModel):
 
 
 def _domain_agents(env: str, seed: int | None = None) -> dict:
-    """env に存在するドメインの専門ノードを構築する (multi の sub-agent と同一構成)。
+    """env に存在するドメインの専門ノードを構築する (multi の sub-agent と完全に同一構成)。
 
-    dispatcher が ``ctx.run_node`` で **動的スケジュール**するので rerun_on_resume=True が必須
-    (既定 False だと context._run_node_internal が「A node must have rerun_on_resume=True」で
-    ValueError にする — 動的ノードは interrupt/resume で親から再実行されうるため)。
+    rerun_on_resume は不要 (multi と同素材)。ctx.run_node の検査は **呼び出し元 (dispatcher) の
+    Context** に対して行われるため、rerun_on_resume=True が必要なのは dispatcher 側 (build 参照)。
     """
-    return {
-        d: make_domain_subagent(d, rerun_on_resume=True) for d in ordered_domains(env, seed)
-    }
+    return {d: make_domain_subagent(d) for d in ordered_domains(env, seed)}
 
 
 def _planner(available: str) -> Agent:
@@ -109,7 +106,12 @@ def build(env: str, seed: int | None = None) -> Workflow:
         body = "\n\n".join(parts) if parts else "(利用可能なドメインからは該当する情報が得られませんでした)"
         return f"ユーザーの質問:\n{question}\n\n各ドメイン専門ノードの回答:\n{body}"
 
-    dispatcher = FunctionNode(func=_dispatch, name="dispatcher")
+    # dispatcher は ctx.run_node で子ノードを動的スケジュールする。context._run_node_internal は
+    # **呼び出し元 (= dispatcher) の Context の rerun_on_resume** を検査する (context.py 207/503:
+    # self._node_rerun_on_resume は「その Context を所有するノード」= dispatcher の値)。子が interrupt
+    # されると親 (dispatcher) が再実行されて子の応答を回収するため、dispatcher が rerun_on_resume=True
+    # でないと ValueError になる (FunctionNode の既定は False)。
+    dispatcher = FunctionNode(func=_dispatch, name="dispatcher", rerun_on_resume=True)
     planner, synthesizer = _planner(available), _synthesizer()
     return Workflow(
         name=NAME,

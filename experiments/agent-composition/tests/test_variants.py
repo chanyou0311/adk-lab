@@ -188,6 +188,10 @@ def test_workflow_graph_spine_is_planner_dispatcher_synthesizer():
         # 静的グラフの spine は env に依らず planner → dispatcher → synthesizer (+ START)。
         node_names = [n.name for n in wf.graph.nodes]
         assert node_names == ["__START__", "planner", "dispatcher", "synthesizer"]
+        # dispatcher は ctx.run_node で子を動的スケジュールするので rerun_on_resume=True 必須
+        # (呼び出し元 Context の rerun_on_resume が検査される。False だと実行時 ValueError。回帰ガード)。
+        dispatcher = next(n for n in wf.graph.nodes if n.name == "dispatcher")
+        assert dispatcher.rerun_on_resume is True
 
 
 def test_workflow_graph_domain_node_count_matches_env():
@@ -195,11 +199,8 @@ def test_workflow_graph_domain_node_count_matches_env():
     for env in (CLEAN, DISTINCT, CONFUSABLE):
         agents = wg._domain_agents(env)
         assert set(agents) == set(domains_for_env(env))
-        # ドメインノードは multi の sub-agent と同一命名 (統制)。
+        # ドメインノードは multi の sub-agent と同一命名・同一構成 (統制)。
         assert all(a.name == f"{d}_assistant" for d, a in agents.items())
-        # ctx.run_node で動的スケジュールするので rerun_on_resume=True が必須
-        # (False だと実行時に ValueError で全滅する。回帰ガード)。
-        assert all(a.rerun_on_resume is True for a in agents.values())
     # CONFUSABLE では portal ドメインノードも存在する。
     assert "portal" in wg._domain_agents(CONFUSABLE)
 

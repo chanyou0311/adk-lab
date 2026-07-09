@@ -77,9 +77,7 @@ DOMAIN_DESCRIPTIONS = {
 }
 
 
-def make_domain_subagent(
-    domain: str, mode: str | None = None, rerun_on_resume: bool = False
-) -> Agent:
+def make_domain_subagent(domain: str, mode: str | None = None) -> Agent:
     """ドメイン別スペシャリスト sub-agent を構築する (multi_agenttool / multi_transfer /
     multi_taskmode / workflow_graph で共有)。
 
@@ -87,9 +85,7 @@ def make_domain_subagent(
     (文字列規約の二重定義を避ける)。instruction は SUBAGENT_PERSONA + OPEN_MANDATE で役割文言を
     root と揃える (過剰拒否を抑える)。**素材 (persona/tools/model) はバリアント間で完全に同一で、
     委譲機構だけが差** = 統制。mode は task-mode 委譲用 (single_turn 等)、既定 None は
-    AgentTool/transfer 用。rerun_on_resume は workflow_graph が ctx.run_node で **動的スケジュール**
-    するノードに必須 (BaseNode の既定 False では context._run_node_internal が ValueError にする —
-    動的ノードは interrupt/resume で親から再実行されうるため)。静的委譲では不要 (既定 False)。
+    AgentTool/transfer 用。
     """
     return Agent(
         name=subagent_name(domain),
@@ -98,6 +94,5 @@ def make_domain_subagent(
         instruction=f"{SUBAGENT_PERSONA}\n\n{OPEN_MANDATE}",
         tools=make_domain_tools(domain),
         mode=mode,
-        rerun_on_resume=rerun_on_resume,
         generate_content_config=make_generate_config(),
     )
