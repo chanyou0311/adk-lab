@@ -1,0 +1,118 @@
+{
+  "reports": {
+    "revenue|2026-06": {
+      "metric": "revenue",
+      "period": "2026-06",
+      "value": 16163128,
+      "note": "全注文の売上合計 (テスト/キャンセル含む簡易集計)"
+    },
+    "orders|2026-06": {
+      "metric": "orders",
+      "period": "2026-06",
+      "value": 500,
+      "note": "全注文件数 (テスト/キャンセル含む)"
+    }
+  },
+  "datasets": {
+    "orders": {
+      "name": "orders",
+      "description": "注文データ (データカタログ / 四半期更新)",
+      "columns": [
+        "order_id",
+        "order_date",
+        "amount",
+        "customer_id"
+      ]
+    },
+    "sales_summary": {
+      "name": "sales_summary",
+      "description": "日次売上サマリ (集計済み)",
+      "columns": [
+        "date",
+        "gross_sales",
+        "order_count"
+      ]
+    }
+  },
+  "dataset_list": [
+    "sales_summary",
+    "orders_daily_rollup",
+    "finance_orders_v1",
+    "dau_weekly"
+  ],
+  "archive": [
+    {
+      "date": "2026-05-01",
+      "channel": "general",
+      "text": "旧デザインのフィードバックまとめ"
+    },
+    {
+      "date": "2026-05-02",
+      "channel": "alerts",
+      "text": "先月のリリース v2.3.5 の振り返り"
+    },
+    {
+      "date": "2026-05-03",
+      "channel": "releases",
+      "text": "5月の定例会議の議事録を共有します"
+    },
+    {
+      "date": "2026-05-19",
+      "channel": "general",
+      "text": "5月の売上速報を共有しました"
+    },
+    {
+      "date": "2026-05-21",
+      "channel": "alerts",
+      "text": "GW 期間中の当番表について"
+    },
+    {
+      "date": "2026-05-21",
+      "channel": "general",
+      "text": "5月のサポート問い合わせ傾向"
+    },
+    {
+      "date": "2026-05-26",
+      "channel": "support",
+      "text": "先月のインフラ費用レポート"
+    },
+    {
+      "date": "2026-05-27",
+      "channel": "general",
+      "text": "四半期 OKR の中間レビュー"
+    }
+  ],
+  "digests": {
+    "alerts": "6月下旬に決済関連の障害とアップロードの不具合が発生し、対応を行いました。詳細は各インシデントレポートを参照してください。",
+    "support": "6月後半は決済エラー・返金・表示速度に関する問い合わせが中心でした。",
+    "releases": "6月は v2.4 系のリリースとロールバックを実施しました。",
+    "general": "通常の運用連絡・雑談が中心でした。"
+  },
+  "groups": [
+    {
+      "name": "@engineering",
+      "members": [
+        "kenji",
+        "mio",
+        "takumi",
+        "rin"
+      ]
+    },
+    {
+      "name": "@support",
+      "members": [
+        "haruka",
+        "yui"
+      ]
+    },
+    {
+      "name": "@oncall-primary",
+      "members": [
+        "kenji",
+        "mio",
+        "satoshi",
+        "takumi"
+      ]
+    }
+  ]
+}

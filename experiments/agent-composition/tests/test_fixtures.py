@@ -127,3 +127,75 @@ def test_uc3_payment_override_creates_violation():
         f"AND {_LAT} > 4*3600 AND {_LAT} < 24*3600"
     ).fetchone()[0]
     assert n >= 1
+
+
+# --------------------------------------------------------------------------- #
+# billing / oncall / portal (agent-composition Phase 2a) の健全性
+# --------------------------------------------------------------------------- #
+BILLING = ROOT / "src" / "lab" / "fixtures" / "billing_data.json"
+ONCALL = ROOT / "src" / "lab" / "fixtures" / "oncall_data.json"
+PORTAL = ROOT / "src" / "lab" / "fixtures" / "portal_data.json"
+_DIP = {"2026-06-24", "2026-06-25", "2026-06-26"}  # INC-42 の決済障害期間
+
+
+def test_billing_refunds_spike_on_incident_days():
+    data = json.loads(BILLING.read_text(encoding="utf-8"))
+    refunds = data["refunds"]
+    dip = [r for r in refunds if r["date"] in _DIP]
+    off = [r for r in refunds if r["date"] not in _DIP]
+    # 障害期間 (3 日) に返金の山ができる: 件数・金額とも非障害期間を上回る。
+    assert len(dip) >= 12
+    assert sum(r["amount"] for r in dip) > sum(r["amount"] for r in off)
+    # 障害期間の返金理由は決済/チェックアウトに言及する (INC-42 と整合)。
+    assert all(("決済" in r["reason"] or "チェックアウト" in r["reason"]) for r in dip)
+
+
+def test_billing_charges_reference_invoices_and_refunds_reference_charges():
+    data = json.loads(BILLING.read_text(encoding="utf-8"))
+    invoice_ids = {inv["invoice_id"] for inv in data["invoices"]}
+    charge_ids = {c["charge_id"] for c in data["charges"]}
+    # 全 charge の invoice_id が実在する (billing_get_invoice が引ける)。
+    assert all(c["invoice_id"] in invoice_ids for c in data["charges"])
+    # refund が参照する charge_id が実在する。
+    assert all(r["charge_id"] in charge_ids for r in data["refunds"] if r["charge_id"])
+
+
+def test_oncall_covers_incident_period_and_all_days():
+    data = json.loads(ONCALL.read_text(encoding="utf-8"))
+    by_id = {a["incident_id"]: a for a in data["assignments"]}
+    assert {"INC-42", "INC-43", "INC-44"} <= set(by_id)
+    # 担当が slack #alerts 投稿者と整合 (kenji=INC-42, mio=INC-43, satoshi=INC-44)。
+    assert any(r["user"] == "kenji" for r in by_id["INC-42"]["responders"])
+    assert any(r["user"] == "mio" for r in by_id["INC-43"]["responders"])
+    assert any(r["user"] == "satoshi" for r in by_id["INC-44"]["responders"])
+    # 全 6 月日 (30 日) に当番が割り当てられている。
+    assert len({s["date"] for s in data["shifts"]}) == 30
+
+
+def test_portal_report_differs_from_correct_revenue():
+    # portal_run_report の revenue は test/cancelled 込みの naive 値で、正解 (K1/K3 適用) と異なる。
+    # distractor が実際に罠として機能する前提を固定する。
+    con = _con()
+    correct = con.execute(
+        "SELECT SUM(amount) FROM orders WHERE status='completed' AND is_test=false"
+    ).fetchone()[0]
+    all_amount = con.execute("SELECT SUM(amount) FROM orders").fetchone()[0]
+    data = json.loads(PORTAL.read_text(encoding="utf-8"))
+    portal_val = data["reports"]["revenue|2026-06"]["value"]
+    assert portal_val == all_amount        # naive = 全注文合計 (test/cancelled 込み)
+    assert portal_val != correct           # 正解値と異なる = distractor として機能する
+    assert portal_val > correct * 1.2      # test 注文の巨額分だけ明確に大きい
+
+
+def test_portal_catalog_columns_are_stale():
+    # portal_describe_dataset("orders") の列は現テーブルと不一致 (is_test/status が無い)。
+    data = json.loads(PORTAL.read_text(encoding="utf-8"))
+    cols = data["datasets"]["orders"]["columns"]
+    assert "is_test" not in cols and "status" not in cols
+
+
+def test_portal_archive_excludes_incident_period():
+    # アーカイブは 30 日より古い (6 月より前) メッセージのみ = 6/24-26 は漏れる。
+    data = json.loads(PORTAL.read_text(encoding="utf-8"))
+    assert data["archive"]  # 非空 (空で誤魔化していない)
+    assert all(m["date"] < "2026-06-01" for m in data["archive"])

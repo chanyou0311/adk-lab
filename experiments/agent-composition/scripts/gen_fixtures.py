@@ -3,10 +3,15 @@
 架空のオンラインストア、期間 2026-06-01〜06-30 のデータを生成する:
 - warehouse/orders.csv            : 注文レコード (6/24-26 に売上落ち込み、6/15 に負荷試験注文 10 件)
 - warehouse/daily_active_users.csv: 日次アクティブユーザー
+- warehouse/support_tickets.csv   : サポートチケット (初回応答 SLA 用、独立 rng SEED+1)
 - slack_data.json                 : #general/#alerts/#support/#releases のメッセージ
+- billing_data.json               : 決済ドメイン (charges/invoices/refunds、独立 rng SEED+2)
+- oncall_data.json                : 当番ドメイン (schedules/shifts/assignments、独立 rng SEED+3)
+- portal_data.json                : portal distractor (reports/datasets/archive/digests/groups、独立 rng SEED+4)
 
 生成物は src/lab/fixtures/ に書き出し、リポジトリに commit する (実験の再現性のため)。
-seed 固定なので何度実行しても同一出力になる。
+各ドメインは **独立した rng** (`random.Random(SEED + n)`) を使い、既存 fixture の生成列を一切
+乱さない (既存生成物のバイト不変を保証する)。seed 固定なので何度実行しても同一出力になる。
 
 Usage:  uv run python scripts/gen_fixtures.py
 """
@@ -221,6 +226,188 @@ def gen_slack(rng: random.Random) -> dict:
     return {"channels": channels, "messages": messages}
 
 
+# --------------------------------------------------------------------------- #
+# billing (決済) ドメイン — 独立 rng (SEED+2)
+# --------------------------------------------------------------------------- #
+_BILLING_SKUS = ["SKU-standard", "SKU-premium", "SKU-addon", "SKU-shipping"]
+_REFUND_REASON_INCIDENT = [
+    "チェックアウトの決済失敗による返金",
+    "二重課金の返金 (決済エラー)",
+    "決済エラーに伴う注文キャンセルの返金",
+]
+_REFUND_REASON_NORMAL = [
+    "顧客都合のキャンセルによる返金",
+    "商品不備による返金",
+]
+
+
+def gen_billing(rng: random.Random) -> dict:
+    """billing (決済) ドメイン fixture。
+
+    6/24-26 のチェックアウト決済障害 (INC-42) と整合させ、その期間に返金 (refund) が急増する。
+    charge は invoice を 1:1 で持ち (get_invoice が引ける)、refund は当日の charge を参照する。
+    既存 fixture の乱数列を乱さないよう専用 rng (Random(SEED+2)) を使う。
+    """
+    charges: list[dict] = []
+    invoices: list[dict] = []
+    refunds: list[dict] = []
+    charges_by_day: dict[str, list[dict]] = {}
+    cid = iid = rid = 1
+
+    for day in _dates():
+        iso = day.isoformat()
+        day_charges: list[dict] = []
+        for _ in range(rng.randint(8, 14)):
+            items = [
+                {"sku": rng.choice(_BILLING_SKUS), "qty": rng.randint(1, 3), "amount": rng.randint(1000, 12000)}
+                for _ in range(rng.randint(1, 3))
+            ]
+            amount = sum(i["amount"] for i in items)
+            fail_p = 0.35 if day in DIP_DAYS else 0.03  # 障害期間は決済失敗が増える
+            status = "failed" if rng.random() < fail_p else "succeeded"
+            invoice_id = f"INV-{iid:05d}"
+            charge_id = f"CHG-{cid:05d}"
+            customer = f"cust-{rng.randint(1000, 9999)}"
+            charge = {
+                "charge_id": charge_id, "date": iso, "amount": amount,
+                "customer": customer, "status": status, "invoice_id": invoice_id,
+            }
+            charges.append(charge)
+            day_charges.append(charge)
+            invoices.append({
+                "invoice_id": invoice_id, "date": iso, "customer": customer,
+                "line_items": items, "total": amount,
+                "status": "paid" if status == "succeeded" else "unpaid",
+            })
+            cid += 1
+            iid += 1
+        charges_by_day[iso] = day_charges
+
+    for day in _dates():
+        iso = day.isoformat()
+        if day in DIP_DAYS:
+            n_ref = rng.randint(5, 8)  # 決済障害でチェックアウト失敗 → 返金が急増
+            reasons = _REFUND_REASON_INCIDENT
+        else:
+            n_ref = 1 if rng.random() < 0.25 else 0
+            reasons = _REFUND_REASON_NORMAL
+        pool = charges_by_day[iso]
+        for _ in range(n_ref):
+            base = rng.choice(pool) if pool else None
+            refunds.append({
+                "refund_id": f"RFN-{rid:04d}", "date": iso,
+                "amount": base["amount"] if base else rng.randint(2000, 20000),
+                "charge_id": base["charge_id"] if base else None,
+                "reason": rng.choice(reasons),
+            })
+            rid += 1
+
+    return {"charges": charges, "invoices": invoices, "refunds": refunds}
+
+
+# --------------------------------------------------------------------------- #
+# oncall (当番) ドメイン — 独立 rng (SEED+3)
+# --------------------------------------------------------------------------- #
+def gen_oncall(rng: random.Random) -> dict:
+    """oncall (当番) ドメイン fixture。
+
+    INC-42/43/44 の対応担当を slack の #alerts 投稿者と整合させる (kenji=INC-42, mio=INC-43,
+    satoshi=INC-44)。日次シフトは週替わりローテーション、引き継ぎ時刻だけ rng で軽く揺らす。
+    既存 fixture を乱さないよう専用 rng (Random(SEED+3)) を使う。
+    """
+    schedules = [
+        {"schedule_id": "SCH-primary", "name": "Primary On-call", "rotation": ["kenji", "mio", "satoshi", "takumi"]},
+        {"schedule_id": "SCH-secondary", "name": "Secondary On-call", "rotation": ["haruka", "yui", "rin", "daiki"]},
+    ]
+    shifts: list[dict] = []
+    for i, day in enumerate(_dates()):
+        week = i // 7
+        handoff = rng.randint(9, 11)  # 引き継ぎ時刻 (seed 由来の軽い揺らぎ)
+        for sch in schedules:
+            rot = sch["rotation"]
+            shifts.append({
+                "date": day.isoformat(),
+                "schedule_id": sch["schedule_id"],
+                "role": "primary" if sch["schedule_id"] == "SCH-primary" else "secondary",
+                "user": rot[week % len(rot)],
+                "handoff_hour": handoff,
+            })
+    assignments = [
+        {"incident_id": "INC-42", "severity": "sev1", "start": "2026-06-24", "end": "2026-06-26",
+         "responders": [{"user": "kenji", "role": "incident_commander"}, {"user": "takumi", "role": "engineer"}]},
+        {"incident_id": "INC-43", "severity": "sev1", "start": "2026-06-29", "end": None,
+         "responders": [{"user": "mio", "role": "incident_commander"}]},
+        {"incident_id": "INC-44", "severity": "sev2", "start": "2026-06-30", "end": None,
+         "responders": [{"user": "satoshi", "role": "engineer"}]},
+    ]
+    return {"schedules": schedules, "shifts": shifts, "assignments": assignments}
+
+
+# --------------------------------------------------------------------------- #
+# portal (社内ポータル) distractor — 独立 rng (SEED+4)、レポート値は orders から導出
+# --------------------------------------------------------------------------- #
+_PORTAL_ARCHIVE_TEXTS = [
+    "5月の定例会議の議事録を共有します",
+    "先月のリリース v2.3.5 の振り返り",
+    "GW 期間中の当番表について",
+    "5月の売上速報を共有しました",
+    "旧デザインのフィードバックまとめ",
+    "先月のインフラ費用レポート",
+    "5月のサポート問い合わせ傾向",
+    "四半期 OKR の中間レビュー",
+]
+
+
+def gen_portal(rng: random.Random, orders: list[dict]) -> dict:
+    """portal (社内ポータル) の near-synonym distractor fixture。
+
+    gold ツール (bq/slack) と紛らわしいが、返すデータのスコープが微妙に違う「もっともらしく
+    不完全」な値。特に reports の revenue は除外ルール (テスト/キャンセル) を適用しない naive な
+    集計値で、bq_query の正解値と異なる (distractor が実際に罠として機能する前提)。
+    レポート値は生成済み orders から導出し、それ以外の揺らぎに専用 rng (Random(SEED+4)) を使う。
+    """
+    # naive 集計: テストアカウント・キャンセル注文を除外しない (K1/K3 違反の値 = 全注文合計)。
+    naive_revenue = sum(o["amount"] for o in orders)
+    reports = {
+        "revenue|2026-06": {"metric": "revenue", "period": "2026-06", "value": naive_revenue,
+                            "note": "全注文の売上合計 (テスト/キャンセル含む簡易集計)"},
+        "orders|2026-06": {"metric": "orders", "period": "2026-06", "value": len(orders),
+                           "note": "全注文件数 (テスト/キャンセル含む)"},
+    }
+    # 古い列定義 (現テーブルと不一致: is_test/status/channel が無く customer_id がある)。
+    datasets = {
+        "orders": {"name": "orders", "description": "注文データ (データカタログ / 四半期更新)",
+                   "columns": ["order_id", "order_date", "amount", "customer_id"]},
+        "sales_summary": {"name": "sales_summary", "description": "日次売上サマリ (集計済み)",
+                          "columns": ["date", "gross_sales", "order_count"]},
+    }
+    # bq_query では引けない論理データセット名 (現テーブル名 orders/daily_active_users とは別)。
+    dataset_list = ["sales_summary", "orders_daily_rollup", "finance_orders_v1", "dau_weekly"]
+    # アーカイブ検索対象は 30 日より古い (= 6 月のインシデントは漏れる) メッセージのみ。
+    channels = ["general", "alerts", "support", "releases"]
+    archive = [
+        {"date": datetime.date(2026, 5, rng.randint(1, 28)).isoformat(),
+         "channel": rng.choice(channels), "text": txt}
+        for txt in _PORTAL_ARCHIVE_TEXTS
+    ]
+    archive.sort(key=lambda m: m["date"])
+    # 日次ダイジェスト: 個別メッセージ・INC 番号などの詳細が落ちた要約。
+    digests = {
+        "alerts": "6月下旬に決済関連の障害とアップロードの不具合が発生し、対応を行いました。詳細は各インシデントレポートを参照してください。",
+        "support": "6月後半は決済エラー・返金・表示速度に関する問い合わせが中心でした。",
+        "releases": "6月は v2.4 系のリリースとロールバックを実施しました。",
+        "general": "通常の運用連絡・雑談が中心でした。",
+    }
+    # チャンネルではなくユーザーグループ (メンション用)。
+    groups = [
+        {"name": "@engineering", "members": ["kenji", "mio", "takumi", "rin"]},
+        {"name": "@support", "members": ["haruka", "yui"]},
+        {"name": "@oncall-primary", "members": ["kenji", "mio", "satoshi", "takumi"]},
+    ]
+    return {"reports": reports, "datasets": datasets, "dataset_list": dataset_list,
+            "archive": archive, "digests": digests, "groups": groups}
+
+
 def main() -> None:
     WAREHOUSE.mkdir(parents=True, exist_ok=True)
     rng = random.Random(SEED)
@@ -251,10 +438,28 @@ def main() -> None:
         w.writeheader()
         w.writerows(tickets)
 
+    # 追加ドメイン (agent-composition の tool-overload / confusability 用)。各々独立 rng を使い、
+    # 上記の既存 fixture を一切乱さない。portal のレポート値は orders から導出する。
+    billing = gen_billing(random.Random(SEED + 2))
+    (FIXTURES / "billing_data.json").write_text(
+        json.dumps(billing, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    oncall = gen_oncall(random.Random(SEED + 3))
+    (FIXTURES / "oncall_data.json").write_text(
+        json.dumps(oncall, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    portal = gen_portal(random.Random(SEED + 4), orders)
+    (FIXTURES / "portal_data.json").write_text(
+        json.dumps(portal, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
     print(f"orders.csv: {len(orders)} rows")
     print(f"daily_active_users.csv: {len(dau)} rows")
     print(f"slack_data.json: {len(slack['messages'])} messages across {len(slack['channels'])} channels")
     print(f"support_tickets.csv: {len(tickets)} rows")
+    print(f"billing_data.json: {len(billing['charges'])} charges / {len(billing['invoices'])} invoices / {len(billing['refunds'])} refunds")
+    print(f"oncall_data.json: {len(oncall['schedules'])} schedules / {len(oncall['shifts'])} shifts / {len(oncall['assignments'])} assignments")
+    print(f"portal_data.json: {len(portal['reports'])} reports / {len(portal['archive'])} archive msgs / {len(portal['groups'])} groups")
 
 
 if __name__ == "__main__":
