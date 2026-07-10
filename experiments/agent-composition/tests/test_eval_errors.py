@@ -84,3 +84,25 @@ def test_transient_job_error_retries_then_falls_back(monkeypatch):
     rec = asyncio.run(_eval_one("single_flat", "clean", TASKS_BY_ID["A1"], 0, sem))
     assert calls["n"] == run_eval._MAX_ATTEMPTS  # transient は上限までリトライ
     assert rec["tokens"] == 500 and rec["passed"] is False
+
+
+def test_job_timeout_produces_error_record(monkeypatch):
+    """ハングしたジョブは _JOB_TIMEOUT_S で打ち切られ、error record として先へ進む。"""
+    import asyncio
+
+    import run_eval
+
+    async def _hang(*args, **kwargs):
+        await asyncio.sleep(30)
+
+    monkeypatch.setattr(run_eval, "_run_once", _hang)
+    monkeypatch.setattr(run_eval, "_JOB_TIMEOUT_S", 0.05)
+    task = TASKS_BY_ID["A1"]
+
+    async def _run():
+        sem = asyncio.Semaphore(1)
+        return await run_eval._eval_one("single_flat", "clean", task, 0, sem)
+
+    rec = asyncio.run(_run())
+    assert "JobTimeout" in rec["error"]
+    assert rec["passed"] is False

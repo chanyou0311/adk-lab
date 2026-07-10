@@ -75,6 +75,9 @@ _CELL_ENVS: dict[str, list[str]] = {
 _SMOKE_TASKS = ["A1", "C1", "E1"]
 _MAX_ATTEMPTS = 3
 _BACKOFF = [5, 15]  # seconds before retry attempt 2 / 3 (最終試行後は sleep しない)
+# 1 ジョブの上限秒数。cap=120 のスパイラルでも数分で終わる (172 calls 実測 96s) ため、これを
+# 超えるのは委譲内部の永久待ち等のハング。semaphore 専有による run 全体の停止を防ぐ。
+_JOB_TIMEOUT_S = 600
 # 一時的エラーの部分一致マーカー (照合は小文字化して行う)。
 _TRANSIENT_MARKERS = (
     "429", "500", "503", "resource_exhausted", "unavailable", "internal",
@@ -279,8 +282,11 @@ async def _run_once(variant: str, env: str, prompts: list[str], seed: int,
             turns.append(final)
     except Exception as exc:  # noqa: BLE001 - 部分メトリクスを載せて伝搬する
         error = exc
-    latency = time.perf_counter() - start
-    await runner.close()
+    finally:
+        # timeout による cancel (CancelledError は except Exception に落ちない) でも runner を
+        # 確実に閉じる。close を finally の外に置くとハング job の cancel で Runner がリークする。
+        latency = time.perf_counter() - start
+        await runner.close()
 
     metrics = _collect_metrics(plugin, turns, latency)
     if error is not None:
@@ -294,7 +300,17 @@ async def _eval_one(variant: str, env: str, task, run_index: int, sem: asyncio.S
         metrics: dict = {}
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             try:
-                metrics = await _run_once(variant, env, task.prompts, run_index, max_llm_calls)
+                metrics = await asyncio.wait_for(
+                    _run_once(variant, env, task.prompts, run_index, max_llm_calls),
+                    timeout=_JOB_TIMEOUT_S,
+                )
+                break
+            except TimeoutError:
+                # ハングしたジョブ (委譲内部で待ちが解けず 5 時間停止した実績あり)。semaphore を
+                # 専有し続けて run 全体を止めるため、リトライせず error record 化して先へ進む。
+                # cancel されるため部分メトリクスは取れない (トークン消費は不明のまま)。
+                metrics = {**_zero_metrics(),
+                           "error": f"JobTimeout: exceeded {_JOB_TIMEOUT_S}s (hung job killed)"}
                 break
             except _JobError as job_err:
                 # ジョブ実行中の例外。transient 判定は cause の文字列で従来どおり。ただしキャップ超過は
