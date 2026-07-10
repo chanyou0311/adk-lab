@@ -3,6 +3,7 @@
 - model: `gemini-3-flash-preview`  ·  runs/(variant,task): 8  ·  cells: 9  ·  tasks: 16
 - pass rate は Wilson 95% CI 付き。route ok = 呼ばれた実ツールのドメインが expected と完全一致した割合 (委譲呼び出し *_assistant / transfer_to_agent と skill メタは無視)。
 - refusal rate = capability 拒否フレーズを含んだ応答の割合 (全タスクで記録)。E 以外は refused=True で不正解にする (refused ゲート)。
+- errors 列 = インフラ起因エラー (transient API・設定バグ等) の件数で、pass rate から除外。ツール幻覚 (存在しないツールを呼んで停止) 等のエージェント挙動起因の失敗は agent_error として passed=False で pass rate に含める。
 
 ## バリアント別サマリ
 
@@ -13,7 +14,7 @@
 | `single_flat@confusable` | 97% [92%–99%] | 48% | 0% | 13133 | 9.6 | 5.5 | 5.5 | 0 |
 | `single_skills@clean` | 98% [93%–99%] | 88% | 0% | 14231 | 12.0 | 6.5 | 7.2 | 0 |
 | `single_skills@confusable` | 91% [84%–95%] | 77% | 0% | 16911 | 12.2 | 7.2 | 8.0 | 0 |
-| `multi_agenttool@clean` | 98% [93%–99%] | 90% | 0% | 7764 | 16.5 | 6.7 | 9.0 | 1 |
+| `multi_agenttool@clean` | 97% [92%–99%] | 90% | 0% | 7704 | 16.4 | 6.6 | 8.9 | 0 |
 | `multi_agenttool@confusable` | 92% [86%–96%] | 71% | 0% | 16673 | 20.4 | 9.1 | 11.0 | 0 |
 | `multi_transfer@clean` | 98% [94%–100%] | 91% | 0% | 7660 | 9.7 | 4.6 | 5.7 | 0 |
 | `multi_transfer@confusable` | 93% [87%–96%] | 71% | 0% | 7744 | 9.8 | 5.0 | 5.9 | 0 |
@@ -27,7 +28,7 @@
 | `single_flat@confusable` | 100% | 100% | 91% | 100% | 94% |
 | `single_skills@clean` | 100% | 100% | 100% | 100% | 81% |
 | `single_skills@confusable` | 100% | 97% | 75% | 100% | 81% |
-| `multi_agenttool@clean` | 100% | 100% | 97% | 100% | 87% |
+| `multi_agenttool@clean` | 100% | 100% | 97% | 100% | 81% |
 | `multi_agenttool@confusable` | 100% | 100% | 72% | 100% | 94% |
 | `multi_transfer@clean` | 100% | 100% | 100% | 100% | 88% |
 | `multi_transfer@confusable` | 100% | 100% | 75% | 100% | 94% |
@@ -50,5 +51,5 @@
 | C4 | 100% | 100% | 100% | 100% | 100% | 88% | 100% | 100% | 100% |
 | D1 | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% |
 | D2 | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% |
-| E1 | 88% | 88% | 88% | 75% | 75% | 100% | 88% | 100% | 88% |
+| E1 | 88% | 88% | 88% | 75% | 75% | 88% | 88% | 100% | 88% |
 | E2 | 75% | 75% | 100% | 88% | 88% | 75% | 100% | 75% | 100% |

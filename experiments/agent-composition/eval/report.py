@@ -11,6 +11,15 @@ import statistics
 from typing import Any
 
 
+def is_scored(record: dict) -> bool:
+    """集計に含める record か。エージェント挙動起因の失敗 (``agent_error``、例: ツール幻覚) は
+    passed=False の採点済みとして pass rate に含め、インフラ起因エラー (transient API・設定バグ等、
+    ``error`` はあるが ``agent_error`` なし) のみ除外する。error record を一律除外すると、幻覚で
+    落ちやすい multi 系に有利なバイアスがかかるのを防ぐ (tasks._classify_agent_error 参照)。
+    """
+    return not record.get("error") or bool(record.get("agent_error"))
+
+
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     if n == 0:
         return (0.0, 0.0)
@@ -39,7 +48,8 @@ def aggregate(records: list[dict], variants: list[str], categories: list[str],
     summary: dict[str, Any] = {}
     for v in variants:
         rows = [r for r in records if r[group_field] == v]
-        ok_rows = [r for r in rows if not r.get("error")]
+        # agent_error (ツール幻覚等) は passed=False で pass rate に含める。除外は純インフラ error のみ。
+        ok_rows = [r for r in rows if is_scored(r)]
         k = sum(1 for r in ok_rows if r["passed"])
         lo, hi = wilson(k, len(ok_rows))
         route_rows = [r for r in ok_rows if r["route_ok"] is not None]
@@ -76,6 +86,7 @@ def render_markdown(summary: dict, variants: list[str], task_ids: list[str],
         f"- model: `{model}`  ·  runs/(variant,task): {runs}  ·  cells: {len(variants)}  ·  tasks: {len(task_ids)}",
         "- pass rate は Wilson 95% CI 付き。route ok = 呼ばれた実ツールのドメインが expected と完全一致した割合 (委譲呼び出し *_assistant / transfer_to_agent と skill メタは無視)。",
         "- refusal rate = capability 拒否フレーズを含んだ応答の割合 (全タスクで記録)。E 以外は refused=True で不正解にする (refused ゲート)。",
+        "- errors 列 = インフラ起因エラー (transient API・設定バグ等) の件数で、pass rate から除外。ツール幻覚 (存在しないツールを呼んで停止) 等のエージェント挙動起因の失敗は agent_error として passed=False で pass rate に含める。",
         "",
         "## バリアント別サマリ",
         "",

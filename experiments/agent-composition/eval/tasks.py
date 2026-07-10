@@ -440,6 +440,26 @@ TASKS: list[Task] = [
 TASKS_BY_ID = {t.id: t for t in TASKS}
 
 
+# エージェント挙動起因のクラッシュを識別するパターン。sub-agent が保持しないツール名を幻覚して
+# 呼ぶと ADK が `Tool '...' not found` で ValueError を投げる (multi 系は直接、workflow_graph は
+# DynamicNodeFailError でラップ) — これは「モデルの選択ミス」であってインフラ障害ではないので、
+# error record として集計除外すると multi 系に有利なバイアスがかかる。よって専用フィールド
+# ``agent_error`` で「集計に含める失敗」として分類する (report.is_scored 参照)。transient API
+# エラー (429/503/timeout 等) や設定バグ (rerun_on_resume 等) はこのパターンに当たらず除外のまま。
+_TOOL_NOT_FOUND_RE = re.compile(r"tool ['\"].+?['\"] not found", re.IGNORECASE)
+
+
+def _classify_agent_error(error: str | None) -> str | None:
+    """error 文字列を「エージェント挙動起因 (集計に含める) か否か」に分類する。
+
+    現状はツール幻覚 (存在しないツール名を呼んで `Tool '...' not found`) のみを agent 起因として
+    拾う。該当すれば ``"tool_hallucination"``、それ以外 (インフラ起因/設定バグ) は None を返す。
+    """
+    if error and _TOOL_NOT_FOUND_RE.search(error):
+        return "tool_hallucination"
+    return None
+
+
 def score_record(task: Task | None, final: str, tool_names: list[str],
                  error: str | None = None, tool_calls: list[dict] | None = None) -> dict:
     """1 record 分の採点フィールドを計算する — run_eval と rescore の共有実装。
@@ -499,6 +519,11 @@ def score_record(task: Task | None, final: str, tool_names: list[str],
         "fabricated": fabricated,
         "selection": selection,
     }
+    agent_error = _classify_agent_error(error)
+    if agent_error:
+        # ツール幻覚等のエージェント挙動起因の失敗。error は原因追跡のため残しつつ、集計側
+        # (report.is_scored) はこの record を passed=False の採点済みとして pass rate に含める。
+        out["agent_error"] = agent_error
     if score_error:
         out["score_error"] = score_error
     return out

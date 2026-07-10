@@ -24,22 +24,26 @@ EVAL_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = EVAL_DIR / "results"
 sys.path.insert(0, str(EVAL_DIR))
 
-from report import aggregate, render_markdown  # noqa: E402
+from report import aggregate, is_scored, render_markdown  # noqa: E402
 from tasks import TASKS_BY_ID, score_record  # noqa: E402
 
 
 def _rescore_record(rec: dict) -> dict:
-    """1 record を現行のチェック関数で再採点する (error record はそのまま保持)。"""
-    if rec.get("error"):
-        return rec
+    """1 record を現行のチェック関数で再採点する。
+
+    error record も再採点する — error 文字列を score_record に渡すことで、ツール幻覚
+    (`Tool '...' not found`) を ``agent_error`` として再分類し、採点変更を再実行なしで
+    _main 等へ遡及適用できる (report.is_scored が pass rate に含める)。error 文字列自体は保持。
+    """
     out = {**rec}
     # 旧採点フィールドは現行採点の結果で置き換える。旧スキーマの残骸 (families/expected_families /
-    # score_error) を除いてから update しないと、新旧フィールドが混在した矛盾 record になる。
-    for stale in ("score_error", "families", "expected_families"):
+    # score_error) と旧 agent_error を除いてから update しないと、新旧フィールドが混在した矛盾
+    # record になる (agent_error は分類対象外なら再付与されないので必ず落とす)。
+    for stale in ("score_error", "families", "expected_families", "agent_error"):
         out.pop(stale, None)
     task = TASKS_BY_ID.get(rec["task_id"])
     out.update(score_record(task, rec.get("final", ""), rec.get("tool_names", []),
-                            tool_calls=rec.get("tool_calls")))
+                            error=rec.get("error"), tool_calls=rec.get("tool_calls")))
     return out
 
 
@@ -52,7 +56,7 @@ def _pass_counts(records: list[dict], group_key: str) -> dict[tuple[str, str], l
     """(task_id, group) → [pass 数, ok 数] を 1 パスで集計する。"""
     counts: dict[tuple[str, str], list[int]] = {}
     for r in records:
-        if r.get("error"):
+        if not is_scored(r):  # agent_error (幻覚) は passed=False で含める。純 error のみ除外。
             continue
         cell = counts.setdefault((r["task_id"], r[group_key]), [0, 0])
         cell[1] += 1
@@ -111,7 +115,7 @@ def main() -> None:
 
     # before/after の要約を標準出力へ。
     def overall_pass(records):
-        ok = [r for r in records if not r.get("error")]
+        ok = [r for r in records if is_scored(r)]
         k = sum(1 for r in ok if r["passed"])
         return k, len(ok)
 
