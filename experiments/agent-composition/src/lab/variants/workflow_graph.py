@@ -35,11 +35,25 @@ from .common import DOMAIN_DESCRIPTIONS, OPEN_MANDATE, PERSONA, make_domain_suba
 NAME = "workflow_graph"
 
 
-class _Plan(BaseModel):
-    """planner の構造化出力。"""
+class _DomainQuery(BaseModel):
+    """ドメインへの委譲 1 件 (対象ドメイン + そのドメインだけで完結するサブクエリ)。"""
 
-    question: str  # ユーザーの質問をそのまま echo (下流ノードが参照する)
-    domains: list[str]  # 回答に必要なドメイン集合 (空 = irrelevance)
+    domain: str
+    subquery: str
+
+
+class _Plan(BaseModel):
+    """planner の構造化出力。
+
+    queries のサブクエリは**そのドメインの道具だけで答えられる自己完結の依頼文**にする。
+    質問全文を各ノードへ配ると、隔離ノードが質問の越境部分に反応して他ドメインのツールを
+    幻覚し、ADK の `Tool '...' not found` ハードクラッシュを踏む (graph ジョブの 19% が
+    クロスドメインタスクで系統的にクラッシュした _main2 初回収集で実証)。multi 系の
+    coordinator が会話的に「狭い依頼文」を作るのと同じ役割を、graph では planner が担う。
+    """
+
+    question: str  # ユーザーの質問をそのまま echo (synthesizer が参照する)
+    queries: list[_DomainQuery]  # 回答に必要なドメインへの委譲 (空 = irrelevance)
 
 
 def _domain_agents(env: str, seed: int | None = None) -> dict:
@@ -54,11 +68,14 @@ def _domain_agents(env: str, seed: int | None = None) -> dict:
 def _planner(available: str) -> Agent:
     instruction = (
         f"{PERSONA}\n\n"
-        "あなたはルーティング担当です。ユーザーの質問に答えるために必要なドメインを判断してください。\n"
+        "あなたはルーティング担当です。ユーザーの質問に答えるために必要なドメインを判断し、"
+        "各ドメインへの依頼文 (サブクエリ) に分解してください。\n"
         f"利用可能なドメイン:\n{available}\n\n"
-        "question にはユーザーの質問をそのまま入れてください。domains には回答に必要なドメイン名だけを"
-        "列挙してください (複数可)。どのドメインのデータでも答えられない質問なら domains は空リストに"
-        "してください。"
+        "question にはユーザーの質問をそのまま入れてください。queries には回答に必要なドメインごとに "
+        "{domain, subquery} を列挙してください (複数可)。**subquery はそのドメインのデータだけで"
+        "答えられる自己完結の依頼文にすること** — 他ドメインに属する部分を混ぜないでください "
+        "(例: 売上の集計は bq へ、障害報告の検索は slack へ、と分けて依頼する)。"
+        "どのドメインのデータでも答えられない質問なら queries は空リストにしてください。"
     )
     return Agent(
         name="planner",
@@ -91,18 +108,26 @@ def build(env: str, seed: int | None = None) -> Workflow:
     available = "\n".join(f"- {d}: {DOMAIN_DESCRIPTIONS[d]}" for d in agents)
 
     async def _dispatch(ctx, node_input):
-        """plan に従い選ばれたドメインノードを動的実行し、synthesizer 用テキストを返す。"""
+        """plan に従い選ばれたドメインノードへサブクエリを動的実行し、synthesizer 用テキストを返す。
+
+        各ノードには質問全文でなく **そのドメイン向けサブクエリだけ** を渡す — 全文を配ると隔離
+        ノードが越境部分に反応して他ドメインのツールを幻覚し、ADK のハードクラッシュを踏む
+        (_Plan docstring 参照)。subquery が空の場合のみ質問全文にフォールバックする。
+        """
         if isinstance(node_input, _Plan):
-            question, wanted = node_input.question, node_input.domains
+            question, queries = node_input.question, node_input.queries
         elif isinstance(node_input, dict):
-            question, wanted = node_input.get("question", ""), node_input.get("domains", [])
+            question = node_input.get("question", "")
+            queries = [_DomainQuery(**q) if isinstance(q, dict) else q
+                       for q in node_input.get("queries", [])]
         else:
-            question, wanted = str(node_input), []
-        selected = [d for d in wanted if d in agents]  # 幻覚した不在ドメインは除外
+            question, queries = str(node_input), []
         parts = []
-        for d in selected:
-            answer = await ctx.run_node(agents[d], node_input=question)
-            parts.append(f"[{d}]\n{answer}")
+        for q in queries:
+            if q.domain not in agents:  # 幻覚した不在ドメインは除外
+                continue
+            answer = await ctx.run_node(agents[q.domain], node_input=q.subquery or question)
+            parts.append(f"[{q.domain}]\n{answer}")
         body = "\n\n".join(parts) if parts else "(利用可能なドメインからは該当する情報が得られませんでした)"
         return f"ユーザーの質問:\n{question}\n\n各ドメイン専門ノードの回答:\n{body}"
 

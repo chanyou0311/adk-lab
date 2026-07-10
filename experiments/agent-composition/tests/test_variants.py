@@ -227,3 +227,17 @@ def test_workflow_graph_builds_into_app_runner():
     from google.adk.runners import InMemoryRunner
     wf = VARIANTS["workflow_graph"](CLEAN)
     InMemoryRunner(app=App(name="t", root_agent=wf))
+
+
+def test_workflow_graph_plan_schema_has_subqueries():
+    """planner の出力契約: ドメイン選択でなく {domain, subquery} の委譲リストであることを固定する。
+
+    質問全文を各ノードに配る旧設計はクロスドメインタスクで越境ツール幻覚のハードクラッシュを
+    系統的に起こした (_main2 初回収集で graph ジョブの 19%)。subquery フィールドの存在が
+    「狭い依頼文を作る」対策の要。
+    """
+    from lab.variants.workflow_graph import _DomainQuery, _Plan
+
+    fields = set(_Plan.model_fields)
+    assert fields == {"question", "queries"}
+    assert set(_DomainQuery.model_fields) == {"domain", "subquery"}
