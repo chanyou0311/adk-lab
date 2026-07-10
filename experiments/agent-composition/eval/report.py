@@ -10,6 +10,8 @@ import math
 import statistics
 from typing import Any
 
+TITLE = "agent-composition 評価 — 結果"
+
 
 def is_scored(record: dict) -> bool:
     """集計に含める record か。エージェント挙動起因の失敗 (``agent_error``、例: ツール幻覚) は
@@ -81,7 +83,7 @@ def aggregate(records: list[dict], variants: list[str], categories: list[str],
 def render_markdown(summary: dict, variants: list[str], task_ids: list[str],
                     categories: list[str], runs: int, model: str) -> str:
     lines = [
-        "# 知識配置バリアント評価 — 結果",
+        f"# {TITLE}",
         "",
         f"- model: `{model}`  ·  runs/(variant,task): {runs}  ·  cells: {len(variants)}  ·  tasks: {len(task_ids)}",
         "- pass rate は Wilson 95% CI 付き。route ok = 呼ばれた実ツールのドメインが expected と完全一致した割合 (委譲呼び出し *_assistant / transfer_to_agent と skill メタは無視)。",
