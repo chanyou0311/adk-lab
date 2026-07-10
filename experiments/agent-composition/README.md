@@ -115,8 +115,9 @@ uv run pytest -q && uv run ruff check .  # オフライン検証 (Vertex 不要)
 # クロス評価 (Vertex 接続。ADC + env 必要)。収集セル計画 13 セル (single_flat×3env + 他 5×2env)
 export GOOGLE_GENAI_USE_VERTEXAI=TRUE GOOGLE_CLOUD_PROJECT=<your-project>
 uv run python eval/run_eval.py --smoke --tag _smoke        # V-1 smoke (13セル×A1/C1/E1×1run)
-uv run python eval/run_eval.py --runs 8 --tag _main        # 本番 (13セル×16タスク×8run)
+uv run python eval/run_eval.py --runs 8 --tag _main        # 本番 (13セル×16タスク×8run・無制限)
 uv run python eval/run_eval.py --variants single_flat --envs clean --tasks B1 C1  # 絞り込み
+uv run python eval/run_eval.py --runs 10 --max-llm-calls 120 --tag _refill  # 追い足し (cap=120)
 
 # 採点器を修正した後の再採点 (完全オフライン・LLM 不要)。新 tag は _rescored も併せて commit
 uv run python eval/rescore.py --tag _smoke
@@ -135,6 +136,13 @@ CONFUSABLE 環境での劣化・トークンコスト差 (multi > single を pro
 ため本来は runs≥10 が望ましいが、コスト都合で**既定 runs=8 に縮退**する。Wilson 95% CI が割れる
 (隣接セルと CI が重なって差を主張できない) セルに限り、事後に runs を 10 へ追い足して CI を締める。
 raw record は append-only なので追い足しは既存結果を壊さない。
+
+**LLM 呼び出しキャップ (`--max-llm-calls`)**: 追い足しセルは `--max-llm-calls 120` (cap=120) で収集し、
+single_turn 系の silo スパイラル (sub-agent が答えに収束せず呼び出しを浪費する) が稀に暴走してコストを
+食うのを抑える。`_main` (本収集) は**無制限** — 実測で 120 呼び出しを超えたのは 5/1151 件のみ・**全て E
+(irrelevance) タスク**で、キャップは典型セルの計測を歪めない一方、暴走セルのコスト上限として効く。cap
+超過時 (`LlmCallsLimitExceeded`) はリトライせず (課金が増えるだけ)、そこまでに消費したトークン・tool
+呼び出しを部分メトリクスとして記録に保全し、`error` を付して `passed=False` で確定する。
 
 ## 後続作業 (TODO)
 

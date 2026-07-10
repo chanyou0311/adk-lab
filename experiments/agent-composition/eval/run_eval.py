@@ -38,6 +38,8 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+from google.adk.agents.invocation_context import LlmCallsLimitExceededError
+from google.adk.agents.run_config import RunConfig
 from google.adk.apps import App
 from google.adk.plugins.base_plugin import BasePlugin
 from google.adk.runners import InMemoryRunner
@@ -165,6 +167,29 @@ def _is_signature_error(exc: Exception) -> bool:
     return any(m in msg for m in _SIGNATURE_MARKERS)
 
 
+def _is_cap_exceeded(exc: Exception) -> bool:
+    """max_llm_calls キャップ超過か。リトライしても同じ結果で課金だけ増えるので transient にしない。"""
+    return isinstance(exc, LlmCallsLimitExceededError) or "llm calls limit" in str(exc).lower()
+
+
+def _make_run_config(max_llm_calls: int | None) -> RunConfig | None:
+    """max_llm_calls 指定時のみ RunConfig を作る (None は ADK 既定に委ねる = run_config を渡さない)。"""
+    return RunConfig(max_llm_calls=max_llm_calls) if max_llm_calls is not None else None
+
+
+class _JobError(Exception):
+    """ジョブ実行中の例外を、消費済みの部分メトリクスと一緒に伝搬する。
+
+    キャップ超過 (LlmCallsLimitExceeded) 等でジョブが落ちても、そこまでに消費したトークン・tool
+    呼び出しを記録から失わないための入れ物。cause に元例外、partial に plugin 集計値 + 途中 turns。
+    """
+
+    def __init__(self, cause: Exception, partial: dict) -> None:
+        super().__init__(str(cause))
+        self.cause = cause
+        self.partial = partial
+
+
 def _zero_metrics() -> dict:
     """メトリクスの空形。_run_once の初期値と error fallback で共有し、スキーマを 1 箇所にする。"""
     return {
@@ -187,45 +212,8 @@ def _zero_metrics() -> dict:
     }
 
 
-async def _run_once(variant: str, env: str, prompts: list[str], seed: int) -> dict:
-    """1 ジョブを実行する。マルチターンは同一 session を turn 間で共有する。
-
-    variant を env でツール環境化し、seed で提示順を run 毎シャッフルして構築する。session を turn
-    ごとに作り直さないのが要点 — turn 2 は turn 1 の結果を参照するので、session を使い回すことで
-    AgentTool の文脈喪失 (sub-agent が前 turn の文脈を持たない) を露出させる。全 turn の最終応答を
-    turns に残し、採点は最終 turn (final) で行う。tool_names は全 turn を通した順序付き trajectory。
-    """
-    root = VARIANTS[variant](env, seed)
-    plugin = MetricsPlugin()
-    app = App(name=APP_NAME, root_agent=root, plugins=[plugin])
-    runner = InMemoryRunner(app=app)
-    session = await runner.session_service.create_session(
-        app_name=runner.app_name, user_id=USER_ID
-    )
-
-    turns: list[str] = []
-    start = time.perf_counter()
-    try:
-        for prompt in prompts:
-            message = types.UserContent(prompt)
-            final = ""
-            async for event in runner.run_async(
-                user_id=USER_ID, session_id=session.id, new_message=message
-            ):
-                content = getattr(event, "content", None)
-                parts = content.parts if content is not None else None
-                # thought part (推論の途中出力) は最終回答に含めない (採点対象は最終応答テキスト)。
-                text = "".join(
-                    p.text for p in (parts or [])
-                    if getattr(p, "text", None) and not getattr(p, "thought", False)
-                )
-                if event.is_final_response() and text:
-                    final = text
-            turns.append(final)
-    finally:
-        latency = time.perf_counter() - start
-        await runner.close()
-
+def _collect_metrics(plugin: MetricsPlugin, turns: list[str], latency: float) -> dict:
+    """plugin の集計値 + turns からメトリクス dict を組む (成功時も部分保全時も同一スキーマ)。"""
     return {
         **_zero_metrics(),
         "final": turns[-1] if turns else "",
@@ -246,18 +234,86 @@ async def _run_once(variant: str, env: str, prompts: list[str], seed: int) -> di
     }
 
 
-async def _eval_one(variant: str, env: str, task, run_index: int, sem: asyncio.Semaphore) -> dict:
+async def _run_once(variant: str, env: str, prompts: list[str], seed: int,
+                    max_llm_calls: int | None = None) -> dict:
+    """1 ジョブを実行する。マルチターンは同一 session を turn 間で共有する。
+
+    variant を env でツール環境化し、seed で提示順を run 毎シャッフルして構築する。session を turn
+    ごとに作り直さないのが要点 — turn 2 は turn 1 の結果を参照するので、session を使い回すことで
+    AgentTool の文脈喪失 (sub-agent が前 turn の文脈を持たない) を露出させる。全 turn の最終応答を
+    turns に残し、採点は最終 turn (final) で行う。tool_names は全 turn を通した順序付き trajectory。
+
+    max_llm_calls 指定時は RunConfig(max_llm_calls=N) で 1 invocation の LLM 呼び出しを上限化する
+    (single_turn の silo スパイラル等でコストが暴走するのを抑える)。例外時は **そこまでに消費した
+    部分メトリクス** を _JobError に載せて伝搬する (キャップ超過のトークンを記録から失わない)。
+    """
+    root = VARIANTS[variant](env, seed)
+    plugin = MetricsPlugin()
+    app = App(name=APP_NAME, root_agent=root, plugins=[plugin])
+    runner = InMemoryRunner(app=app)
+    session = await runner.session_service.create_session(
+        app_name=runner.app_name, user_id=USER_ID
+    )
+    run_config = _make_run_config(max_llm_calls)
+
+    turns: list[str] = []
+    error: Exception | None = None
+    start = time.perf_counter()
+    try:
+        for prompt in prompts:
+            message = types.UserContent(prompt)
+            final = ""
+            async for event in runner.run_async(
+                user_id=USER_ID, session_id=session.id, new_message=message,
+                run_config=run_config,
+            ):
+                content = getattr(event, "content", None)
+                parts = content.parts if content is not None else None
+                # thought part (推論の途中出力) は最終回答に含めない (採点対象は最終応答テキスト)。
+                text = "".join(
+                    p.text for p in (parts or [])
+                    if getattr(p, "text", None) and not getattr(p, "thought", False)
+                )
+                if event.is_final_response() and text:
+                    final = text
+            turns.append(final)
+    except Exception as exc:  # noqa: BLE001 - 部分メトリクスを載せて伝搬する
+        error = exc
+    latency = time.perf_counter() - start
+    await runner.close()
+
+    metrics = _collect_metrics(plugin, turns, latency)
+    if error is not None:
+        raise _JobError(error, metrics) from error
+    return metrics
+
+
+async def _eval_one(variant: str, env: str, task, run_index: int, sem: asyncio.Semaphore,
+                    max_llm_calls: int | None = None) -> dict:
     async with sem:
         metrics: dict = {}
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             try:
-                metrics = await _run_once(variant, env, task.prompts, run_index)
+                metrics = await _run_once(variant, env, task.prompts, run_index, max_llm_calls)
                 break
-            except Exception as exc:  # noqa: BLE001
+            except _JobError as job_err:
+                # ジョブ実行中の例外。transient 判定は cause の文字列で従来どおり。ただしキャップ超過は
+                # リトライしても同じ結果で課金だけ増えるので transient にしない。
+                cause = job_err.cause
+                if attempt < _MAX_ATTEMPTS and _is_transient(cause) and not _is_cap_exceeded(cause):
+                    await asyncio.sleep(_BACKOFF[attempt - 1])
+                    continue
+                # 部分メトリクス (消費済みトークン・tool 呼び出し) を保全したうえで error を付す。
+                metrics = {
+                    **job_err.partial,
+                    "error": f"{type(cause).__name__}: {cause}"[:300],
+                    "signature_400": _is_signature_error(cause),
+                }
+                break
+            except Exception as exc:  # noqa: BLE001 - 構築段階など _JobError 以前の例外
                 if attempt < _MAX_ATTEMPTS and _is_transient(exc):
                     await asyncio.sleep(_BACKOFF[attempt - 1])
                     continue
-                # thought signature 起因の 400 は別フラグで残す (multi-agent の伝播回帰を切り分ける)。
                 metrics = {
                     **_zero_metrics(),
                     "error": f"{type(exc).__name__}: {exc}"[:300],
@@ -349,7 +405,7 @@ async def _main_async(args) -> None:
         ckpt_path.unlink(missing_ok=True)
     done_keys = {_ckpt_key(r) for r in prior}
 
-    jobs = [_eval_one(v, e, t, run_idx, sem)
+    jobs = [_eval_one(v, e, t, run_idx, sem, args.max_llm_calls)
             for (v, e, t, run_idx) in _pending_specs(cells, tasks, runs, done_keys)]
     total = len(jobs)
     mode = "SMOKE " if args.smoke else ""
@@ -374,7 +430,8 @@ async def _main_async(args) -> None:
     summary = aggregate(records, cell_labels, categories, group_field="cell")
     (RESULTS_DIR / f"results{suffix}.json").write_text(
         json.dumps(
-            {"model": MODEL, "runs": runs, "cells": cell_labels, "task_ids": task_ids,
+            {"model": MODEL, "runs": runs, "max_llm_calls": args.max_llm_calls,
+             "cells": cell_labels, "task_ids": task_ids,
              "summary": summary, "records": records},
             ensure_ascii=False, indent=2,
         ),
@@ -403,6 +460,9 @@ def main() -> None:
     p.add_argument("--resume", action="store_true",
                    help="checkpoint (results_<tag>.checkpoint.jsonl) の完了済みジョブを"
                         "スキップして再開 (error record も完了扱い = 自動再実行しない)")
+    p.add_argument("--max-llm-calls", type=int, default=None,
+                   help="1 invocation あたりの LLM 呼び出し上限 (RunConfig.max_llm_calls)。"
+                        "既定 None = ADK 既定 (500)。single_turn の silo スパイラル抑制用 (例: 120)")
     asyncio.run(_main_async(p.parse_args()))
 
 
