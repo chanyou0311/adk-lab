@@ -144,6 +144,17 @@ single_turn 系の silo スパイラル (sub-agent が答えに収束せず呼�
 超過時 (`LlmCallsLimitExceeded`) はリトライせず (課金が増えるだけ)、そこまでに消費したトークン・tool
 呼び出しを部分メトリクスとして記録に保全し、`error` を付して `passed=False` で確定する。
 
+**checkpoint / `--resume` (kill 耐性)**: 長時間 run が外部シグナル等で kill されても課金済みジョブを
+失わないよう、ジョブ完了ごとに 1 行 JSON を `results_<tag>.checkpoint.jsonl` (scratch、.gitignore 対象)
+へ追記する。中断後は `--resume` で完了済み (cell, task_id, run_index) をスキップして続きから再開できる。
+復元 record は現行採点器で再採点してから合流する (resume を跨いで採点器が変わっても raw results に
+採点世代が混在しない)。正常完了時は最終結果に合流して checkpoint を削除する。
+
+**ジョブ単位タイムアウト (600s)**: 委譲内部の待ちが解けないハング (実測: in-flight 4 ジョブが約 5 時間
+無進捗で concurrency の semaphore を専有し run 全体が停止) を防ぐため、1 ジョブ 600 秒で打ち切り
+`JobTimeout` の error record として先へ進む (リトライしない)。cap=120 のスパイラルでも実測 96s で
+終わるため、600s 超は正常ジョブでは起きない水準。
+
 ## 後続作業 (TODO)
 
 - **本収集** — `--runs 8` で 13 セル × 16 タスクを実測し `eval/results/` に保存 (raw + `_rescored` 同時 commit)。

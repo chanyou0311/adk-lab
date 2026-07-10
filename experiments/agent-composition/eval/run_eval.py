@@ -50,6 +50,7 @@ RESULTS_DIR = EVAL_DIR / "results"
 sys.path.insert(0, str(EVAL_DIR))
 
 from report import aggregate, render_markdown  # noqa: E402
+from rescore import _rescore_record  # noqa: E402 - resume 復元 record の採点世代を現行へ揃える
 from tasks import TASKS, score_record  # noqa: E402
 
 from lab.environments import CLEAN, CONFUSABLE, DISTINCT, ENVIRONMENTS  # noqa: E402
@@ -419,6 +420,11 @@ async def _main_async(args) -> None:
     if not args.resume:
         # 新規実行: 過去の中断で残った checkpoint を破棄する (追記で新旧が混ざるのを防ぐ)。
         ckpt_path.unlink(missing_ok=True)
+    if prior:
+        # 復元 record を現行採点器で再採点する — resume を跨いで採点器が変わると raw results に
+        # 採点器世代が混在する (実発生: _main2 初回は option A 前の 89 件 + 後の 423 件が混在)。
+        # final/tool_names/error は checkpoint に保存済みなので、メタを保ったまま採点だけ揃う。
+        prior = [_rescore_record(r) for r in prior]
     done_keys = {_ckpt_key(r) for r in prior}
 
     jobs = [_eval_one(v, e, t, run_idx, sem, args.max_llm_calls)
@@ -458,9 +464,11 @@ async def _main_async(args) -> None:
     ckpt_path.unlink(missing_ok=True)  # 正常完了: 最終結果に合流済みなので checkpoint は不要
     print("\n" + md)
 
-    n_err = sum(1 for r in records if r.get("error"))
-    if n_err:
-        print(f"⚠ {n_err}/{total} records had errors (集計から除外済み)。results{suffix}.json を参照。")
+    n_hall = sum(1 for r in records if r.get("agent_error"))
+    n_infra = sum(1 for r in records if r.get("error") and not r.get("agent_error"))
+    if n_infra or n_hall:
+        print(f"⚠ 全 {len(records)} 件中: インフラ起因 error {n_infra} 件 (集計から除外) / "
+              f"agent_error {n_hall} 件 (passed=False で集計に包含)。results{suffix}.json を参照。")
 
 
 def main() -> None:

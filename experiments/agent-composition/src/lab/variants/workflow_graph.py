@@ -118,8 +118,13 @@ def build(env: str, seed: int | None = None) -> Workflow:
             question, queries = node_input.question, node_input.queries
         elif isinstance(node_input, dict):
             question = node_input.get("question", "")
-            queries = [_DomainQuery(**q) if isinstance(q, dict) else q
-                       for q in node_input.get("queries", [])]
+            # planner の崩れた出力 (想定外キー/型) で workflow ごと落とさない — 欠損キー耐性で
+            # 読める要素だけ拾う (domain 空は下の not in agents で除外される)。
+            queries = [q if isinstance(q, _DomainQuery)
+                       else _DomainQuery(domain=str(q.get("domain", "")),
+                                         subquery=str(q.get("subquery", "")))
+                       for q in node_input.get("queries", [])
+                       if isinstance(q, (dict, _DomainQuery))]
         else:
             question, queries = str(node_input), []
         parts = []
