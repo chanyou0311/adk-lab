@@ -1,0 +1,521 @@
+{
+  "model": "gemini-3-flash-preview",
+  "runs": 1,
+  "cells": [
+    "workflow_graph@clean",
+    "workflow_graph@confusable"
+  ],
+  "task_ids": [
+    "A1",
+    "C1",
+    "E1"
+  ],
+  "rescored_from": "results_smoke3.json",
+  "summary": {
+    "workflow_graph@clean": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 1.0,
+      "pass_ci": [
+        0.43849391955098227,
+        1.0
+      ],
+      "route_ok_rate": 1.0,
+      "refusal_rate": 0.0,
+      "tokens": 2276.3333333333335,
+      "latency": 7.788116625354935,
+      "tool_calls": 1.6666666666666667,
+      "llm_calls": 4.333333333333333,
+      "by_category": {
+        "A": 1.0,
+        "C": 1.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "A1": 1.0,
+        "C1": 1.0,
+        "E1": 1.0
+      }
+    },
+    "workflow_graph@confusable": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 1.0,
+      "pass_ci": [
+        0.43849391955098227,
+        1.0
+      ],
+      "route_ok_rate": 0.3333333333333333,
+      "refusal_rate": 0.0,
+      "tokens": 8769.333333333334,
+      "latency": 16.552796471863985,
+      "tool_calls": 8,
+      "llm_calls": 11.333333333333334,
+      "by_category": {
+        "A": 1.0,
+        "C": 1.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "A1": 1.0,
+        "E1": 1.0,
+        "C1": 1.0
+      }
+    }
+  },
+  "records": [
+    {
+      "final": "2026年6月10日の注文数は**18件**でした。",
+      "turns": [
+        "2026年6月10日の注文数は**18件**でした。"
+      ],
+      "latency": 7.212571166921407,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10'"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 2,
+      "llm_calls": 5,
+      "tokens": 2158,
+      "prompt_tokens": 1942,
+      "candidate_tokens": 115,
+      "thoughts_tokens": 101,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_max": 0,
+      "signature_ever_missing": false,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "delegations": [],
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "workflow_graph",
+      "env": "confusable",
+      "cell": "workflow_graph@confusable",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0
+    },
+    {
+      "final": "2026年6月10日の注文数は18件でした。",
+      "turns": [
+        "2026年6月10日の注文数は18件でした。"
+      ],
+      "latency": 8.960854000411928,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = false"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 2,
+      "llm_calls": 5,
+      "tokens": 2290,
+      "prompt_tokens": 1844,
+      "candidate_tokens": 120,
+      "thoughts_tokens": 326,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_max": 0,
+      "signature_ever_missing": false,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "delegations": [],
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "workflow_graph",
+      "env": "clean",
+      "cell": "workflow_graph@clean",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0
+    },
+    {
+      "final": "2026年6月の売上レポートをまとめました。\n\nテスト注文およびキャンセル注文を除いた、税抜純売上の合計は以下の通りです。\n\n*   **税抜純売上合計**: **7,290,948円**\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **算出方法**: 税込合計金額を1.1で除算（円未満切り捨て）\n\nテスト注文（`is_test = false`）およびキャンセル済みステータスの注文を除外して集計しています。",
+      "turns": [
+        "2026年6月の売上レポートをまとめました。\n\nテスト注文およびキャンセル注文を除いた、税抜純売上の合計は以下の通りです。\n\n*   **税抜純売上合計**: **7,290,948円**\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **算出方法**: 税込合計金額を1.1で除算（円未満切り捨て）\n\nテスト注文（`is_test = false`）およびキャンセル済みステータスの注文を除外して集計しています。"
+      ],
+      "latency": 10.70433016680181,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(FLOOR(amount / 1.1)) AS net_sales_excl_tax FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND is_test = false AND status"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 6,
+      "tokens": 3640,
+      "prompt_tokens": 2994,
+      "candidate_tokens": 468,
+      "thoughts_tokens": 178,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_max": 0,
+      "signature_ever_missing": false,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "delegations": [],
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "workflow_graph",
+      "env": "clean",
+      "cell": "workflow_graph@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0
+    },
+    {
+      "final": "申し訳ありませんが、提供されたデータの中には、2026年5月に新しく採用されたメンバーに関する情報が含まれていませんでした。そのため、正確な人数をお答えすることができません。",
+      "turns": [
+        "申し訳ありませんが、提供されたデータの中には、2026年5月に新しく採用されたメンバーに関する情報が含まれていませんでした。そのため、正確な人数をお答えすることができません。"
+      ],
+      "latency": 3.699165708851069,
+      "tool_calls": [],
+      "tool_names": [],
+      "n_tool_calls": 0,
+      "llm_calls": 2,
+      "tokens": 899,
+      "prompt_tokens": 623,
+      "candidate_tokens": 71,
+      "thoughts_tokens": 205,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_max": 0,
+      "signature_ever_missing": false,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "domains": [],
+      "expected_domains": [],
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "delegations": [],
+      "fabricated": false,
+      "selection": "no_call",
+      "variant": "workflow_graph",
+      "env": "clean",
+      "cell": "workflow_graph@clean",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0
+    },
+    {
+      "final": "2026年5月に新しく採用されたメンバーの人数については、社内メッセージやアーカイブを確認しましたが、該当する記録が見つかりませんでした。\n\n現在のユーザーグループの名簿は確認できておりますが、各メンバーの加入時期を特定できる情報が含まれていない状況です。\n\n採用情報の周知が行われる特定のチャンネル名や、入社時の定型メッセージ（例：「新メンバー紹介」など）について詳細がわかれば、再調査が可能です。",
+      "turns": [
+        "2026年5月に新しく採用されたメンバーの人数については、社内メッセージやアーカイブを確認しましたが、該当する記録が見つかりませんでした。\n\n現在のユーザーグループの名簿は確認できておりますが、各メンバーの加入時期を特定できる情報が含まれていない状況です。\n\n採用情報の周知が行われる特定のチャンネル名や、入社時の定型メッセージ（例：「新メンバー紹介」など）について詳細がわかれば、再調査が可能です。"
+      ],
+      "latency": 14.749159207567573,
+      "tool_calls": [
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "hr-recruit"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "入社 2026年5月"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "採用 2026年5月"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "ジョイン"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "new member 2026-05"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "自己紹介"
+          }
+        },
+        {
+          "name": "portal_list_groups",
+          "args": {}
+        }
+      ],
+      "tool_names": [
+        "portal_get_digest",
+        "portal_search_archive",
+        "portal_search_archive",
+        "portal_get_digest",
+        "portal_search_archive",
+        "portal_search_archive",
+        "portal_search_archive",
+        "portal_list_groups"
+      ],
+      "n_tool_calls": 8,
+      "llm_calls": 11,
+      "tokens": 8291,
+      "prompt_tokens": 7721,
+      "candidate_tokens": 407,
+      "thoughts_tokens": 163,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_max": 0,
+      "signature_ever_missing": false,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "domains": [
+        "portal"
+      ],
+      "expected_domains": [],
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": false,
+      "offtask_calls": 8,
+      "delegations": [],
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "workflow_graph",
+      "env": "confusable",
+      "cell": "workflow_graph@confusable",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0
+    },
+    {
+      "final": "2026年6月の売上レポート（テスト注文およびキャンセル注文を除く）をご報告します。\n\n詳細な注文データを集計した結果、条件に合致する売上合計は以下の通りです。\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **算出条件**: テスト注文およびキャンセル済み注文を除外\n*   **税抜純売上合計**: **7,290,948円**\n    *   ※税込合計金額を1.1で割り、円未満を切り捨てて算出。\n\nなお、ポータル上の簡易レポート（テスト・キャンセル分を含む総売上 16,163,128円）と比較すると、実際の純売上は大きく変動しています。これはテスト・キャンセル分が厳密に除外されたことによるものです。",
+      "turns": [
+        "2026年6月の売上レポート（テスト注文およびキャンセル注文を除く）をご報告します。\n\n詳細な注文データを集計した結果、条件に合致する売上合計は以下の通りです。\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **算出条件**: テスト注文およびキャンセル済み注文を除外\n*   **税抜純売上合計**: **7,290,948円**\n    *   ※税込合計金額を1.1で割り、円未満を切り捨てて算出。\n\nなお、ポータル上の簡易レポート（テスト・キャンセル分を含む総売上 16,163,128円）と比較すると、実際の純売上は大きく変動しています。これはテスト・キャンセル分が厳密に除外されたことによるものです。"
+      ],
+      "latency": 27.696659041102976,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(FLOOR(amount / 1.1)) AS net_sales_excluding_tax FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND is_test = false AND s"
+          }
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "metric": "売上",
+            "period": "2026-06"
+          }
+        },
+        {
+          "name": "portal_list_datasets",
+          "args": {}
+        },
+        {
+          "name": "portal_describe_dataset",
+          "args": {
+            "name": "finance_orders_v1"
+          }
+        },
+        {
+          "name": "portal_describe_dataset",
+          "args": {
+            "name": "sales_summary"
+          }
+        },
+        {
+          "name": "portal_describe_dataset",
+          "args": {
+            "name": "orders_daily_rollup"
+          }
+        },
+        {
+          "name": "portal_list_datasets",
+          "args": {}
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "period": "2026-06",
+            "metric": "revenue"
+          }
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "metric": "orders",
+            "period": "2026-06"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "2026年6月 キャンセル テスト 売上"
+          }
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "period": "2026-06",
+            "metric": "cancel_rate"
+          }
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "metric": "revenue",
+            "period": "2026-05"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query",
+        "portal_run_report",
+        "portal_list_datasets",
+        "portal_describe_dataset",
+        "portal_describe_dataset",
+        "portal_describe_dataset",
+        "portal_list_datasets",
+        "portal_run_report",
+        "portal_run_report",
+        "portal_search_archive",
+        "portal_run_report",
+        "portal_run_report"
+      ],
+      "n_tool_calls": 14,
+      "llm_calls": 18,
+      "tokens": 15859,
+      "prompt_tokens": 14414,
+      "candidate_tokens": 1201,
+      "thoughts_tokens": 244,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_max": 0,
+      "signature_ever_missing": false,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "domains": [
+        "bq",
+        "portal"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": false,
+      "offtask_calls": 11,
+      "delegations": [],
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "workflow_graph",
+      "env": "confusable",
+      "cell": "workflow_graph@confusable",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0
+    }
+  ]
+}

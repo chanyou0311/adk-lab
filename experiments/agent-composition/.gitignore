@@ -1,0 +1,3 @@
+
+# eval checkpoint (scratch — results append-only 規約の対象外)
+*.checkpoint.jsonl

@@ -1,0 +1,488 @@
+{
+  "schedules": [
+    {
+      "schedule_id": "SCH-primary",
+      "name": "Primary On-call",
+      "rotation": [
+        "kenji",
+        "mio",
+        "satoshi",
+        "takumi"
+      ]
+    },
+    {
+      "schedule_id": "SCH-secondary",
+      "name": "Secondary On-call",
+      "rotation": [
+        "haruka",
+        "yui",
+        "rin",
+        "daiki"
+      ]
+    }
+  ],
+  "shifts": [
+    {
+      "date": "2026-06-01",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-01",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-02",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-02",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-03",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-03",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-04",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-04",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-05",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-05",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-06",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-06",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-07",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-07",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-08",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-08",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-09",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-09",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-10",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-10",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-11",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-11",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-12",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-12",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-13",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-13",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-14",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "mio",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-14",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "yui",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-15",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-15",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-16",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-16",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-17",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-17",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-18",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-18",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-19",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-19",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-20",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-20",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-21",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "satoshi",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-21",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "rin",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-22",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-22",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-23",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-23",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-24",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-24",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-25",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-25",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-26",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-26",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-27",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-27",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-28",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "takumi",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-28",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "daiki",
+      "handoff_hour": 9
+    },
+    {
+      "date": "2026-06-29",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-29",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 11
+    },
+    {
+      "date": "2026-06-30",
+      "schedule_id": "SCH-primary",
+      "role": "primary",
+      "user": "kenji",
+      "handoff_hour": 10
+    },
+    {
+      "date": "2026-06-30",
+      "schedule_id": "SCH-secondary",
+      "role": "secondary",
+      "user": "haruka",
+      "handoff_hour": 10
+    }
+  ],
+  "assignments": [
+    {
+      "incident_id": "INC-42",
+      "severity": "sev1",
+      "start": "2026-06-24",
+      "end": "2026-06-26",
+      "responders": [
+        {
+          "user": "kenji",
+          "role": "incident_commander"
+        },
+        {
+          "user": "takumi",
+          "role": "engineer"
+        }
+      ]
+    },
+    {
+      "incident_id": "INC-43",
+      "severity": "sev1",
+      "start": "2026-06-29",
+      "end": null,
+      "responders": [
+        {
+          "user": "mio",
+          "role": "incident_commander"
+        }
+      ]
+    },
+    {
+      "incident_id": "INC-44",
+      "severity": "sev2",
+      "start": "2026-06-30",
+      "end": null,
+      "responders": [
+        {
+          "user": "satoshi",
+          "role": "engineer"
+        }
+      ]
+    }
+  ]
+}

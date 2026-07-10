@@ -15,8 +15,10 @@ uv プロジェクトとして置く。
    現行採点器を再適用して結果を更新できる構造 (LLM 再実行なし) が生命線
 4. **採点器のユニットテスト**: 正例に加えて **gaming 例** (見つけた定義への接地・捏造閾値で
    偶然正解を包含) と **terse-correct 例** (正しいが簡潔で marker を欠く回答) の両側を固定する
-5. **pin**: モデルは明示 pin (preview の alias 禁止)・`temperature=0`・依存は `==` pin +
-   uv.lock を commit (`uv sync --frozen` が通ること)
+5. **pin**: モデルは明示 pin (preview の alias 禁止)・`temperature` は既定 0。ただし thinking
+   モデルで公式推奨が 1.0 の場合は 1.0 とし、決定性は runs を増やして分散を統計吸収する (採用理由は
+   実験 README に明記する)。依存は `==` または lower-bound pin + uv.lock を commit
+   (`uv sync --frozen` が通ること)
 6. **統計**: runs≥10 + Wilson 95% CI。n が小さいセルの差から結論を書かない
 
 ## エージェント制約 (MUST)

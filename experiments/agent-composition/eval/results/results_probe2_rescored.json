@@ -1,0 +1,745 @@
+{
+  "model": "gemini-3-flash-preview",
+  "runs": 2,
+  "cells": [
+    "single_flat@clean"
+  ],
+  "task_ids": [
+    "B1",
+    "B2",
+    "B3",
+    "C1"
+  ],
+  "rescored_from": "results_probe2.json",
+  "summary": {
+    "single_flat@clean": {
+      "n": 8,
+      "n_ok": 8,
+      "n_error": 0,
+      "pass_rate": 1.0,
+      "pass_ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "route_ok_rate": 1.0,
+      "refusal_rate": 0.0,
+      "tokens": 10570.25,
+      "latency": 14.964531114790589,
+      "tool_calls": 6.5,
+      "llm_calls": 6.625,
+      "by_category": {
+        "B": 1.0,
+        "C": 1.0
+      },
+      "by_task": {
+        "C1": 1.0,
+        "B3": 1.0,
+        "B2": 1.0,
+        "B1": 1.0
+      }
+    }
+  },
+  "records": [
+    {
+      "final": "2026年6月の売上レポート（テスト注文およびキャンセル注文を除く）をまとめました。\n\n### 2026年6月 売上集計レポート\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   テスト注文（`is_test = true`）を除外\n    *   キャンセル済みの注文（`status = 'cancelled'`）を除外\n*   **計算方法**: 各注文の税込合計金額を1.1で割り、円未満を切り捨てた額（税抜純売上）を合算\n*   **合計税抜純売上**: **7,290,948円**",
+      "turns": [
+        "2026年6月の売上レポート（テスト注文およびキャンセル注文を除く）をまとめました。\n\n### 2026年6月 売上集計レポート\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   テスト注文（`is_test = true`）を除外\n    *   キャンセル済みの注文（`status = 'cancelled'`）を除外\n*   **計算方法**: 各注文の税込合計金額を1.1で割り、円未満を切り捨てた額（税抜純売上）を合算\n*   **合計税抜純売上**: **7,290,948円**"
+      ],
+      "latency": 6.911789458245039,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(FLOOR(amount / 1.1)) AS net_sales_excl_tax FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND is_test = false AND status"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 3114,
+      "prompt_tokens": 2826,
+      "candidate_tokens": 288,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 1,
+      "tool_order_seed": 1,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "INC-42 の障害期間（2026年6月24日から2026年6月26日まで）における、完了済み注文（テスト注文を除く）の税抜純売上合計は **212,907円** です。\n\n※税込金額の合計を1.1で割り、円未満を切り捨てて算出しています。",
+      "turns": [
+        "INC-42 の障害期間（2026年6月24日から2026年6月26日まで）における、完了済み注文（テスト注文を除く）の税抜純売上合計は **212,907円** です。\n\n※税込金額の合計を1.1で割り、円未満を切り捨てて算出しています。"
+      ],
+      "latency": 8.140721042174846,
+      "tool_calls": [
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "INC-42"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(FLOOR(amount / 1.1)) AS net_sales\nFROM orders\nWHERE order_date >= '2026-06-24' AND order_date <= '2026-06-26'\n  AND status = 'completed'\n  AND is_tes"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_search_messages",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 5,
+      "tokens": 4586,
+      "prompt_tokens": 4364,
+      "candidate_tokens": 222,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "B3",
+      "category": "B",
+      "run_index": 1,
+      "tool_order_seed": 1,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [
+        "bq",
+        "slack"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "v2.4.0 のデプロイ後に発生した障害の特定と、その影響について報告します。\n\n### 障害の内容と期間\n*   **障害内容:** v2.4.0 で実施した「決済モジュールの刷新」に起因し、チェックアウト時に決済が失敗する障害（INC-42）が発生しました。\n*   **発生期間:** 2026年6月24日（デプロイ） 〜 2026年6月26日（修正版 v2.4.1 の適用により解消）\n\n### 障害期間中の売上実績\nこの期間（6/24〜6/26）における完了注文の売上合計は以下の通りです。\n*   **合計売上:** **234,204円（税込）**\n\n### ビジネス影響の分析\n障害の影響は極めて深刻でした。\n\n1.  **直接的な減収:**\n    障害発生前（6/20〜6/23）の1日あたりの平均売上は約268,810円でしたが、障害期間中は1日平均約78,068円まで落ち込みました。これは、通常時の**約29%**程度の売上にとどまったことを示しています。\n2.  **機会損失の推計:**\n    通常時の傾向から、この3日間で本来得られたはずの売上を約80万円〜85万円と想定すると、約**55万円〜60万円程度の機会損失**が発生したと推定されます。\n3.  **顧客体験への悪影響:**\n    決済エラーにより購入を断念したユーザーが多数存在し、ブランドへの信頼低下や他社サイトへの流出を招いた可能性があります。\n\n現在は v2.4.1 で決済モジュールをロールバックしており、6月27日以降は売上が障害前の水準（30万円前後）に回復していることを確認しています。",
+      "turns": [
+        "v2.4.0 のデプロイ後に発生した障害の特定と、その影響について報告します。\n\n### 障害の内容と期間\n*   **障害内容:** v2.4.0 で実施した「決済モジュールの刷新」に起因し、チェックアウト時に決済が失敗する障害（INC-42）が発生しました。\n*   **発生期間:** 2026年6月24日（デプロイ） 〜 2026年6月26日（修正版 v2.4.1 の適用により解消）\n\n### 障害期間中の売上実績\nこの期間（6/24〜6/26）における完了注文の売上合計は以下の通りです。\n*   **合計売上:** **234,204円（税込）**\n\n### ビジネス影響の分析\n障害の影響は極めて深刻でした。\n\n1.  **直接的な減収:**\n    障害発生前（6/20〜6/23）の1日あたりの平均売上は約268,810円でしたが、障害期間中は1日平均約78,068円まで落ち込みました。これは、通常時の**約29%**程度の売上にとどまったことを示しています。\n2.  **機会損失の推計:**\n    通常時の傾向から、この3日間で本来得られたはずの売上を約80万円〜85万円と想定すると、約**55万円〜60万円程度の機会損失**が発生したと推定されます。\n3.  **顧客体験への悪影響:**\n    決済エラーにより購入を断念したユーザーが多数存在し、ブランドへの信頼低下や他社サイトへの流出を招いた可能性があります。\n\n現在は v2.4.1 で決済モジュールをロールバックしており、6月27日以降は売上が障害前の水準（30万円前後）に回復していることを確認しています。"
+      ],
+      "latency": 14.315125874709338,
+      "tool_calls": [
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "v2.4.0 デプロイ 障害"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "v2.4.0"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "INC-42"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) as total_revenue\nFROM orders\nWHERE order_date BETWEEN '2026-06-24' AND '2026-06-26'\nAND status = 'completed'\nAND is_test = false"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT order_date, SUM(amount) as daily_revenue\nFROM orders\nWHERE order_date BETWEEN '2026-06-20' AND '2026-06-30'\nAND status = 'completed'\nAND is_test = false\n"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query",
+        "bq_query"
+      ],
+      "n_tool_calls": 7,
+      "llm_calls": 8,
+      "tokens": 8757,
+      "prompt_tokens": 8064,
+      "candidate_tokens": 693,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "B2",
+      "category": "B",
+      "run_index": 1,
+      "tool_order_seed": 1,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [
+        "bq",
+        "slack"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月24日から26日にかけて、売上は大幅に落ち込んでいます。\n\n### 売上への影響\n前週の同じ曜日（6月17日〜19日）と比較した、完了売上の合計差分は以下の通りです。\n\n*   **2026/06/17 - 06/19（前週）:** 789,389円\n*   **2026/06/24 - 06/26（当該期間）:** 234,204円\n*   **減少額:** **555,185円の減少**\n\n### 落ち込みの原因（障害情報）\nSlackの`#alerts`チャンネルの記録（INC-42）によると、以下の決済障害が発生していたことが原因です。\n\n*   **発生内容:** バージョン2.4.0へのアップデートに伴う「決済モジュールの刷新」が原因で、チェックアウト時に決済が失敗する事象が発生しました。\n*   **経緯:**\n    *   **6月24日 11:00:** 障害検知、調査開始。\n    *   **6月25日 10:00:** 原因を新決済モジュールの不具合と特定。\n    *   **6月26日 15:00:** バージョン2.4.1へのロールバックを実施し、復旧・クローズ。\n\nこの3日間は決済が正常に完了できない状態が続いていたため、売上が大きく減少したと考えられます。",
+      "turns": [
+        "2026年6月24日から26日にかけて、売上は大幅に落ち込んでいます。\n\n### 売上への影響\n前週の同じ曜日（6月17日〜19日）と比較した、完了売上の合計差分は以下の通りです。\n\n*   **2026/06/17 - 06/19（前週）:** 789,389円\n*   **2026/06/24 - 06/26（当該期間）:** 234,204円\n*   **減少額:** **555,185円の減少**\n\n### 落ち込みの原因（障害情報）\nSlackの`#alerts`チャンネルの記録（INC-42）によると、以下の決済障害が発生していたことが原因です。\n\n*   **発生内容:** バージョン2.4.0へのアップデートに伴う「決済モジュールの刷新」が原因で、チェックアウト時に決済が失敗する事象が発生しました。\n*   **経緯:**\n    *   **6月24日 11:00:** 障害検知、調査開始。\n    *   **6月25日 10:00:** 原因を新決済モジュールの不具合と特定。\n    *   **6月26日 15:00:** バージョン2.4.1へのロールバックを実施し、復旧・クローズ。\n\nこの3日間は決済が正常に完了できない状態が続いていたため、売上が大きく減少したと考えられます。"
+      ],
+      "latency": 19.808502375148237,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT \n    CASE \n        WHEN order_date BETWEEN '2026-06-17' AND '2026-06-19' THEN 'Previous Week'\n        WHEN order_date BETWEEN '2026-06-24' AND '2026-06-2"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "障害 2026-06-24"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "障害 2026-06-25"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "障害 2026-06-26"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "システム 障害"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "不具合"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "決済エラー"
+          }
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "channel": "alerts"
+          }
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "channel": "general"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_list_channels",
+        "slack_read_channel",
+        "slack_read_channel"
+      ],
+      "n_tool_calls": 12,
+      "llm_calls": 7,
+      "tokens": 13917,
+      "prompt_tokens": 12115,
+      "candidate_tokens": 772,
+      "thoughts_tokens": 1030,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 19,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "B1",
+      "category": "B",
+      "run_index": 1,
+      "tool_order_seed": 1,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [
+        "bq",
+        "slack"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月24日から26日にかけて、売上は大きく落ち込んでいます。\n\n### 売上の比較\n*   **前週（6/17-19）の完了売上合計:** 789,389円\n*   **当該週（6/24-26）の完了売上合計:** 234,204円\n*   **減少額:** **555,185円の減少**\n\n### 原因について\nSlackの障害情報（`alerts` チャンネル）を確認したところ、期間中に決済システムに関わる重大な障害が発生していました。\n\n*   **障害内容:** チェックアウト時に決済が失敗する事象（INC-42）\n*   **経緯:**\n    *   **6/24 11:00:** 障害発生を検知。\n    *   **6/25 10:00:** バージョン v2.4.0 での決済モジュール刷新が原因と特定。\n    *   **6/26 15:00:** v2.4.1 へのロールバックにより復旧。\n\nこの決済障害が、当該期間の売上急減の直接的な原因であると判断されます。",
+      "turns": [
+        "2026年6月24日から26日にかけて、売上は大きく落ち込んでいます。\n\n### 売上の比較\n*   **前週（6/17-19）の完了売上合計:** 789,389円\n*   **当該週（6/24-26）の完了売上合計:** 234,204円\n*   **減少額:** **555,185円の減少**\n\n### 原因について\nSlackの障害情報（`alerts` チャンネル）を確認したところ、期間中に決済システムに関わる重大な障害が発生していました。\n\n*   **障害内容:** チェックアウト時に決済が失敗する事象（INC-42）\n*   **経緯:**\n    *   **6/24 11:00:** 障害発生を検知。\n    *   **6/25 10:00:** バージョン v2.4.0 での決済モジュール刷新が原因と特定。\n    *   **6/26 15:00:** v2.4.1 へのロールバックにより復旧。\n\nこの決済障害が、当該期間の売上急減の直接的な原因であると判断されます。"
+      ],
+      "latency": 14.627833584323525,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT \n    SUM(CASE WHEN order_date BETWEEN '2026-06-17' AND '2026-06-19' THEN amount ELSE 0 END) as sales_prev_week,\n    SUM(CASE WHEN order_date BETWEEN '202"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "障害 6月"
+          }
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "limit": "20",
+            "channel": "alerts"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query",
+        "slack_search_messages",
+        "slack_list_channels",
+        "slack_read_channel"
+      ],
+      "n_tool_calls": 6,
+      "llm_calls": 7,
+      "tokens": 10209,
+      "prompt_tokens": 9016,
+      "candidate_tokens": 500,
+      "thoughts_tokens": 693,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "B1",
+      "category": "B",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [
+        "bq",
+        "slack"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "障害 INC-42 が発生していた期間（2026年6月24日〜6月26日）の完了注文（テスト注文を除く）の税抜純売上合計は、**212,912円**です。\n\n**集計の詳細:**\n*   **対象期間:** 2026-06-24 から 2026-06-26（障害の発生から解消までの全期間を含む日付単位で集計）\n*   **対象注文:** 完了済み（status = 'completed'）、かつテスト注文を除く（is_test = false）\n*   **税込売上合計:** 234,204円\n*   **計算式:** 234,204円 ÷ 1.1 = 212,912.7... → **212,912円**（円未満切り捨て）\n\n※データベースの注文データに時刻情報が含まれていないため、日付単位での合算値となります。",
+      "turns": [
+        "障害 INC-42 が発生していた期間（2026年6月24日〜6月26日）の完了注文（テスト注文を除く）の税抜純売上合計は、**212,912円**です。\n\n**集計の詳細:**\n*   **対象期間:** 2026-06-24 から 2026-06-26（障害の発生から解消までの全期間を含む日付単位で集計）\n*   **対象注文:** 完了済み（status = 'completed'）、かつテスト注文を除く（is_test = false）\n*   **税込売上合計:** 234,204円\n*   **計算式:** 234,204円 ÷ 1.1 = 212,912.7... → **212,912円**（円未満切り捨て）\n\n※データベースの注文データに時刻情報が含まれていないため、日付単位での合算値となります。"
+      ],
+      "latency": 17.159528333693743,
+      "tool_calls": [
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "INC-42"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT * FROM orders LIMIT 5"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) as total_amount\nFROM orders\nWHERE status = 'completed'\n  AND is_test = false\n  AND order_date BETWEEN '2026-06-24' AND '2026-06-26'"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_search_messages",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query",
+        "bq_query"
+      ],
+      "n_tool_calls": 5,
+      "llm_calls": 6,
+      "tokens": 10751,
+      "prompt_tokens": 8956,
+      "candidate_tokens": 377,
+      "thoughts_tokens": 1418,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "B3",
+      "category": "B",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [
+        "bq",
+        "slack"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の売上レポート（テスト注文・キャンセル注文を除く）をまとめました。\n\n### 2026年6月 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   テスト注文 (`is_test = false`) を除外\n    *   キャンセル済み注文 (`status = 'cancelled'`) を除外\n    *   税抜純売上の算出方法：各注文の税込合計金額を1.1で割り、円未満を切り捨て\n*   **税抜純売上 合計**: **7,290,948円**",
+      "turns": [
+        "2026年6月の売上レポート（テスト注文・キャンセル注文を除く）をまとめました。\n\n### 2026年6月 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   テスト注文 (`is_test = false`) を除外\n    *   キャンセル済み注文 (`status = 'cancelled'`) を除外\n    *   税抜純売上の算出方法：各注文の税込合計金額を1.1で割り、円未満を切り捨て\n*   **税抜純売上 合計**: **7,290,948円**"
+      ],
+      "latency": 6.315017125103623,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(FLOOR(amount / 1.1)) AS total_net_sales FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND is_test = false AND status !="
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 3094,
+      "prompt_tokens": 2817,
+      "candidate_tokens": 277,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "v2.4.0 のデプロイ後に発生した障害の特定と、その期間の売上およびビジネス影響について報告します。\n\n### 1. 特定された障害\n*   **事象:** チェックアウト時に決済が失敗する障害（INC-42）\n*   **原因:** v2.4.0 で実施された「決済モジュールの刷新」による不具合\n*   **発生期間:** 2026年6月24日 09:30（v2.4.0 デプロイ） 〜 2026年6月26日 16:00（v2.4.1 でのロールバック完了まで）\n\n### 2. 障害期間中の完了注文の売上合計（税込）\n障害の影響を大きく受けた3日間の完了注文の売上合計は以下の通りです。\n*   **合計売上高: 234,204円**\n    *   6月24日: 54,426円\n    *   6月25日: 114,752円\n    *   6月26日: 65,026円\n\n### 3. ビジネス影響の解説\n本障害により、極めて深刻なビジネス影響が発生しました。\n\n*   **売上の著しい減少:**\n    通常時の1日あたりの平均売上は約291,500円（障害前後1週間の平均から算出）ですが、障害期間中は1日平均約78,000円まで落ち込みました。\n*   **推定損失額:**\n    期待された売上（約874,500円）に対し、実績が234,204円であったため、**約64万400円の機会損失**が発生したと推定されます。\n*   **注文完了率の低下:**\n    通常は1日15〜20件程度の注文が完了していますが、障害期間中は1日3〜5件にまで激減しており、ほとんどのユーザーが購入を完了できなかったことを示しています。\n\n決済というサービスの根幹に関わる部分での不具合であったため、短期間で大きな機会損失とユーザー体験の毀損を招く結果となりました。",
+      "turns": [
+        "v2.4.0 のデプロイ後に発生した障害の特定と、その期間の売上およびビジネス影響について報告します。\n\n### 1. 特定された障害\n*   **事象:** チェックアウト時に決済が失敗する障害（INC-42）\n*   **原因:** v2.4.0 で実施された「決済モジュールの刷新」による不具合\n*   **発生期間:** 2026年6月24日 09:30（v2.4.0 デプロイ） 〜 2026年6月26日 16:00（v2.4.1 でのロールバック完了まで）\n\n### 2. 障害期間中の完了注文の売上合計（税込）\n障害の影響を大きく受けた3日間の完了注文の売上合計は以下の通りです。\n*   **合計売上高: 234,204円**\n    *   6月24日: 54,426円\n    *   6月25日: 114,752円\n    *   6月26日: 65,026円\n\n### 3. ビジネス影響の解説\n本障害により、極めて深刻なビジネス影響が発生しました。\n\n*   **売上の著しい減少:**\n    通常時の1日あたりの平均売上は約291,500円（障害前後1週間の平均から算出）ですが、障害期間中は1日平均約78,000円まで落ち込みました。\n*   **推定損失額:**\n    期待された売上（約874,500円）に対し、実績が234,204円であったため、**約64万400円の機会損失**が発生したと推定されます。\n*   **注文完了率の低下:**\n    通常は1日15〜20件程度の注文が完了していますが、障害期間中は1日3〜5件にまで激減しており、ほとんどのユーザーが購入を完了できなかったことを示しています。\n\n決済というサービスの根幹に関わる部分での不具合であったため、短期間で大きな機会損失とユーザー体験の毀損を招く結果となりました。"
+      ],
+      "latency": 32.43773112492636,
+      "tool_calls": [
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "v2.4.0 障害"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "v2.4.0 デプロイ"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "v2.4.0"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "INC-42"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT * FROM orders LIMIT 1"
+          }
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "support_tickets"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT status, count(*) FROM orders GROUP BY 1"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT order_date, status, count(*) as order_count, sum(amount) as total_amount\nFROM orders\nWHERE order_date BETWEEN '2026-06-20' AND '2026-06-30'\nGROUP BY 1, 2"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT count(*) FROM support_tickets WHERE opened_at BETWEEN '2026-06-24' AND '2026-06-27' AND subject LIKE '%決済%' OR subject LIKE '%チェックアウト%' OR subject LIKE '"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT * FROM support_tickets WHERE opened_at BETWEEN '2026-06-24' AND '2026-06-27'"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query",
+        "bq_get_table_info",
+        "bq_query",
+        "bq_query",
+        "bq_query",
+        "bq_query"
+      ],
+      "n_tool_calls": 12,
+      "llm_calls": 12,
+      "tokens": 30134,
+      "prompt_tokens": 27129,
+      "candidate_tokens": 905,
+      "thoughts_tokens": 2100,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 11,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "B2",
+      "category": "B",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [
+        "bq",
+        "slack"
+      ],
+      "delegations": []
+    }
+  ]
+}

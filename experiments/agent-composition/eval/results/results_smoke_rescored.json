@@ -1,0 +1,2584 @@
+{
+  "model": "gemini-3-flash-preview",
+  "runs": 1,
+  "cells": [
+    "single_flat@clean",
+    "single_flat@distinct",
+    "single_flat@confusable",
+    "single_skills@clean",
+    "single_skills@confusable",
+    "multi_agenttool@clean",
+    "multi_agenttool@confusable",
+    "multi_transfer@clean",
+    "multi_transfer@confusable"
+  ],
+  "task_ids": [
+    "A1",
+    "C1",
+    "E1"
+  ],
+  "rescored_from": "results_smoke.json",
+  "summary": {
+    "single_flat@clean": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 10627,
+      "latency": 12.036923139045635,
+      "tool_calls": 7,
+      "llm_calls": 8,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "E1": 1.0,
+        "A1": 1.0,
+        "C1": 0.0
+      }
+    },
+    "single_flat@distinct": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 6735.333333333333,
+      "latency": 8.843748680471132,
+      "tool_calls": 6,
+      "llm_calls": 5,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "C1": 0.0,
+        "A1": 1.0,
+        "E1": 1.0
+      }
+    },
+    "single_flat@confusable": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.3333333333333333,
+      "refusal_rate": 0.0,
+      "tokens": 11133.666666666666,
+      "latency": 11.626626541217169,
+      "tool_calls": 6.333333333333333,
+      "llm_calls": 7.333333333333333,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "A1": 1.0,
+        "C1": 0.0,
+        "E1": 1.0
+      }
+    },
+    "single_skills@clean": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 17719,
+      "latency": 14.214266264035055,
+      "tool_calls": 8,
+      "llm_calls": 9,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "C1": 0.0,
+        "E1": 1.0,
+        "A1": 1.0
+      }
+    },
+    "single_skills@confusable": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 23539,
+      "latency": 14.47202877762417,
+      "tool_calls": 10.666666666666666,
+      "llm_calls": 9.333333333333334,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "A1": 1.0,
+        "C1": 0.0,
+        "E1": 1.0
+      }
+    },
+    "multi_agenttool@clean": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 3881.6666666666665,
+      "latency": 10.114973680426678,
+      "tool_calls": 4,
+      "llm_calls": 6.333333333333333,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "E1": 1.0,
+        "A1": 1.0,
+        "C1": 0.0
+      }
+    },
+    "multi_agenttool@confusable": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 4835,
+      "latency": 10.828418889082968,
+      "tool_calls": 5.333333333333333,
+      "llm_calls": 6.333333333333333,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "A1": 1.0,
+        "C1": 0.0,
+        "E1": 1.0
+      }
+    },
+    "multi_transfer@clean": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 6892.666666666667,
+      "latency": 10.7633929719838,
+      "tool_calls": 6,
+      "llm_calls": 6,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "E1": 1.0,
+        "A1": 1.0,
+        "C1": 0.0
+      }
+    },
+    "multi_transfer@confusable": {
+      "n": 3,
+      "n_ok": 3,
+      "n_error": 0,
+      "pass_rate": 0.6666666666666666,
+      "pass_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ],
+      "route_ok_rate": 0.6666666666666666,
+      "refusal_rate": 0.0,
+      "tokens": 6453.666666666667,
+      "latency": 7.826952625066042,
+      "tool_calls": 4.666666666666667,
+      "llm_calls": 5.666666666666667,
+      "by_category": {
+        "A": 1.0,
+        "C": 0.0,
+        "E": 1.0
+      },
+      "by_task": {
+        "A1": 1.0,
+        "C1": 0.0,
+        "E1": 1.0
+      }
+    }
+  },
+  "records": [
+    {
+      "final": "2026年6月の売上レポートをまとめました。\n\n### 2026年6月 完了売上集計\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**: \n    *   完了済み注文（`status = 'completed'`）\n    *   テスト注文を除く（`is_test = FALSE`）\n*   **合計売上額**: **8,020,316円**\n\nご確認のほどよろしくお願いいたします。",
+      "turns": [
+        "2026年6月の売上レポートをまとめました。\n\n### 2026年6月 完了売上集計\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**: \n    *   完了済み注文（`status = 'completed'`）\n    *   テスト注文を除く（`is_test = FALSE`）\n*   **合計売上額**: **8,020,316円**\n\nご確認のほどよろしくお願いいたします。"
+      ],
+      "latency": 6.839739333372563,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_sales FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND status = 'completed' AND is_test = FALSE"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 4316,
+      "prompt_tokens": 4083,
+      "candidate_tokens": 233,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "distinct",
+      "cell": "single_flat@distinct",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の完了売上（テスト注文を除く）について、以下の通りレポートいたします。\n\n### 2026年6月 売上レポート\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**: \n    *   ステータス: `completed`（完了）\n    *   テスト注文: 除外 (`is_test = false`)\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウスの注文レコードを基に集計いたしました。詳細な内訳や、チャネル別の分析が必要な際はお申し付けください。",
+      "turns": [
+        "2026年6月の完了売上（テスト注文を除く）について、以下の通りレポートいたします。\n\n### 2026年6月 売上レポート\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**: \n    *   ステータス: `completed`（完了）\n    *   テスト注文: 除外 (`is_test = false`)\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウスの注文レコードを基に集計いたしました。詳細な内訳や、チャネル別の分析が必要な際はお申し付けください。"
+      ],
+      "latency": 8.592319333925843,
+      "tool_calls": [
+        {
+          "name": "list_skills",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "bq"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_revenue FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND status = 'completed' AND is_test = false;"
+          }
+        }
+      ],
+      "tool_names": [
+        "list_skills",
+        "load_skill",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 5,
+      "llm_calls": 6,
+      "tokens": 9443,
+      "prompt_tokens": 9152,
+      "candidate_tokens": 291,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_skills",
+      "env": "clean",
+      "cell": "single_skills@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年5月に新しく採用されたメンバーに関する具体的な人数や情報は、Slackのログからは確認できませんでした。\n\nなお、直近の動きとしては、6月15日の投稿で「来週（6月下旬）に新しいメンバーが入社する」という旨の通知が確認されています。\n\nもし特定の部署や、入社案内などの別のキーワードでお調べする必要があればお知らせください。",
+      "turns": [
+        "2026年5月に新しく採用されたメンバーに関する具体的な人数や情報は、Slackのログからは確認できませんでした。\n\nなお、直近の動きとしては、6月15日の投稿で「来週（6月下旬）に新しいメンバーが入社する」という旨の通知が確認されています。\n\nもし特定の部署や、入社案内などの別のキーワードでお調べする必要があればお知らせください。"
+      ],
+      "latency": 12.554751666728407,
+      "tool_calls": [
+        {
+          "name": "slack_assistant",
+          "args": {
+            "request": "2026年5月 採用 メンバー 新入社員"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026年5月 採用 メンバー 新入社員"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026年 採用"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "新入社員"
+          }
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "limit": "50",
+            "channel": "general"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_assistant",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_list_channels",
+        "slack_read_channel"
+      ],
+      "n_tool_calls": 6,
+      "llm_calls": 8,
+      "tokens": 4969,
+      "prompt_tokens": 4624,
+      "candidate_tokens": 345,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 5,
+      "fabricated": false,
+      "selection": "no_call",
+      "variant": "multi_agenttool",
+      "env": "clean",
+      "cell": "multi_agenttool@clean",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "slack"
+      ]
+    },
+    {
+      "final": "2026年6月10日の注文件数は18件です。",
+      "turns": [
+        "2026年6月10日の注文件数は18件です。"
+      ],
+      "latency": 5.089648500084877,
+      "tool_calls": [
+        {
+          "name": "transfer_to_agent",
+          "args": {
+            "agent_name": "bq_assistant"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = false;"
+          }
+        }
+      ],
+      "tool_names": [
+        "transfer_to_agent",
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 3791,
+      "prompt_tokens": 3691,
+      "candidate_tokens": 100,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_transfer",
+      "env": "confusable",
+      "cell": "multi_transfer@confusable",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "Slackのメッセージを確認しましたが、2026年5月に新しく採用（入社）したメンバーの人数を明記した情報は見つかりませんでした。\n\n関連する情報として、6月15日に「新しいメンバーが来週入社します」というメッセージ（rinさんより）があり、6月22日の週に新メンバーが加わることが示唆されていますが、5月の採用人数については言及がありません。\n\nもし人事関連の特定のチャンネルや、別のキーワードでの検索が必要であればお知らせください。",
+      "turns": [
+        "Slackのメッセージを確認しましたが、2026年5月に新しく採用（入社）したメンバーの人数を明記した情報は見つかりませんでした。\n\n関連する情報として、6月15日に「新しいメンバーが来週入社します」というメッセージ（rinさんより）があり、6月22日の週に新メンバーが加わることが示唆されていますが、5月の採用人数については言及がありません。\n\nもし人事関連の特定のチャンネルや、別のキーワードでの検索が必要であればお知らせください。"
+      ],
+      "latency": 18.472300542052835,
+      "tool_calls": [
+        {
+          "name": "transfer_to_agent",
+          "args": {
+            "agent_name": "slack_assistant"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "採用 5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社 5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026年5月 入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "新メンバー"
+          }
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "自己紹介"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "ジョイン"
+          }
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "limit": "100",
+            "channel": "general"
+          }
+        }
+      ],
+      "tool_names": [
+        "transfer_to_agent",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_list_channels",
+        "slack_read_channel",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_read_channel"
+      ],
+      "n_tool_calls": 11,
+      "llm_calls": 9,
+      "tokens": 12834,
+      "prompt_tokens": 11941,
+      "candidate_tokens": 331,
+      "thoughts_tokens": 562,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 15,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 10,
+      "fabricated": false,
+      "selection": "no_call",
+      "variant": "multi_transfer",
+      "env": "clean",
+      "cell": "multi_transfer@clean",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "slack"
+      ]
+    },
+    {
+      "final": "2026年6月10日の注文数は、合計で18件でした。",
+      "turns": [
+        "2026年6月10日の注文数は、合計で18件でした。"
+      ],
+      "latency": 7.112457832787186,
+      "tool_calls": [
+        {
+          "name": "bq_assistant",
+          "args": {
+            "request": "2026年6月10日の注文数を、注文データテーブル（ordersなど）から集計してください。"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) AS order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = 0;"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_assistant",
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 5,
+      "tokens": 2797,
+      "prompt_tokens": 2647,
+      "candidate_tokens": 150,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_agenttool",
+      "env": "confusable",
+      "cell": "multi_agenttool@confusable",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "提供されたデータ（Slackのメッセージおよびデータベース）を確認しましたが、2026年5月に新しく採用・入社したメンバーの人数を明示する記録は見当たりませんでした。\n\nなお、Slackの `general` チャンネルにおいて、2026年6月15日に「新しいメンバーが来週入社します」という投稿（rinさんによる）があり、同年6月27日には歓迎会の調整が行われていることから、**2026年6月**には新メンバーが加わったことが推測されます。\n\n5月の採用状況についてより正確な情報が必要な場合は、人事管理システムや他のドキュメントを確認する必要があるかもしれません。",
+      "turns": [
+        "提供されたデータ（Slackのメッセージおよびデータベース）を確認しましたが、2026年5月に新しく採用・入社したメンバーの人数を明示する記録は見当たりませんでした。\n\nなお、Slackの `general` チャンネルにおいて、2026年6月15日に「新しいメンバーが来週入社します」という投稿（rinさんによる）があり、同年6月27日には歓迎会の調整が行われていることから、**2026年6月**には新メンバーが加わったことが推測されます。\n\n5月の採用状況についてより正確な情報が必要な場合は、人事管理システムや他のドキュメントを確認する必要があるかもしれません。"
+      ],
+      "latency": 23.315567375160754,
+      "tool_calls": [
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "採用 入社 2026年5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "limit": "100",
+            "channel": "general"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "メンバー 入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "さん"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "よろしくお願いします"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "new member"
+          }
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "limit": "50",
+            "channel": "general"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社いたしました"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "welcome"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "お迎え"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "join"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_list_channels",
+        "slack_search_messages",
+        "slack_search_messages",
+        "bq_list_tables",
+        "slack_read_channel",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_read_channel",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages"
+      ],
+      "n_tool_calls": 15,
+      "llm_calls": 16,
+      "tokens": 25635,
+      "prompt_tokens": 25206,
+      "candidate_tokens": 429,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 15,
+      "fabricated": false,
+      "selection": "no_call",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月10日の注文は、テスト注文を除いて**18件**ありました。",
+      "turns": [
+        "2026年6月10日の注文は、テスト注文を除いて**18件**ありました。"
+      ],
+      "latency": 4.618108457885683,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) FROM orders WHERE order_date = '2026-06-10' AND is_test = FALSE"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 2,
+      "llm_calls": 3,
+      "tokens": 2830,
+      "prompt_tokens": 2751,
+      "candidate_tokens": 79,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "distinct",
+      "cell": "single_flat@distinct",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "先月（2026年5月）に新しく採用されたメンバーに関する直接的な記録（人事データや5月中の入社通知など）は見当たりませんでした。\n\nしかし、Slackの `#general` チャンネルにおける6月15日の投稿で、「新しいメンバーが来週入社します」というアナウンスがありました。このことから、直近では**2026年6月下旬に1名**が新しく加わった（あるいは加わる予定である）ことが確認できています。\n\n5月中に採用・入社したメンバーについて、より詳細な情報が必要な場合は、人事担当者へ確認するか、別のキーワードでの検索を試みることができます。",
+      "turns": [
+        "先月（2026年5月）に新しく採用されたメンバーに関する直接的な記録（人事データや5月中の入社通知など）は見当たりませんでした。\n\nしかし、Slackの `#general` チャンネルにおける6月15日の投稿で、「新しいメンバーが来週入社します」というアナウンスがありました。このことから、直近では**2026年6月下旬に1名**が新しく加わった（あるいは加わる予定である）ことが確認できています。\n\n5月中に採用・入社したメンバーについて、より詳細な情報が必要な場合は、人事担当者へ確認するか、別のキーワードでの検索を試みることができます。"
+      ],
+      "latency": 15.073398250155151,
+      "tool_calls": [
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "採用"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "new hire"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "welcome"
+          }
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "channel": "general",
+            "limit": "100"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "May"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "oncall_list_schedules",
+          "args": {}
+        },
+        {
+          "name": "oncall_get_shift",
+          "args": {
+            "date": "2026-04-01"
+          }
+        },
+        {
+          "name": "oncall_get_shift",
+          "args": {
+            "date": "2026-05-01"
+          }
+        },
+        {
+          "name": "oncall_get_shift",
+          "args": {
+            "date": "2026-06-01"
+          }
+        }
+      ],
+      "tool_names": [
+        "slack_list_channels",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_read_channel",
+        "slack_search_messages",
+        "slack_search_messages",
+        "bq_list_tables",
+        "oncall_list_schedules",
+        "oncall_get_shift",
+        "oncall_get_shift",
+        "oncall_get_shift"
+      ],
+      "n_tool_calls": 13,
+      "llm_calls": 8,
+      "tokens": 13060,
+      "prompt_tokens": 12659,
+      "candidate_tokens": 401,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 24,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 13,
+      "fabricated": false,
+      "selection": "no_call",
+      "variant": "single_flat",
+      "env": "distinct",
+      "cell": "single_flat@distinct",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "oncall",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
+    },
+    {
+      "final": "提供されたツールを使って、Slackのメッセージやデータベースを検索しましたが、2026年5月に新しく採用・入社したメンバーに関する直接的な記録は見当たりませんでした。\n\nなお、Slackの `#general` チャンネルにおいて、2026年6月15日に「新しいメンバーが来週入社します」という投稿（投稿者: rin）があり、6月下旬に新メンバーが加わった可能性は確認できています。\n\nもし特定の部署や、上記以外のキーワード（氏名など）でお心当たりがあれば、再度お調べいたします。",
+      "turns": [
+        "提供されたツールを使って、Slackのメッセージやデータベースを検索しましたが、2026年5月に新しく採用・入社したメンバーに関する直接的な記録は見当たりませんでした。\n\nなお、Slackの `#general` チャンネルにおいて、2026年6月15日に「新しいメンバーが来週入社します」という投稿（投稿者: rin）があり、6月下旬に新メンバーが加わった可能性は確認できています。\n\nもし特定の部署や、上記以外のキーワード（氏名など）でお心当たりがあれば、再度お調べいたします。"
+      ],
+      "latency": 27.18912695813924,
+      "tool_calls": [
+        {
+          "name": "list_skills",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "bq"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "slack"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "採用 2026 5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "自己紹介"
+          }
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "メンバー"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "5月"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "May"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "joined"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "ジョイン"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "ようこそ"
+          }
+        }
+      ],
+      "tool_names": [
+        "list_skills",
+        "load_skill",
+        "bq_list_tables",
+        "load_skill",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_list_channels",
+        "slack_read_channel",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages"
+      ],
+      "n_tool_calls": 15,
+      "llm_calls": 16,
+      "tokens": 36482,
+      "prompt_tokens": 36100,
+      "candidate_tokens": 382,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 12,
+      "fabricated": false,
+      "selection": "no_call",
+      "variant": "single_skills",
+      "env": "clean",
+      "cell": "single_skills@clean",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月10日の注文数は、テスト用の注文を除いて合計で18件でした。",
+      "turns": [
+        "2026年6月10日の注文数は、テスト用の注文を除いて合計で18件でした。"
+      ],
+      "latency": 6.337974125053734,
+      "tool_calls": [
+        {
+          "name": "list_skills",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "bq"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = false;"
+          }
+        }
+      ],
+      "tool_names": [
+        "list_skills",
+        "load_skill",
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 5,
+      "tokens": 7921,
+      "prompt_tokens": 7808,
+      "candidate_tokens": 113,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_skills",
+      "env": "confusable",
+      "cell": "single_skills@confusable",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月のテスト注文を除いた完了売上の集計結果は以下の通りです。\n\n### 2026年6月 売上レポート（確定分）\n*   **合計売上額**: 8,020,316円\n*   **合計注文本数**: 471件\n\n**集計条件:**\n*   **期間**: 2026年6月1日 〜 2026年6月30日\n*   **ステータス**: 完了（completed）\n*   **除外データ**: テスト注文（is_test = true）を除外",
+      "turns": [
+        "2026年6月のテスト注文を除いた完了売上の集計結果は以下の通りです。\n\n### 2026年6月 売上レポート（確定分）\n*   **合計売上額**: 8,020,316円\n*   **合計注文本数**: 471件\n\n**集計条件:**\n*   **期間**: 2026年6月1日 〜 2026年6月30日\n*   **ステータス**: 完了（completed）\n*   **除外データ**: テスト注文（is_test = true）を除外"
+      ],
+      "latency": 7.57923062518239,
+      "tool_calls": [
+        {
+          "name": "transfer_to_agent",
+          "args": {
+            "agent_name": "bq_assistant"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_revenue, COUNT(order_id) AS total_orders FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND status = 'c"
+          }
+        }
+      ],
+      "tool_names": [
+        "transfer_to_agent",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 5,
+      "tokens": 5386,
+      "prompt_tokens": 5106,
+      "candidate_tokens": 280,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_transfer",
+      "env": "confusable",
+      "cell": "multi_transfer@confusable",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "2026年6月10日の注文数は、テスト用の注文を除いて合計 **18件** でした。",
+      "turns": [
+        "2026年6月10日の注文数は、テスト用の注文を除いて合計 **18件** でした。"
+      ],
+      "latency": 5.55753416614607,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = false"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 2,
+      "llm_calls": 3,
+      "tokens": 4036,
+      "prompt_tokens": 3950,
+      "candidate_tokens": 86,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "confusable",
+      "cell": "single_flat@confusable",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の売上集計レポート（テスト注文を除く）をご報告します。\n\n### 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計対象**: 完了済み注文（status = 'completed'）、テスト注文を除く（is_test = false）\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウス内の注文（`orders`）テーブルより、上記条件で集計を行いました。",
+      "turns": [
+        "2026年6月の売上集計レポート（テスト注文を除く）をご報告します。\n\n### 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計対象**: 完了済み注文（status = 'completed'）、テスト注文を除く（is_test = false）\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウス内の注文（`orders`）テーブルより、上記条件で集計を行いました。"
+      ],
+      "latency": 7.629231249913573,
+      "tool_calls": [
+        {
+          "name": "list_skills",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "bq"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_revenue FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND status = 'completed' AND is_test = false"
+          }
+        }
+      ],
+      "tool_names": [
+        "list_skills",
+        "load_skill",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 5,
+      "llm_calls": 6,
+      "tokens": 10264,
+      "prompt_tokens": 10001,
+      "candidate_tokens": 263,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_skills",
+      "env": "confusable",
+      "cell": "single_skills@confusable",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の完了売上の集計結果を報告します。\n\n### 2026年6月 完了売上レポート\n*   **合計売上:** 8,020,316円\n*   **条件:**\n    *   期間: 2026年6月1日 〜 2026年6月30日\n    *   ステータス: 完了 (completed)\n    *   除外項目: テスト注文 (`is_test = TRUE`) を除外済",
+      "turns": [
+        "2026年6月の完了売上の集計結果を報告します。\n\n### 2026年6月 完了売上レポート\n*   **合計売上:** 8,020,316円\n*   **条件:**\n    *   期間: 2026年6月1日 〜 2026年6月30日\n    *   ステータス: 完了 (completed)\n    *   除外項目: テスト注文 (`is_test = TRUE`) を除外済"
+      ],
+      "latency": 8.76378429075703,
+      "tool_calls": [
+        {
+          "name": "portal_run_report",
+          "args": {
+            "period": "2026-06",
+            "metric": "売上"
+          }
+        },
+        {
+          "name": "portal_list_datasets",
+          "args": {}
+        },
+        {
+          "name": "portal_describe_dataset",
+          "args": {
+            "name": "finance_orders_v1"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_revenue\nFROM orders\nWHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30'\n  AND status = 'completed'\n  AND is_test = FALSE"
+          }
+        }
+      ],
+      "tool_names": [
+        "portal_run_report",
+        "portal_list_datasets",
+        "portal_describe_dataset",
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 5,
+      "llm_calls": 6,
+      "tokens": 8625,
+      "prompt_tokens": 8348,
+      "candidate_tokens": 277,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": true,
+      "offtask_calls": 3,
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "single_flat",
+      "env": "confusable",
+      "cell": "single_flat@confusable",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "portal"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の完了売上（テスト注文を除く）について報告します。\n\n### **売上集計レポート：2026年6月**\n\n*   **合計売上高**: **8,020,316円**\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   ステータスが「完了（completed）」の注文のみを合算\n    *   テスト用注文フラグ（`is_test = true`）が付与されているデータを除外\n\n以上の通り、2026年6月期の実績は確定しております。詳細な内訳（日別推移や商品別売上など）が必要な場合は、追加で指示をいただけますと幸いです。",
+      "turns": [
+        "2026年6月の完了売上（テスト注文を除く）について報告します。\n\n### **売上集計レポート：2026年6月**\n\n*   **合計売上高**: **8,020,316円**\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   ステータスが「完了（completed）」の注文のみを合算\n    *   テスト用注文フラグ（`is_test = true`）が付与されているデータを除外\n\n以上の通り、2026年6月期の実績は確定しております。詳細な内訳（日別推移や商品別売上など）が必要な場合は、追加で指示をいただけますと幸いです。"
+      ],
+      "latency": 12.727604917250574,
+      "tool_calls": [
+        {
+          "name": "bq_assistant",
+          "args": {
+            "request": "2026年6月の完了済み売上の合計を算出してください。その際、テスト注文（通常、フラグやメールアドレス、備考欄などで判別可能）を除外してください。まず、関連するテーブルのカラム構成を確認し、その後集計SQLを実行してください。"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_sales FROM orders WHERE order_date >= '2026-06-01' AND order_date <= '2026-06-30' AND status = 'completed' AND is_test = false"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_assistant",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 6,
+      "tokens": 4694,
+      "prompt_tokens": 3900,
+      "candidate_tokens": 477,
+      "thoughts_tokens": 317,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_agenttool",
+      "env": "confusable",
+      "cell": "multi_agenttool@confusable",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "2026年5月に新しく採用されたメンバーに関する情報は、社内アーカイブおよびグループ一覧からは確認できませんでした。\n\nお手数ですが、人事関連の公式通知チャンネル（`#announcements` など）や、最新の組織図などをご確認いただけますでしょうか。もし特定のチームや役割（例：エンジニア、サポートなど）に関する情報であれば、再度キーワードを変えてお調べいたします。",
+      "turns": [
+        "2026年5月に新しく採用されたメンバーに関する情報は、社内アーカイブおよびグループ一覧からは確認できませんでした。\n\nお手数ですが、人事関連の公式通知チャンネル（`#announcements` など）や、最新の組織図などをご確認いただけますでしょうか。もし特定のチームや役割（例：エンジニア、サポートなど）に関する情報であれば、再度キーワードを変えてお調べいたします。"
+      ],
+      "latency": 10.811978749930859,
+      "tool_calls": [
+        {
+          "name": "transfer_to_agent",
+          "args": {
+            "agent_name": "portal_assistant"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "採用 2026年5月 新メンバー"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "入社 2026年5月"
+          }
+        },
+        {
+          "name": "portal_list_groups",
+          "args": {}
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "announcements"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "ジョイン 2026年5月"
+          }
+        }
+      ],
+      "tool_names": [
+        "transfer_to_agent",
+        "portal_search_archive",
+        "portal_search_archive",
+        "portal_list_groups",
+        "portal_get_digest",
+        "portal_get_digest",
+        "portal_search_archive"
+      ],
+      "n_tool_calls": 7,
+      "llm_calls": 8,
+      "tokens": 10184,
+      "prompt_tokens": 9949,
+      "candidate_tokens": 235,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": false,
+      "offtask_calls": 6,
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "multi_transfer",
+      "env": "confusable",
+      "cell": "multi_transfer@confusable",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "portal"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "portal"
+      ]
+    },
+    {
+      "final": "2026年6月10日の注文数は、テスト注文を除いて合計18件でした。",
+      "turns": [
+        "2026年6月10日の注文数は、テスト注文を除いて合計18件でした。"
+      ],
+      "latency": 6.767949792090803,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = false;"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 3322,
+      "prompt_tokens": 3000,
+      "candidate_tokens": 105,
+      "thoughts_tokens": 217,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年5月に新しく採用されたメンバーについて社内ポータルのアーカイブやメッセージを調査しましたが、該当する人数や紹介に関する情報は見当たりませんでした。\n\nより詳細な情報が必要な場合は、特定の部署（エンジニアリング、サポートなど）を指定していただくか、人事関連の通知が行われる特定のチャンネルやドキュメントについてお知らせいただけますと、再度調査いたします。",
+      "turns": [
+        "2026年5月に新しく採用されたメンバーについて社内ポータルのアーカイブやメッセージを調査しましたが、該当する人数や紹介に関する情報は見当たりませんでした。\n\nより詳細な情報が必要な場合は、特定の部署（エンジニアリング、サポートなど）を指定していただくか、人事関連の通知が行われる特定のチャンネルやドキュメントについてお知らせいただけますと、再度調査いたします。"
+      ],
+      "latency": 12.645193917211145,
+      "tool_calls": [
+        {
+          "name": "portal_assistant",
+          "args": {
+            "request": "2026年5月に新しく採用されたメンバー、または新入社員の一覧や人数について教えてください。"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "2026年5月 新入社員 採用 メンバー 入社"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "hr"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "human-resources"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "announcements"
+          }
+        },
+        {
+          "name": "portal_list_groups",
+          "args": {}
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "入社 2026年5月"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "2026年5月 メンバー 参加"
+          }
+        }
+      ],
+      "tool_names": [
+        "portal_assistant",
+        "portal_search_archive",
+        "portal_get_digest",
+        "portal_get_digest",
+        "portal_get_digest",
+        "portal_get_digest",
+        "portal_list_groups",
+        "portal_search_archive",
+        "portal_search_archive"
+      ],
+      "n_tool_calls": 9,
+      "llm_calls": 8,
+      "tokens": 7014,
+      "prompt_tokens": 6559,
+      "candidate_tokens": 455,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 12,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": false,
+      "offtask_calls": 8,
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "multi_agenttool",
+      "env": "confusable",
+      "cell": "multi_agenttool@confusable",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "portal"
+      ],
+      "expected_domains": [],
+      "delegations": [
+        "portal"
+      ]
+    },
+    {
+      "final": "2026年6月10日の注文は、合計で18件ありました。",
+      "turns": [
+        "2026年6月10日の注文は、合計で18件ありました。"
+      ],
+      "latency": 5.394126540981233,
+      "tool_calls": [
+        {
+          "name": "transfer_to_agent",
+          "args": {
+            "agent_name": "bq_assistant"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10'"
+          }
+        }
+      ],
+      "tool_names": [
+        "transfer_to_agent",
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 3246,
+      "prompt_tokens": 3088,
+      "candidate_tokens": 95,
+      "thoughts_tokens": 63,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_transfer",
+      "env": "clean",
+      "cell": "multi_transfer@clean",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "2026年6月の売上レポート（テスト注文を除く完了済み売上）をまとめました。\n\n### **2026年6月 売上集計レポート**\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計対象**: ステータスが「完了（completed）」かつテスト注文（is_test = FALSE）を除いたデータ\n*   **合計売上額**: **8,020,316円**\n\nご確認のほど、よろしくお願いいたします。",
+      "turns": [
+        "2026年6月の売上レポート（テスト注文を除く完了済み売上）をまとめました。\n\n### **2026年6月 売上集計レポート**\n\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計対象**: ステータスが「完了（completed）」かつテスト注文（is_test = FALSE）を除いたデータ\n*   **合計売上額**: **8,020,316円**\n\nご確認のほど、よろしくお願いいたします。"
+      ],
+      "latency": 6.0272522498853505,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_sales FROM orders WHERE order_date BETWEEN '2026-06-01' AND '2026-06-30' AND status = 'completed' AND is_test = FALSE"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 3,
+      "llm_calls": 4,
+      "tokens": 2924,
+      "prompt_tokens": 2695,
+      "candidate_tokens": 229,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_flat",
+      "env": "clean",
+      "cell": "single_flat@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月10日の注文件数は **18件** です。",
+      "turns": [
+        "2026年6月10日の注文件数は **18件** です。"
+      ],
+      "latency": 5.1602289588190615,
+      "tool_calls": [
+        {
+          "name": "bq_assistant",
+          "args": {
+            "request": "SELECT count(*) FROM orders WHERE order_date = '2026-06-10'"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT count(*) FROM orders WHERE order_date = '2026-06-10'"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_assistant",
+        "bq_query"
+      ],
+      "n_tool_calls": 2,
+      "llm_calls": 4,
+      "tokens": 1851,
+      "prompt_tokens": 1737,
+      "candidate_tokens": 114,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_agenttool",
+      "env": "clean",
+      "cell": "multi_agenttool@clean",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "提供されているデータ（Slackのメッセージ履歴やアーカイブ）を確認しましたが、2026年5月に新しく採用・入社したメンバーに関する直接的な記録は見当たりませんでした。\n\nなお、直近のSlack（`general` チャンネル）では以下の動きが確認できています。\n*   **6月15日**: 「新しいメンバーが来週入社します」という投稿（rin氏）\n*   **6月27日**: 「歓迎会の日程を調整中です」という投稿（mio氏）\n\nこれらは6月入社のメンバーに関するものと考えられます。5月の採用者数については、人事システムや別の管理台帳を確認する必要があるかもしれません。",
+      "turns": [
+        "提供されているデータ（Slackのメッセージ履歴やアーカイブ）を確認しましたが、2026年5月に新しく採用・入社したメンバーに関する直接的な記録は見当たりませんでした。\n\nなお、直近のSlack（`general` チャンネル）では以下の動きが確認できています。\n*   **6月15日**: 「新しいメンバーが来週入社します」という投稿（rin氏）\n*   **6月27日**: 「歓迎会の日程を調整中です」という投稿（mio氏）\n\nこれらは6月入社のメンバーに関するものと考えられます。5月の採用者数については、人事システムや別の管理台帳を確認する必要があるかもしれません。"
+      ],
+      "latency": 20.558561166748405,
+      "tool_calls": [
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "採用"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "ジョイン"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "ようこそ"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "採用"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "new member"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "メンバー"
+          }
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "channel": "general",
+            "limit": "50"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_list_tables",
+        "slack_list_channels",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "portal_get_digest",
+        "portal_search_archive",
+        "portal_search_archive",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_read_channel"
+      ],
+      "n_tool_calls": 12,
+      "llm_calls": 13,
+      "tokens": 20740,
+      "prompt_tokens": 20384,
+      "candidate_tokens": 356,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": false,
+      "offtask_calls": 12,
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "single_flat",
+      "env": "confusable",
+      "cell": "single_flat@confusable",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "portal",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月10日の注文件数は18件でした。",
+      "turns": [
+        "2026年6月10日の注文件数は18件でした。"
+      ],
+      "latency": 6.861352500040084,
+      "tool_calls": [
+        {
+          "name": "list_skills",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "bq"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT COUNT(*) as order_count FROM orders WHERE order_date = '2026-06-10' AND is_test = false"
+          }
+        }
+      ],
+      "tool_names": [
+        "list_skills",
+        "load_skill",
+        "bq_list_tables",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 5,
+      "tokens": 7232,
+      "prompt_tokens": 7127,
+      "candidate_tokens": 105,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "single_skills",
+      "env": "clean",
+      "cell": "single_skills@clean",
+      "task_id": "A1",
+      "category": "A",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の売上レポート（テスト注文を除く、完了済み売上）をご報告します。\n\n### 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **ステータス**: 完了 (completed)\n*   **テスト注文**: 除外 (is_test = FALSE)\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウスの注文テーブル (`orders`) より、上記条件に合致するレコードを抽出して集計いたしました。",
+      "turns": [
+        "2026年6月の売上レポート（テスト注文を除く、完了済み売上）をご報告します。\n\n### 売上集計結果\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **ステータス**: 完了 (completed)\n*   **テスト注文**: 除外 (is_test = FALSE)\n*   **合計売上額**: **8,020,316円**\n\nデータウェアハウスの注文テーブル (`orders`) より、上記条件に合致するレコードを抽出して集計いたしました。"
+      ],
+      "latency": 8.423751832917333,
+      "tool_calls": [
+        {
+          "name": "transfer_to_agent",
+          "args": {
+            "agent_name": "bq_assistant"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_get_table_info",
+          "args": {
+            "table_name": "orders"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_sales FROM orders WHERE order_date BETWEEN '2026-06-01' AND '2026-06-30' AND status = 'completed' AND is_test = FALSE;"
+          }
+        }
+      ],
+      "tool_names": [
+        "transfer_to_agent",
+        "bq_list_tables",
+        "bq_get_table_info",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 5,
+      "tokens": 4598,
+      "prompt_tokens": 4337,
+      "candidate_tokens": 261,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_transfer",
+      "env": "clean",
+      "cell": "multi_transfer@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq"
+      ]
+    },
+    {
+      "final": "2026年5月に新しく採用されたメンバーに関するデータ（Slack のメッセージや社内ポータルのアーカイブ、月次レポートなど）を確認しましたが、該当する情報は見つかりませんでした。\n\n現在、Slack の `#general` チャンネルには 2026年6月中旬以降のメッセージ（歓迎会の調整や新しいメンバーの入社予定に関する話題など）は残っていますが、5月の採用人数を特定できる記録は確認できておりません。\n\nもし、特定の人事システムや別のチャンネルに記録があるようでしたら、そちらを確認いたしますのでお知らせください。",
+      "turns": [
+        "2026年5月に新しく採用されたメンバーに関するデータ（Slack のメッセージや社内ポータルのアーカイブ、月次レポートなど）を確認しましたが、該当する情報は見つかりませんでした。\n\n現在、Slack の `#general` チャンネルには 2026年6月中旬以降のメッセージ（歓迎会の調整や新しいメンバーの入社予定に関する話題など）は残っていますが、5月の採用人数を特定できる記録は確認できておりません。\n\nもし、特定の人事システムや別のチャンネルに記録があるようでしたら、そちらを確認いたしますのでお知らせください。"
+      ],
+      "latency": 29.448880957905203,
+      "tool_calls": [
+        {
+          "name": "list_skills",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "portal"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "採用 2026年5月"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "入社 2026年5月"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "新メンバー 2026年5月"
+          }
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "bq"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "load_skill",
+          "args": {
+            "skill_name": "slack"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026年5月 採用"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026年5月 入社"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026年5月 新メンバー"
+          }
+        },
+        {
+          "name": "slack_list_channels",
+          "args": {}
+        },
+        {
+          "name": "slack_read_channel",
+          "args": {
+            "limit": "100",
+            "channel": "general"
+          }
+        },
+        {
+          "name": "portal_get_digest",
+          "args": {
+            "channel": "general"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "入社"
+          }
+        },
+        {
+          "name": "portal_search_archive",
+          "args": {
+            "query": "採用"
+          }
+        },
+        {
+          "name": "portal_list_groups",
+          "args": {}
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "metric": "new_hires",
+            "period": "2026-05"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026-05"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "2026/05"
+          }
+        },
+        {
+          "name": "slack_search_messages",
+          "args": {
+            "query": "5月"
+          }
+        },
+        {
+          "name": "portal_run_report",
+          "args": {
+            "metric": "revenue",
+            "period": "2026-05"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT * FROM orders LIMIT 5"
+          }
+        }
+      ],
+      "tool_names": [
+        "list_skills",
+        "load_skill",
+        "portal_search_archive",
+        "portal_search_archive",
+        "portal_search_archive",
+        "load_skill",
+        "bq_list_tables",
+        "load_skill",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_list_channels",
+        "slack_read_channel",
+        "portal_get_digest",
+        "portal_search_archive",
+        "portal_search_archive",
+        "portal_list_groups",
+        "portal_run_report",
+        "slack_search_messages",
+        "slack_search_messages",
+        "slack_search_messages",
+        "portal_run_report",
+        "bq_query"
+      ],
+      "n_tool_calls": 23,
+      "llm_calls": 17,
+      "tokens": 52432,
+      "prompt_tokens": 51820,
+      "candidate_tokens": 612,
+      "thoughts_tokens": 0,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 60,
+      "signature_400": false,
+      "passed": true,
+      "refused": false,
+      "route_ok": false,
+      "trap_hit": true,
+      "trap_fatal": false,
+      "offtask_calls": 19,
+      "fabricated": false,
+      "selection": "wrong_tool",
+      "variant": "single_skills",
+      "env": "confusable",
+      "cell": "single_skills@confusable",
+      "task_id": "E1",
+      "category": "E",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq",
+        "portal",
+        "slack"
+      ],
+      "expected_domains": [],
+      "delegations": []
+    },
+    {
+      "final": "2026年6月の完了売上（テスト注文を除く）について報告します。\n\n### **2026年6月 売上レポート**\n\n*   **合計売上高**: 8,020,316円\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   ステータスが「完了（completed）」の注文のみを集計\n    *   テスト注文（is_test = true）をすべて除外\n\n以上です。詳細な内訳や日次の推移が必要な場合はお知らせください。",
+      "turns": [
+        "2026年6月の完了売上（テスト注文を除く）について報告します。\n\n### **2026年6月 売上レポート**\n\n*   **合計売上高**: 8,020,316円\n*   **対象期間**: 2026年6月1日 〜 2026年6月30日\n*   **集計条件**:\n    *   ステータスが「完了（completed）」の注文のみを集計\n    *   テスト注文（is_test = true）をすべて除外\n\n以上です。詳細な内訳や日次の推移が必要な場合はお知らせください。"
+      ],
+      "latency": 12.629940415732563,
+      "tool_calls": [
+        {
+          "name": "bq_assistant",
+          "args": {
+            "request": "SHOW TABLES IN orders_data"
+          }
+        },
+        {
+          "name": "bq_list_tables",
+          "args": {}
+        },
+        {
+          "name": "bq_assistant",
+          "args": {
+            "request": "SELECT SUM(amount) AS total_sales\nFROM orders\nWHERE order_date BETWEEN '2026-06-01' AND '2026-06-30'\n  AND status = 'completed'\n  AND is_test = false;"
+          }
+        },
+        {
+          "name": "bq_query",
+          "args": {
+            "sql": "SELECT SUM(amount) AS total_sales\nFROM orders\nWHERE order_date BETWEEN '2026-06-01' AND '2026-06-30'\n  AND status = 'completed'\n  AND is_test = false;"
+          }
+        }
+      ],
+      "tool_names": [
+        "bq_assistant",
+        "bq_list_tables",
+        "bq_assistant",
+        "bq_query"
+      ],
+      "n_tool_calls": 4,
+      "llm_calls": 7,
+      "tokens": 4825,
+      "prompt_tokens": 3998,
+      "candidate_tokens": 457,
+      "thoughts_tokens": 370,
+      "tool_use_prompt_tokens": 0,
+      "cached_tokens": 0,
+      "signature_missing_count": 0,
+      "signature_400": false,
+      "passed": false,
+      "refused": false,
+      "route_ok": true,
+      "trap_hit": false,
+      "trap_fatal": false,
+      "offtask_calls": 0,
+      "fabricated": false,
+      "selection": "correct_tool",
+      "variant": "multi_agenttool",
+      "env": "clean",
+      "cell": "multi_agenttool@clean",
+      "task_id": "C1",
+      "category": "C",
+      "run_index": 0,
+      "tool_order_seed": 0,
+      "domains": [
+        "bq"
+      ],
+      "expected_domains": [
+        "bq"
+      ],
+      "delegations": [
+        "bq",
+        "bq"
+      ]
+    }
+  ]
+}
