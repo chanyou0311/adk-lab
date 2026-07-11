@@ -24,7 +24,7 @@ EVAL_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = EVAL_DIR / "results"
 sys.path.insert(0, str(EVAL_DIR))
 
-from report import aggregate, is_scored, render_markdown  # noqa: E402
+from report import TITLE, aggregate, is_scored, render_markdown  # noqa: E402
 from tasks import TASKS_BY_ID, score_record  # noqa: E402
 
 
@@ -107,8 +107,8 @@ def main() -> None:
     )
     md = render_markdown(summary, groups, task_ids, categories, runs, model)
     md = md.replace(
-        "# 知識配置バリアント評価 — 結果",
-        f"# 知識配置バリアント評価 — 結果 (再採点: {src.name})",
+        f"# {TITLE}",
+        f"# {TITLE} (再採点: {src.name})",
         1,
     )
     (RESULTS_DIR / f"RESULTS{args.tag}_rescored.md").write_text(md, encoding="utf-8")

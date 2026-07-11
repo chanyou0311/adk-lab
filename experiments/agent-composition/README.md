@@ -3,11 +3,10 @@
 Google ADK (Python) エージェントで、**単一の LLM エージェントと multi-agent 構成 (agent
 composition) を統制比較する**実験 ([adk-lab](../../README.md) の実験のひとつ)。
 
-> **状態: WIP (本収集前)。** ハーネス・16 タスク・6 バリアント・3 環境 (CLEAN/DISTINCT/
-> CONFUSABLE) を実装済み。V-1 smoke と難度プローブ (単発実行) で計測健全性・採点器・罠の発動を
-> 確認済み。**本収集 (runs≥8 の全セル) はこれから。** 較正メモ: gemini-3-flash は強く、多段導出で
-> 硬化しても CLEAN ベースラインは天井寄り。品質だけでなく環境劣化・コスト差・trajectory 指標で
-> 仮説を検証する設計 (下記「較正と runs 設計」参照)。
+> **状態: 本収集完了・記事公開済み。** 13 セル (6 バリアント) × 16 タスク × runs=8 の本収集に加え、
+> C カテゴリ (罠) を n=64/構成 まで追い足し収集済み。結果と考察は
+> [ブログ記事](https://blog.fumo.jp/posts/adk-agent-composition-patterns/) にまとめた。
+> 記事の表がどの結果ファイルから来ているかは下記「結果ファイルの構成」節を参照。
 
 ## 問い
 
@@ -102,8 +101,9 @@ streaming の partial レスポンスは usage が二重に来るため、`after
 | `eval/run_eval.py` | (variant,env,task,run) 直交ランナー + `MetricsPlugin` |
 | `eval/report.py` | Wilson CI 集計 (group_field で cell 群化) + Markdown |
 | `eval/rescore.py` | 保存済み結果のオフライン再採点 (cell 集計) |
+| `eval/canonical_report.py` | rescored 4 tag の統合レポート (`RESULTS_canonical.md`) 生成。マージ規則・supersede はスクリプト内に明記 |
 | `scripts/gen_fixtures.py` | 決定的 fixture 生成 (seed=42) |
-| `tests/` | fixture 健全性 + 採点器 (gaming/terse 両側) + バリアント構築 + naming |
+| `tests/` | fixture 健全性 + 採点器 (gaming/terse 両側) + バリアント構築 + naming + canonical マージ規則 |
 
 ## 実行方法
 
@@ -125,6 +125,27 @@ uv run python eval/rescore.py --tag _smoke
 
 `.env.example` を `.env` にコピーして値を設定してもよい (`.env` は commit しない)。
 
+## 結果ファイルの構成
+
+収集は複数の tag に分かれている (raw record は append-only — 修正時も既存 tag を書き換えず新しい
+tag を追加する)。各 tag に raw (`results_<tag>.json` / `RESULTS_<tag>.md`) と現行採点器での再採点
+(`*_rescored.*`) が併存する。
+
+| tag | 内容 | 記事での使われ方 |
+|---|---|---|
+| `_main` | 本収集第 1 波: single_flat (3 env) / single_skills / multi_agenttool / multi_transfer (各 2 env) = 9 セル × 16 タスク × 8 runs | スコアボードの基礎 |
+| `_main2` | 追加収集: multi_taskmode (2 セル)。**同 tag の workflow_graph 2 セルは planner 修正前の旧実装で `_graph2` が正 (supersede)** | multi_taskmode 行 |
+| `_graph2` | workflow_graph (2 セル)。planner をドメイン別サブクエリ分解に修正した後の正版 | workflow_graph 行 |
+| `_ctopup` | C カテゴリ 4 タスクの追い足し (confusable × 6 バリアント × 8 runs、cap=120) | C 列の n=64 化・trap_fatal・C3 |
+| `_smoke*` / `_probe*` | 収集前の較正・計測健全性確認 | 記事未使用 |
+
+記事のスコアボードは、rescored 4 tag をマージした統合レポート
+**`eval/results/RESULTS_canonical.md`** として決定的に再生成できる:
+
+```bash
+uv run python eval/canonical_report.py
+```
+
 ## 較正と runs 設計
 
 gemini-3-flash-preview は強く、多段導出でタスクを硬化しても CLEAN 単一 flat のベースラインは
@@ -137,12 +158,13 @@ CONFUSABLE 環境での劣化・トークンコスト差 (multi > single を pro
 (隣接セルと CI が重なって差を主張できない) セルに限り、事後に runs を 10 へ追い足して CI を締める。
 raw record は append-only なので追い足しは既存結果を壊さない。
 
-**LLM 呼び出しキャップ (`--max-llm-calls`)**: 追い足しセルは `--max-llm-calls 120` (cap=120) で収集し、
-single_turn 系の silo スパイラル (sub-agent が答えに収束せず呼び出しを浪費する) が稀に暴走してコストを
-食うのを抑える。`_main` (本収集) は**無制限** — 実測で 120 呼び出しを超えたのは 5/1151 件のみ・**全て E
-(irrelevance) タスク**で、キャップは典型セルの計測を歪めない一方、暴走セルのコスト上限として効く。cap
-超過時 (`LlmCallsLimitExceeded`) はリトライせず (課金が増えるだけ)、そこまでに消費したトークン・tool
-呼び出しを部分メトリクスとして記録に保全し、`error` を付して `passed=False` で確定する。
+**LLM 呼び出しキャップ (`--max-llm-calls`)**: multi_taskmode の silo スパイラル (sub-agent が答えに
+収束せず呼び出しを浪費する) の発見後に導入した。よって収集条件に差がある — `_main` (本収集第 1 波) は
+**無制限**、`_main2` / `_graph2` / `_ctopup` は `--max-llm-calls 120` (cap=120)。無制限だった `_main` で
+実測 120 呼び出しを超えたのは 7/1152 件のみ・**全て E (irrelevance) タスク**で、キャップは典型セルの
+計測を歪めない一方、暴走セルのコスト上限として効く。cap 超過時 (`LlmCallsLimitExceeded`) はリトライ
+せず (課金が増えるだけ)、そこまでに消費したトークン・tool 呼び出しを部分メトリクスとして記録に保全し、
+`error` を付して確定する (集計では errors 列の error 扱いで pass 分母から除外される — 計 8 件)。
 
 **checkpoint / `--resume` (kill 耐性)**: 長時間 run が外部シグナル等で kill されても課金済みジョブを
 失わないよう、ジョブ完了ごとに 1 行 JSON を `results_<tag>.checkpoint.jsonl` (scratch、.gitignore 対象)
@@ -155,11 +177,13 @@ single_turn 系の silo スパイラル (sub-agent が答えに収束せず呼�
 `JobTimeout` の error record として先へ進む (リトライしない)。cap=120 のスパイラルでも実測 96s で
 終わるため、600s 超は正常ジョブでは起きない水準。
 
-## 後続作業 (TODO)
+## 既知の限界 (レビュー指摘の拡張候補)
 
-- **本収集** — `--runs 8` で 13 セル × 16 タスクを実測し `eval/results/` に保存 (raw + `_rescored` 同時 commit)。
-- **report.py の見出し** を agent-composition 用に更新 (現在は流用元「知識配置バリアント評価」のまま)。
-- 天井が問題になる場合の追加硬化 (portal 罠の巧妙化など) は結果を見て判断。
+- **罠の独立反復が 1 種類しかない**: 「排他ゲーティングは誤ルーティングを不可逆にする」の根拠 C3
+  (鮮度の古いデータカタログ) は 1 表層のみ。一般化には primary/replica・gross/net・deprecated API
+  のような別表層の罠タスクを複数追加して同傾向を確認する必要がある。
+- **paired 検定は未適用**: 同一 (task, run) を全バリアントで収集しているため、McNemar / paired
+  bootstrap による差分検定が raw record から事後解析できる (現状は Wilson CI の独立標本扱い)。
 
 ## バージョン注記
 

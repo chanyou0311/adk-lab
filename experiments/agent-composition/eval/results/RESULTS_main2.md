@@ -1,4 +1,4 @@
-# 知識配置バリアント評価 — 結果
+# agent-composition 評価 — 結果
 
 - model: `gemini-3-flash-preview`  ·  runs/(variant,task): 8  ·  cells: 4  ·  tasks: 16
 - pass rate は Wilson 95% CI 付き。route ok = 呼ばれた実ツールのドメインが expected と完全一致した割合 (委譲呼び出し *_assistant / transfer_to_agent と skill メタは無視)。
